@@ -1,0 +1,24 @@
+<resources>
+
+    <!--
+        Base application theme for API 11+. This theme completely replaces
+        AppBaseTheme from res/values/styles.xml on API 11+ devices.
+    -->
+    <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
+        <!-- API 11 theme customizations can go here. -->
+    </style>
+    
+    <style name="TransparentAppTheme" parent="@style/Theme.Sherlock">
+    	<item name="actionBarStyle">@style/TransparentAppTheme.ActionBar</item>
+    	<item name="windowActionBarOverlay">true</item>
+    	<item name="android:actionBarStyle">@style/TransparentAppTheme.ActionBar</item>
+    	<item name="android:windowActionBarOverlay">true</item>
+	</style>
+
+	<style name="TransparentAppTheme.ActionBar" parent="@style/Widget.Sherlock.ActionBar">
+	    <item name="background">#65000000</item>
+	    <item name="backgroundSplit">#65000000</item>
+   	    <item name="android:background">#65000000</item>
+ 	</style>    
+
+</resources>

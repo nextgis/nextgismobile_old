@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Project:  NextGISDroid
+ 	Purpose:  Gathering position information and data
+    Author:   Bishop (aka Baryshnikov Dmitriy), polimax@mail.ru
+    Copyright (C) 2012 NextGIS
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<resources>
+	<string-array name="tracker_min_dist_update">
+	    <item>0 м</item>
+		<item>1 м</item>
+		<item>5 м</item>
+		<item>10 м</item>
+		<item>25 м</item>
+		<item>50 м</item>
+		<item>75 м</item>
+		<item>100 м</item>
+		<item>150 м</item>
+		<item>200 м</item>
+		<item>300 м</item>
+	</string-array>
+	<string-array name="tracker_min_time_between_updates">
+	    <item>0 мин</item>
+		<item>1 мин</item>
+		<item>2 мин</item>
+		<item>5 мин</item>
+		<item>10 мин</item>
+		<item>20 мин</item>
+		<item>30 мин</item>
+	</string-array>
+	<string-array name="datapos_send_updates">
+	    <item>1 мин</item>
+		<item>2 мин</item>
+		<item>3 мин</item>
+		<item>4 мин</item>
+		<item>5 мин</item>
+		<item>10 мин</item>
+		<item>15 мин</item>
+		<item>20 мин</item>
+		<item>30 мин</item>
+		<item>60 мин</item>
+	</string-array>	
+	<string-array name="coordinates_format">
+	    <item>ГГ-ММ-СС.СС</item>
+		<item>ГГ-ММ.ММ</item>
+		<item>ГГ.ГГГГ</item>
+	</string-array>	
+	<string-array name="views">
+	    <item>Карта</item>
+		<item>Компас</item>	
+	</string-array>		
+</resources>

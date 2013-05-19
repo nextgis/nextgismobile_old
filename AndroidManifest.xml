@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.nextgis.mobile"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="17" />
+    
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />    
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/> 
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.WAKE_LOCK"/>
+	<uses-permission android:name="android.permission.CAMERA" />
+	
+	<uses-feature android:name="android.hardware.camera" android:required="false" />
+	<uses-feature android:name="android.hardware.location" android:required="true"/>
+	
+	<supports-screens android:largeScreens="true"/>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Sherlock" >
+        <activity
+            android:name="com.nextgis.mobile.MainActivity"
+            android:label="@string/app_name" 
+            android:theme="@style/TransparentAppTheme"
+            android:uiOptions="splitActionBarWhenNarrow">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity 
+    		android:name="com.nextgis.mobile.PreferencesActivity"
+    		android:label="@string/pref_title">
+		</activity>
+        <activity 
+    		android:name="com.nextgis.mobile.AboutActivity"
+    		android:label="@string/sAbout">
+		</activity>
+        <activity 
+    		android:name="com.nextgis.mobile.CompassActivity"
+    		android:label="@string/compass_title">
+		</activity>  
+		
+        <service           
+            android:name="com.nextgis.mobile.TrackerService"
+            android:process=":ng_tracker"			
+			android:label="@string/tracker_service_name"             
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.nextgis.mobile.tracker.action.START" />
+                <action android:name="com.nextgis.mobile.tracker.action.STOP" />
+                <action android:name="com.nextgis.mobile.tracker.action.START_GPX" />
+                <action android:name="com.nextgis.mobile.tracker.action.STOP_GPX" />
+            </intent-filter>
+        </service>
+        <service           
+            android:name="com.nextgis.mobile.DataSendService"
+            android:process=":ng_sendpos"			
+			android:label="@string/sendpos_service_name"             
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.nextgis.mobile.sendpos.action.START" />
+                <action android:name="com.nextgis.mobile.sendpos.action.STOP" />
+            </intent-filter>
+        </service>        
+        
+        <receiver android:enabled="true"
+                  android:name="com.nextgis.mobile.StartupReceiver"
+                  android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <category android:name="android.intent.category.DEFAULT"/> 
+            </intent-filter>
+
+        </receiver>        		
+        
+    </application>
+
+</manifest>

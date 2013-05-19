@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Project:  NextGISDroid
+ 	Purpose:  Gathering position information and data
+    Author:   Bishop (aka Baryshnikov Dmitriy), polimax@mail.ru
+    Copyright (C) 2012 NextGIS
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<resources>
+	<string-array name="tracker_min_dist_update">
+	    <item>0 m</item>
+		<item>1 m</item>
+		<item>5 m</item>
+		<item>10 m</item>
+		<item>25 m</item>
+		<item>50 m</item>
+		<item>75 m</item>
+		<item>100 m</item>
+		<item>150 m</item>
+		<item>200 m</item>
+		<item>300 m</item>
+	</string-array>
+	<string-array name="tracker_min_time_between_updates">
+	    <item>0 min</item>
+		<item>1 min</item>
+		<item>2 min</item>
+		<item>5 min</item>
+		<item>10 min</item>
+		<item>20 min</item>
+		<item>30 min</item>
+	</string-array>
+	<string-array name="datapos_send_updates">
+	    <item>1 min</item>
+		<item>2 min</item>
+		<item>3 min</item>
+		<item>4 min</item>
+		<item>5 min</item>
+		<item>10 min</item>
+		<item>15 min</item>
+		<item>20 min</item>
+		<item>30 min</item>
+		<item>60 min</item>
+	</string-array>	
+	<string-array name="coordinates_format">
+	    <item>DD-MM-SS.SS</item>
+		<item>DD-MM.MM</item>
+		<item>DD.DDDD</item>
+	</string-array>
+	<string-array name="accuracy">
+	    <item>CE50</item>
+		<item>CE90</item>
+		<item>CE95</item>
+		<item>CE98</item>		
+	</string-array>	
+	<string-array name="tilesize">
+	    <item>128</item>
+		<item>256</item>
+		<item>512</item>
+		<item>1024</item>		
+	</string-array>		
+	<string-array name="views">
+	    <item>Map</item>
+		<item>Compass</item>	
+	</string-array>	
+</resources>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">NextGIS Mobile</string>
+    <string name="sHomepage">http://nextgis.ru</string>
+    
+    <string name="action_settings">Settings</string>
+    
+    <string name="switch_track_service">Start tracker service</string>
+	<string name="tracker_service_name">NGMTrackerService</string>
+	<string name="sendpos_service_name">NGMSendPosService</string>
+	<string name="about_app">This is the application for geoposition tracking, send position information to the tracking server, show map and pick geodata. \n\nDevelopers:\n  Dmitriy Baryshnikov\n\nMore info at</string>
+	<string name="bt_map">Map</string>
+	<string name="bt_compass">Compass</string>
+	
+	<string name="sSettings">Settings</string>
+	<string name="sAbout">About</string>
+	<string name="sMark">Add Point</string>
+	<string name="sGPXRecord">Record GPX</string>
+	<string name="sInfo">Show/Hide infopanel</string>
+	<string name="sPan">Pan</string>
+		
+	<string name="pref_title">NextGIS Mobile preferences</string>
+	<string name="pref_cat_main">Main preferences</string>
+	<string name="pref_cat_tracker">Tracker preferences</string>
+	<string name="pref_cat_datasenser">Data send preferences</string>
+	<string name="pref_cat_compass">Location preferences</string>
+	<string name="pref_tracker_service_on">Track service started</string>
+	<string name="pref_tracker_service_off">Track service stoped</string>
+	<string name="pref_tracker_service">Track service start/stop</string>
+	<string name="pref_tracker_name">Track service start/stop</string>
+	<string name="pref_site_name">Storage site</string>
+	<string name="pref_site_summary">Enter the web site address to store geodata</string>
+	<string name="pref_site_dlg_title">Enter the web site address</string>
+	<string name="pref_tracker_min_dist_update_name">Min. distance change for updates</string>
+	<string name="pref_tracker_min_dist_update_summary">Enter minimum distance change for updates in meters</string>
+	<string name="pref_tracker_min_dist_update_dlg_title">Enter minimum distance change for updates</string>
+	<string name="pref_tracker_min_time_between_updates_name">Min. time between updates</string>
+	<string name="pref_tracker_min_time_between_updates_summary">Enter minimum time between updates in seconds</string>
+	<string name="pref_tracker_min_time_between_updates_dlg_title">Enter minimum time between updates</string>	
+	<string name="pref_sendpos_service">Send position service start/stop</string>
+	<string name="pref_sendpos_name">Send position service start/stop</string>	
+	<string name="pref_sendpos_service_on">Send position service started</string>
+	<string name="pref_sendpos_service_off">Send position service stoped</string>	
+	<string name="pref_time_between_sendpos_name">Min. time between position send</string>
+	<string name="pref_time_between_sendpos_summary">Enter minimum time between position send</string>
+	<string name="pref_time_between_sendpos_dlg_title">Enter minimum time between position send</string>	
+	<string name="pref_energy_economy_summary">Send position in suspend</string>
+	<string name="pref_energy_economy_name">Send position in suspend</string>
+	<string name="pref_energy_economy_on">Don\'t send position in suspend</string>
+	<string name="pref_energy_economy_off">Send position in suspend</string>	
+	<string name="pref_uid_name">User identificator</string>
+	<string name="pref_uid_summary">Enter the user identificator</string>
+	<string name="pref_uid_dlg_title">Enter the user identificator</string>
+	<string name="pref_start_services_onstartup">Start services on startup</string>
+	<string name="pref_start_services_onstartup_summary">If checked start track and data send services on startup</string>
+	<string name="pref_coordinates_format_name">Coordintates format</string>
+	<string name="pref_coordinates_format_summary">Set text output format for coordinates</string>
+	<string name="pref_coordinates_format_dlg_title">Select coordinates format</string>	
+	
+	<string name="pref_compass_vibration">Vibrate on comapss touch</string>
+	<string name="pref_compass_vibration_summary">Then touching compass the device will vibrate</string>
+	<string name="pref_compass_wake_lock">Lock screen off if compass is shown</string>	
+	<string name="pref_compass_wake_lock_summary">Don\'t switch off display if compass is shown</string>
+	<string name="pref_compass_true_north">Show true north</string>
+	<string name="pref_compass_true_north_summary">Show true north</string>
+	<string name="pref_compass_show_magnetic">Show magnetic</string>
+	<string name="pref_compass_show_magnetic_summary">Show magnetic</string>
+			
+	<string name="default_azimuth">0°N</string>	
+	<string name="compass_title">Compass</string>
+	<string name="map_title">Map</string>
+	<string name="tabs_position_tab">Position</string>
+	<string name="tabs_description_tab">Description</string>
+	<string name="tabs_camera_tab">Camera</string>
+	<string name="tabs_note_tab">Notes</string>	
+	<string name="error_loc_fix">Error location fix</string>
+	<string name="input_poi_title">Input point</string>
+	<string name="input_poi_step1">1. Add POI description</string>
+	<string name="input_poi_step2">2. Add position and orientation</string>
+	<string name="input_poi_step3">3. Take a photos</string>
+	<string name="input_poi_step4">4. Add notest and finish</string>
+	<string name="input_poi_finish">Finish</string>
+	<string name="input_poi_summary">Summary: </string>
+	<string name="input_poi_coordiantes">Coordinates: </string>
+	<string name="input_poi_dist">Distance: </string>
+	<string name="input_poi_azimuth">Asimuth: </string>
+	<string name="input_poi_cat">Input category: </string>
+	<string name="input_poi_subcat">Input subcategory: </string>
+	<string name="input_poi_subcatcustom">Input custom subcategory: </string>
+	<string name="input_poi_subcatdefault">None</string>
+	<string name="input_poi_added">Point added</string>
+	<string name="input_poi_take_photo">Take photo</string>
+	<string name="info_speed">Speed</string>
+	<string name="info_speed_val">km/h</string>
+	<string name="info_coordinates">Coordinates</string>
+	<string name="info_lat">Latitude</string>
+	<string name="info_lon">Longtitude</string>
+	<string name="info_height">Height</string>
+	<string name="info_height_val">m</string>
+	<string name="compas_N">N</string>
+	<string name="compas_NE">NE</string>
+	<string name="compas_E">E</string>
+	<string name="compas_SE">SE</string>
+	<string name="compas_S">S</string>
+	<string name="compas_SW">SW</string>
+	<string name="compas_W">W</string>
+	<string name="compas_NW">NW</string>
+	<string name="sum_cat">Category: </string>
+	<string name="sum_subcat">Subcategory: </string>
+	<string name="sum_coords">Coordinates: </string>
+	<string name="sum_az">Azimuth: </string>
+	<string name="sum_dist">Distance: </string>
+	<string name="coord_lat"></string>
+	<string name="coord_lon"></string>
+	<string name="create_nex_gpx">Create GPX file: </string>
+	<string name="gpx_recording">GPX recording...</string>
+	
+	<string name="set_mode_offline">Set to offline mode</string>
+	<string name="set_mode_online">Set to online mode</string>
+
+	<string name="set_mode_show_me">showing and tracking my current location</string>
+	<string name="set_mode_hide_me">hiding my current location</string>
+	
+	<string name="pref_cat_map">Map</string>
+	<string name="pref_tile_size_name">Map tile size</string>
+	<string name="pref_tile_size_summary">Set map tile size</string>
+	<string name="pref_tile_size_name_dlg_title">Choose map tile size</string>
+	
+	<string name="pref_cat_acc">Coordinate accuracy</string>
+	<string name="pref_accurate_coordinates_pick">Accurate coordinates pick</string>
+	<string name="pref_accurate_coordinates_pick_summary">If on, more accurate coordinates pick provided. The point coordinates accumulated and averaged</string>	
+	<string name="acc_gather_dlg_title">Gather coordinates</string>
+	
+	<string name="pref_accurate_coordinates_pick_count">Count of GPS measures</string>
+	<string name="pref_accurate_coordinates_pick_count_summary">Count of GPS measures for more accurate coordinates pick</string>
+
+	<string name="pref_accurate_ce">Circular error</string>
+	<string name="pref_accurate_ce_summary">Circular error probability</string>
+</resources>
