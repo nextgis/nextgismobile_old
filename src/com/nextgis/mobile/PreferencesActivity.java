@@ -21,6 +21,7 @@
 package com.nextgis.mobile;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -116,8 +117,8 @@ public class PreferencesActivity extends SherlockPreferenceActivity implements O
 	    MinDistPref = (ListPreference) findPreference(KEY_PREF_MIN_DIST_CHNG_UPD);
 	    MinDistPref.setSummary((String) MinDistPref.getValue());
 	    
-	    TileSizePref = (ListPreference) findPreference(KEY_PREF_TILE_SIZE);
-	    TileSizePref.setSummary((String) TileSizePref.getValue());
+//	    TileSizePref = (ListPreference) findPreference(KEY_PREF_TILE_SIZE);
+//	    TileSizePref.setSummary((String) TileSizePref.getValue());
 	    
 	    MinTimePref = (ListPreference) findPreference(KEY_PREF_MIN_TIME_UPD);
 	    MinTimePref.setSummary((String) MinTimePref.getValue());	   
@@ -183,18 +184,18 @@ public class PreferencesActivity extends SherlockPreferenceActivity implements O
 	
     public void onTrackService(boolean bStart) {
     	Log.d(MainActivity.TAG, "Preferences: onTrackService " + bStart);
-/*    	if(bStart)
+    	if(bStart)
 			startService(new Intent(TrackerService.ACTION_START));
 		else
-			startService(new Intent(TrackerService.ACTION_STOP));*/    	
+			startService(new Intent(TrackerService.ACTION_STOP));    	
     }
     
     public void onSendPosService(boolean bStart) {
     	Log.d(MainActivity.TAG, "Preferences: onSendPosService " + bStart);
-/*    	if(bStart)
+    	if(bStart)
 			startService(new Intent(DataSendService.ACTION_START));
 		else
-			startService(new Intent(DataSendService.ACTION_STOP));*/
+			startService(new Intent(DataSendService.ACTION_STOP));
     }    
  
 	public static String GetDeviceId(){
@@ -256,7 +257,7 @@ public class PreferencesActivity extends SherlockPreferenceActivity implements O
 			newVal = sharedPreferences.getString(key, "256");
         	String toIntStr = (String) newVal;
     		Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-    		editor.putLong(key + "_int", Integer.parseInt(toIntStr));
+    		editor.putInt(key + "_int", Integer.parseInt(toIntStr));
     		editor.commit(); 		
 		}	
 		else if(key.equals(KEY_PREF_SW_TRACK_SRV))

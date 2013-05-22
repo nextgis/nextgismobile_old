@@ -41,9 +41,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:inputType="textMultiLine" >
-
-            <requestFocus />
+	        android:inputType="text|textMultiLine"
+	        android:minLines="3" >
         </EditText>
         
         <TextView
@@ -59,16 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="left"
-            android:text=""
-            android:inputType="textMultiLine"
             android:textAppearance="?android:attr/textAppearanceSmall" />
-        <Button
-            android:id="@+id/insert_poi_finish"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/input_poi_finish"/>
-
     </LinearLayout>
 
 </FrameLayout>

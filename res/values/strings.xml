@@ -16,6 +16,7 @@
 	<string name="sSettings">Settings</string>
 	<string name="sAbout">About</string>
 	<string name="sMark">Add Point</string>
+	<string name="sCancel">Cancel</string>
 	<string name="sGPXRecord">Record GPX</string>
 	<string name="sInfo">Show/Hide infopanel</string>
 	<string name="sPan">Pan</string>

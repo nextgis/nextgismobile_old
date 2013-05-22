@@ -40,7 +40,7 @@
 			android:defaultValue="false"			
 			android:summary="@string/pref_start_services_onstartup_summary" /> 		
 	</PreferenceCategory>
-	<PreferenceCategory
+	<!-- PreferenceCategory
 	    android:title="@string/sMap">
    		<ListPreference
 		    android:key="map_tile_size"
@@ -50,7 +50,7 @@
 			android:entries="@array/tilesize"
 			android:entryValues="@array/tilesize"
 			android:dialogTitle="@string/pref_tile_size_name_dlg_title" />
-	</PreferenceCategory>
+	</PreferenceCategory-->
 	<PreferenceCategory
 		android:title="@string/pref_cat_acc">
 		<CheckBoxPreference

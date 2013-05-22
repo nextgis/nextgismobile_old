@@ -50,6 +50,10 @@
     		android:name="com.nextgis.mobile.CompassActivity"
     		android:label="@string/compass_title">
 		</activity>  
+        <activity 
+    		android:name="com.nextgis.mobile.InputPointActivity"
+    		android:label="@string/sMark">         
+		</activity>		
 		
         <service           
             android:name="com.nextgis.mobile.TrackerService"
@@ -63,6 +67,7 @@
                 <action android:name="com.nextgis.mobile.tracker.action.STOP_GPX" />
             </intent-filter>
         </service>
+        
         <service           
             android:name="com.nextgis.mobile.DataSendService"
             android:process=":ng_sendpos"			

@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.api.IGeoPoint;
@@ -43,6 +44,7 @@ import org.osmdroid.views.overlay.OverlayItem;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -52,6 +54,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -74,8 +78,10 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
+
 public class MainActivity extends SherlockActivity implements OnNavigationListener{
 	final static String TAG = "nextgismobile";	
+	final static String LOACTION_HINT = "com.nextgis.gis.location";	
 
 	private MapView mOsmv;
 	private ResourceProxy mResourceProxy;	
@@ -114,6 +120,8 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	final static int mNotifyId = 9999;
 	final static int margings = 10;
 	
+	protected ProgressDialog pd;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -130,7 +138,6 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		mbInfoOn = prefs.getBoolean(PREFS_SHOW_INFO, false);
 		mbGpxRecord = prefs.getBoolean(PreferencesActivity.KEY_PREF_SW_TRACKGPX_SRV, false);
-		mnTileSize = prefs.getInt(PreferencesActivity.KEY_PREF_TILE_SIZE + "_int", 256);
 		
 	    ActionBar actionBar = getSupportActionBar();
 		Context context = actionBar.getThemedContext();
@@ -145,6 +152,22 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		
 	    mResourceProxy = new ResourceProxyImpl(context);
 		
+	    InitMap();
+	    
+		setContentView(rl);	
+		
+		PanToLocation();
+		
+        Log.d(TAG, "MainActivity: onCreate");
+	}
+	
+	void InitMap(){
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		mnTileSize = prefs.getInt(PreferencesActivity.KEY_PREF_TILE_SIZE + "_int", 256);
+		if(mOsmv != null){
+			rl.removeAllViews();
+			mOsmv = null;
+		}
 		mOsmv = new MapView(this, mnTileSize, mResourceProxy);
 		
 		//add overlays
@@ -177,26 +200,21 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		//m_Osmv.setBuiltInZoomControls(true);
 		mOsmv.getOverlays().add(mDirectedLocationOverlay);
 		mOsmv.getOverlays().add(mLocationOverlay);
-		mOsmv.getOverlays().add(mPointsOverlay);
+		
+		LoadPointsToOverlay();
 		
 		rl.addView(mOsmv, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));		
-		
-		AddMapButtons(rl);
-		
-		this.setContentView(rl);
-		
+	
 		mOsmv.getController().setZoom(prefs.getInt(PREFS_ZOOM_LEVEL, 1));
 		mOsmv.scrollTo(prefs.getInt(PREFS_SCROLL_X, 0), prefs.getInt(PREFS_SCROLL_Y, 0));
 
 		//mLocationOverlay.enableMyLocation();
 		//m_LocationOverlay.enableCompass();
 		mLocationOverlay.setDrawAccuracyEnabled(true);
-		
-		PanToLocation();
 
 		mOsmv.setKeepScreenOn(true);
 		
-        Log.d(TAG, "MainActivity: onCreate");
+		AddMapButtons(rl);
 	}
 
 	@Override
@@ -225,6 +243,8 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	protected void onResume() {
 		super.onResume();
 
+		InitMap();
+		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		final String tileSourceName = prefs.getString(PREFS_TILE_SOURCE, TileSourceFactory.DEFAULT_TILE_SOURCE.name());
 		try {
@@ -249,7 +269,7 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 			startGPXRecord();
 		}
 		
-		AddPointsToOverlay();
+		//AddPointsToOverlay();
 		
 		PanToLocation();
 	}	
@@ -316,7 +336,8 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
         	onRecordGpx();
         	return true;
         case MENU_MARK:        	
-        	return true;
+        	onMark();
+            return true;
         }
 		return super.onOptionsItemSelected(item);
 	}
@@ -390,7 +411,7 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	protected void AddPointsToOverlay(){
 		//add new point		
 		File file = new File(getExternalFilesDir(null), "points.csv");
-		if (file != null) {
+		if (file != null && file.exists()) {
 			Drawable ivPt10 = getResources().getDrawable(R.drawable.dot10);
         	InputStream in;
 			try {
@@ -476,33 +497,35 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 			}
 		}
 		, mResourceProxy);
+		
+		mOsmv.getOverlays().add(mPointsOverlay);
 	}
 	
 	void onRecordGpx(){
-		/*m_bGpxRecord = !m_bGpxRecord;	
+		mbGpxRecord = !mbGpxRecord;	
 		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		final SharedPreferences.Editor edit = prefs.edit();
-		edit.putBoolean(PreferencesActivity.KEY_PREF_SW_TRACKGPX_SRV, m_bGpxRecord);
+		edit.putBoolean(PreferencesActivity.KEY_PREF_SW_TRACKGPX_SRV, mbGpxRecord);
 		edit.commit();
 		
         final SharedPreferences.Editor editor1 = getSharedPreferences("preferences", Context.MODE_PRIVATE).edit();
-        editor1.putBoolean(PreferencesActivity.KEY_PREF_SW_TRACKGPX_SRV, m_bGpxRecord);
+        editor1.putBoolean(PreferencesActivity.KEY_PREF_SW_TRACKGPX_SRV, mbGpxRecord);
         editor1.commit();   
 
 		
-		if(m_bGpxRecord){
+		if(mbGpxRecord){
 			//start record
 			startGPXRecord();
 		}
 		else{
 			//stop record
 			stopGPXRecord();
-		}		*/
+		}
 	}    
 	
 	void startGPXRecord(){
-		/*startService(new Intent(TrackerService.ACTION_START_GPX));
+		startService(new Intent(TrackerService.ACTION_START_GPX));
 		
 		NotificationCompat.Builder mBuilder =
 		        new NotificationCompat.Builder(this)
@@ -522,20 +545,190 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	     mBuilder.setContentIntent(resultPendingIntent);
 	     NotificationManager mNotificationManager =
 	         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-	     mNotificationManager.notify(mNotifyId, mBuilder.getNotification());*/
+	     mNotificationManager.notify(mNotifyId, mBuilder.getNotification());
      }
 	
 	void stopGPXRecord(){
-		 /*startService(new Intent(TrackerService.ACTION_STOP_GPX));
+		 startService(new Intent(TrackerService.ACTION_STOP_GPX));
 	     NotificationManager mNotificationManager =
 		         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-	     mNotificationManager.cancel(mNotifyId);*/
+	     mNotificationManager.cancel(mNotifyId);
 	}
 
 	void ShowInfo()
 	{
 		mbInfoOn = !mbInfoOn;
 		ShowInfo(mbInfoOn);
+	}
+	
+	void onMark(){
+       
+		final Location loc = mLocationOverlay.getLastFix();
+		
+		if(loc == null)
+		{
+			Toast.makeText(getApplicationContext(), R.string.error_loc_fix, Toast.LENGTH_SHORT).show();
+		}
+		else
+		{	
+			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			final boolean bAccCoord = prefs.getBoolean(PreferencesActivity.KEY_PREF_ACCURATE_LOC, false);
+			if(bAccCoord)
+			{				          
+	          class AccLocation extends Handler  implements LocationListener{
+	        	  int nPointCount;
+	        	  double dfXsum, dfYsum, dfXmean, dfYmean, dfXmin, dfYmin, dfXmax, dfYmax;
+	        	  double dfAsum, dfAmean, dfAmin, dfAmax;
+	        	  double dfXSumSqDev, sdYSumSqDev;
+	        	  ArrayList<GeoPoint> GPSRecords = new ArrayList<GeoPoint>();
+	        	  
+	        	  public AccLocation() {
+						dfXsum = dfYsum = dfXmean = dfYmean = dfXmin = dfYmin = dfXmax = dfYmax = 0;
+						dfAsum = dfAmean = dfAmin = dfAmax = 0;
+						dfXSumSqDev = sdYSumSqDev = 0;
+						
+						mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+	        		  	
+						pd = new ProgressDialog(MainActivity.this);
+						pd.setTitle(R.string.acc_gather_dlg_title);
+						//pd.setMessage("Wait");
+						pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+						final int nGPSCount = prefs.getInt(PreferencesActivity.KEY_PREF_ACCURATE_GPSCOUNT + "_int", 60);
+						pd.setMax(nGPSCount);
+						pd.setIndeterminate(true);
+						pd.show();									
+	        	  }
+	        	  
+		        public void handleMessage(Message msg) {
+		        	pd.setIndeterminate(false);
+		        	if (pd.getProgress() < pd.getMax()) {
+		        		sendEmptyMessageDelayed(0, 100);
+		        	}
+		        	else {
+		        		mLocationManager.removeUpdates(this);
+		        		
+						dfXmean = dfXsum / nPointCount;
+						dfYmean = dfYsum / nPointCount;	
+						dfAmean = dfAsum / nPointCount;		
+						
+						Location newLoc = new Location("GPS Accurate");
+						
+		        		newLoc.setSpeed(0);
+		        		newLoc.setLatitude(dfYmean);
+		        		newLoc.setLongitude(dfXmean);
+		        		newLoc.setAltitude(dfAmean);
+		        		newLoc.setTime(System.currentTimeMillis());									
+						
+		        		GeoPoint basept = new GeoPoint(newLoc);
+		        		
+		        		ArrayList<Integer> GPSDist = new ArrayList<Integer>();
+		        		
+		        		for (final GeoPoint gp : GPSRecords) {
+		        			dfXSumSqDev += ( (gp.getLongitudeE6() - basept.getLongitudeE6()) / 1000000 ) * ( (gp.getLongitudeE6() - basept.getLongitudeE6()) / 1000000 );
+		        			sdYSumSqDev += ( (gp.getLatitudeE6() - basept.getLatitudeE6()) / 1000000 ) * ( (gp.getLatitudeE6() - basept.getLatitudeE6()) / 1000000 );
+		        			
+		        			GPSDist.add(basept.distanceTo(gp));
+		    			}
+		        		
+		        		Collections.sort(GPSDist);
+		        		
+
+			        	float dfAcc;
+			        	int nIndex = 0;
+						final String CE = prefs.getString(PreferencesActivity.KEY_PREF_ACCURATE_CE, "CE50");
+
+			        	if(CE.compareTo("CE50") == 0)
+			        		nIndex = (int) (GPSDist.size() * 0.5);
+						else if(CE.compareTo("CE90") == 0)
+							nIndex = (int) (GPSDist.size() * 0.9);
+						else if(CE.compareTo("CE95") == 0)
+							nIndex = (int) (GPSDist.size() * 0.95);
+						else if(CE.compareTo("CE98") == 0)
+							nIndex = (int) (GPSDist.size() * 0.98);
+
+			        	dfAcc = GPSDist.get(nIndex);
+		        		newLoc.setAccuracy(dfAcc);
+		        		
+		        		Intent newIntent = new Intent(MainActivity.this, InputPointActivity.class);
+		        		newIntent.putExtra(LOACTION_HINT, newLoc);
+		        		startActivity (newIntent);
+		        		pd.dismiss();
+		        	}	
+		        }
+
+				public void onLocationChanged(Location location) {
+					GPSRecords.add(new GeoPoint(location.getLatitude(), location.getLongitude()));
+					if ( dfXmin == 0 )
+					{
+						dfXmin = location.getLongitude();
+						dfXmax = location.getLongitude();
+					}
+					else {
+						dfXmin = Math.min(dfXmin, location.getLongitude());
+						dfXmax = Math.max(dfXmin, location.getLongitude());
+					}
+					
+					if ( dfYmin == 0 )
+					{
+						dfYmin = location.getLatitude();
+						dfYmax = location.getLatitude();
+					}
+					else {
+						dfYmin = Math.min(dfYmin, location.getLatitude());
+						dfYmax = Math.max(dfYmin, location.getLatitude());
+					}
+					
+					if ( dfAmin == 0 )
+					{
+						dfAmin = location.getAltitude();
+						dfAmax = location.getAltitude();
+					}
+					else {
+						dfAmin = Math.min(dfAmin, location.getAltitude());
+						dfAmax = Math.max(dfAmax, location.getAltitude());
+					}								
+					
+					dfXsum += location.getLongitude();
+					dfYsum += location.getLatitude();
+					dfAsum += location.getAltitude();
+					
+					nPointCount++;
+					
+					//dfXmean = dfXsum / nPointCount;
+					//dfYmean = dfYsum / nPointCount;
+							
+					//pd.setMessage("X: " + (( location.getLongitude() - dfXmean ) * ( location.getLongitude() - dfXmean )) + "Y: " + (( location.getLatitude() - dfYmean ) * ( location.getLatitude() - dfYmean )));
+					pd.incrementProgressBy(1);								
+				}
+
+				public void onProviderDisabled(String provider) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				public void onProviderEnabled(String provider) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				public void onStatusChanged(String provider,
+						int status, Bundle extras) {
+					// TODO Auto-generated method stub
+					
+				}
+	          }
+	          
+	          AccLocation h = new AccLocation();
+	          h.sendEmptyMessageDelayed(0, 2000);
+			}
+			else
+			{
+				Toast.makeText(getApplicationContext(), PositionFragment.getLocationText(getApplicationContext(), loc), Toast.LENGTH_SHORT).show();
+				Intent newIntent = new Intent(this, InputPointActivity.class);		
+				newIntent.putExtra(LOACTION_HINT, loc);
+				startActivity (newIntent);
+			}
+		}
 	}
 	
 	void ShowInfo(boolean bShow){
@@ -548,12 +741,15 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 					RelativeLayout.LayoutParams.WRAP_CONTENT);
 					RightParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 					
-					
 					int nHeight = 0;
 					if(getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE){
 						TypedValue typeValue = new TypedValue();
-						getTheme().resolveAttribute(android.R.attr.actionBarSize, typeValue, true);
+						
+						getTheme().resolveAttribute(com.actionbarsherlock.R.attr.actionBarSize, typeValue, true);
 						nHeight = TypedValue.complexToDimensionPixelSize(typeValue.data,getResources().getDisplayMetrics());
+				    
+						//getTheme().resolveAttribute(android.R.attr.actionBarSize, typeValue, true);
+						//nHeight = TypedValue.complexToDimensionPixelSize(typeValue.data,getResources().getDisplayMetrics());
 					}
 					RightParams.setMargins(0, 0, 0, nHeight);
 		    
