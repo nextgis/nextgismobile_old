@@ -59,13 +59,13 @@
 		<item>DD-MM.MM</item>
 		<item>DD.DDDD</item>
 	</string-array>
-	<string-array name="accuracy">
+	<string-array name="accuracy" translatable="false">
 	    <item>CE50</item>
 		<item>CE90</item>
 		<item>CE95</item>
 		<item>CE98</item>		
 	</string-array>	
-	<string-array name="tilesize">
+	<string-array name="tilesize" translatable="false">
 	    <item>128</item>
 		<item>256</item>
 		<item>512</item>

@@ -75,6 +75,7 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.internal.ResourcesCompat;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
@@ -742,7 +743,8 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 					RightParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 					
 					int nHeight = 0;
-					if(getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE){
+					if(ResourcesCompat.getResources_getBoolean(MainActivity.this, R.bool.abs__split_action_bar_is_narrow)){
+					//if(getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE){
 						TypedValue typeValue = new TypedValue();
 						
 						getTheme().resolveAttribute(com.actionbarsherlock.R.attr.actionBarSize, typeValue, true);

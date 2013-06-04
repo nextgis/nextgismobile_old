@@ -10,8 +10,8 @@
 	<string name="tracker_service_name">NGMTrackerService</string>
 	<string name="sendpos_service_name">NGMSendPosService</string>
 	<string name="about_app">This is the application for geoposition tracking, send position information to the tracking server, show map and pick geodata. \n\nDevelopers:\n  Dmitriy Baryshnikov\n\nMore info at</string>
-	<string name="bt_map">Map</string>
-	<string name="bt_compass">Compass</string>
+	<string name="sMap">Map</string>
+	<string name="sCompass">Compass</string>
 	
 	<string name="sSettings">Settings</string>
 	<string name="sAbout">About</string>

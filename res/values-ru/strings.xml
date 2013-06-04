@@ -2,7 +2,8 @@
 <resources>
 
     <string name="app_name">NextGIS Mobile</string>
-
+    <string name="sHomepage">http://nextgis.ru</string>
+    
     <string name="action_settings">Настройки</string>
     
     <string name="switch_track_service">Запуск службы трекера</string>
@@ -118,7 +119,7 @@
 	<string name="coord_lat">Ш</string>
 	<string name="coord_lon">Д</string>
 	<string name="create_nex_gpx">Запись GPX файла: </string>
-	<string name="gpx_recording">Запись GPX...</string>
+	<string name="gpx_recording">Запись GPX&#8230;</string>
 	
 	<string name="set_mode_offline">Перевести в оффлайн режим</string>
 	<string name="set_mode_online">Перевести в онлайн режим</string>
@@ -127,6 +128,7 @@
 	<string name="set_mode_hide_me">Прекратить ведение</string>
 	
 	<string name="pref_cat_acc">Точность снятие координат</string>
+	<string name="pref_cat_map">Карта</string>
 	<string name="pref_accurate_coordinates_pick">Уточненное снятие координат</string>
 	<string name="pref_accurate_coordinates_pick_summary">Если отмечено, выполняется более точное снятие координат. Выполняется накопление координат в точке и их усреднение</string>
 	<string name="acc_gather_dlg_title">Снятие координат</string>
