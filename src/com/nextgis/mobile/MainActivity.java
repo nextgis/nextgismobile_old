@@ -41,20 +41,24 @@ import org.osmdroid.views.overlay.DirectedLocationOverlay;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.MyLocationOverlay;
 import org.osmdroid.views.overlay.OverlayItem;
+import org.osmdroid.views.overlay.PathOverlay;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
@@ -78,6 +82,8 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.internal.ResourcesCompat;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.nextgis.mobile.TrackerService.RecordedGeoPoint;
+import com.nextgis.mobile.TrackerService.TSBinder;
 
 
 public class MainActivity extends SherlockActivity implements OnNavigationListener{
@@ -88,6 +94,7 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	private ResourceProxy mResourceProxy;	
 	//overlays
 	private MyLocationOverlay mLocationOverlay;
+	private PathOverlay mGPXOverlay;
 	private DirectedLocationOverlay mDirectedLocationOverlay;
 	private ItemizedIconOverlay<OverlayItem> mPointsOverlay;
 	
@@ -118,10 +125,12 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	public final static int MENU_ABOUT = 5;
 	
 	final static String CSV_CHAR = ";";
-	final static int mNotifyId = 9999;
 	final static int margings = 10;
 	
 	protected ProgressDialog pd;
+	
+	private TrackerService m_TrackerService;
+	private Handler m_TrakAddPointHandler;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -159,8 +168,56 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		
 		PanToLocation();
 		
+		doBindService();
+		
         Log.d(TAG, "MainActivity: onCreate");
 	}
+	
+	void doBindService() {
+		
+		m_TrakAddPointHandler = new Handler() {
+            public void handleMessage(Message msg) {
+            	super.handleMessage(msg);
+            	
+            	Bundle resultData = msg.getData();
+            	double dfLat = resultData.getDouble("lat");
+            	double dfLon = resultData.getDouble("lon");
+            	mGPXOverlay.addPoint((int)(dfLat * 1000000), (int)(dfLon * 1000000));
+            }
+        };
+
+		
+	    bindService(new Intent(this, TrackerService.class), mConnection, 0);
+	  }
+	
+	private ServiceConnection mConnection = new ServiceConnection() {
+
+		@Override
+	    public void onServiceConnected(ComponentName className, IBinder binder) {
+			TSBinder tsBinder = (TSBinder) binder;
+			if(tsBinder == null)
+				return;
+			
+			m_TrackerService = tsBinder.getService();
+			if(m_TrackerService == null)
+				return;
+			
+			m_TrackerService.setPathHanler(m_TrakAddPointHandler);
+			//fill path
+			mGPXOverlay.clearPath();
+			ArrayList<RecordedGeoPoint> path = m_TrackerService.GetPath();
+			if(path != null){
+				for(int i = 0; i < path.size(); i++){
+					mGPXOverlay.addPoint((int)(path.get(i).mdfLat * 1000000), (int)(path.get(i).mdfLong * 1000000));					
+				}
+			}
+	    }
+
+		@Override
+	    public void onServiceDisconnected(ComponentName className) {
+			m_TrackerService = null;
+	    }
+	};	
 	
 	void InitMap(){
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -175,6 +232,8 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		mLocationOverlay = new MyLocationOverlay(this, mOsmv, mResourceProxy);
 		mDirectedLocationOverlay = new DirectedLocationOverlay(this, mResourceProxy);
 		mDirectedLocationOverlay.setShowAccuracy(true);
+		
+		mGPXOverlay = new PathOverlay(android.graphics.Color.RED, mResourceProxy);
 
 		//auto enable follow location if position is closed to center
 		mOsmv.setOnTouchListener(new View.OnTouchListener() {
@@ -201,6 +260,7 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		//m_Osmv.setBuiltInZoomControls(true);
 		mOsmv.getOverlays().add(mDirectedLocationOverlay);
 		mOsmv.getOverlays().add(mLocationOverlay);
+		mOsmv.getOverlays().add(mGPXOverlay);
 		
 		LoadPointsToOverlay();
 		
@@ -236,6 +296,9 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		
 		mLocationOverlay.disableMyLocation();
 		mLocationOverlay.disableCompass();
+		
+		if(mbGpxRecord)
+			unbindService(mConnection);
 		
 		super.onPause();
 	}
@@ -528,32 +591,12 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	void startGPXRecord(){
 		startService(new Intent(TrackerService.ACTION_START_GPX));
 		
-		NotificationCompat.Builder mBuilder =
-		        new NotificationCompat.Builder(this)
-		        .setSmallIcon(R.drawable.record_start_notify)
-		        .setContentTitle("NGISDroid")
-		        .setOngoing(true)
-		        .setContentText(getString(R.string.gpx_recording));        
-		Intent resultIntent = new Intent(this, MainActivity.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-	    stackBuilder.addParentStack(MainActivity.class);
-	    stackBuilder.addNextIntent(resultIntent);
-	     PendingIntent resultPendingIntent =
-	             stackBuilder.getPendingIntent(
-	                 0,
-	                 PendingIntent.FLAG_UPDATE_CURRENT
-	             );
-	     mBuilder.setContentIntent(resultPendingIntent);
-	     NotificationManager mNotificationManager =
-	         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-	     mNotificationManager.notify(mNotifyId, mBuilder.getNotification());
+	    bindService(new Intent(this, TrackerService.class), mConnection, Context.BIND_AUTO_CREATE);
      }
 	
 	void stopGPXRecord(){
 		 startService(new Intent(TrackerService.ACTION_STOP_GPX));
-	     NotificationManager mNotificationManager =
-		         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-	     mNotificationManager.cancel(mNotifyId);
+		 unbindService(mConnection);
 	}
 
 	void ShowInfo()

@@ -31,6 +31,7 @@ import java.util.Formatter;
 import java.util.TimeZone;
 
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -44,8 +45,13 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.util.Log;
@@ -62,10 +68,13 @@ public class TrackerService extends Service {
 
 	private SQLiteDatabase PositionDB;
 	private PositionDatabase dbHelper;
+	
+	private final IBinder mBinder = new TSBinder();
     
-	/* (non-Javadoc)
-	 * @see android.app.Service#onCreate()
-	 */
+	private Handler m_TrakAddPointHandler = null;
+	
+	final static int mNotifyId = 9999;
+
 	@Override
 	public void onCreate() {
 		Log.d(MainActivity.TAG, "onCreate()");
@@ -74,9 +83,8 @@ public class TrackerService extends Service {
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         trackerLocationListener = new TrackerLocationListener();
 	}
-	/* (non-Javadoc)
-	 * @see android.app.Service#onDestroy()
-	 */
+
+
 	@Override
 	public void onDestroy() {
 		Log.d(MainActivity.TAG, "onDestroy()");
@@ -85,7 +93,7 @@ public class TrackerService extends Service {
 		locationManager.removeUpdates(trackerLocationListener);
 		
 		if(trackerLocationListener.isWriteTrack())
-			trackerLocationListener.StoreTrack();
+			trackerLocationListener.StoreTrack(false);
 		
 		SharedPreferences prefs = getSharedPreferences(PreferencesActivity.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS); 
 		final SharedPreferences.Editor edit = prefs.edit();
@@ -93,6 +101,9 @@ public class TrackerService extends Service {
 		edit.commit();
 		
 		trackerLocationListener = null;
+		
+  	     NotificationManager mNotificationManager =  (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+	     mNotificationManager.cancel(mNotifyId);
 	}
 
 
@@ -107,6 +118,8 @@ public class TrackerService extends Service {
 			return START_STICKY;
 		
 		String action = intent.getAction();
+		if(action == null)
+			return START_STICKY;
 		
 		Log.d(MainActivity.TAG, "action " + action);
         if (action.equals(ACTION_STOP))
@@ -119,10 +132,14 @@ public class TrackerService extends Service {
         }
         else if (action.equals(ACTION_STOP_GPX))
         {
-        	trackerLocationListener.StoreTrack();
+        	m_TrakAddPointHandler = null;
+	   	    NotificationManager mNotificationManager =  (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		    mNotificationManager.cancel(mNotifyId);
+		     
+		    trackerLocationListener.StoreTrack(false);
         	trackerLocationListener.setWriteTrack(false);
         	if(!trackerLocationListener.isWritePostion())
-        		stopSelf(); 
+        		stopSelf();
         }
         else if(action.equals(ACTION_START))
         {	
@@ -173,6 +190,27 @@ public class TrackerService extends Service {
     	
 	        		Log.d(MainActivity.TAG, "start GPX LocationManager.GPS_PROVIDER");
 	        		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, nMinTimeBetweenUpdates, nMinDistChangeForUpdates, trackerLocationListener);
+	        		
+	        		Intent resultIntent = new Intent(this, MainActivity.class);
+	                TaskStackBuilder stackBuilder = TaskStackBuilder.create(this)
+	                		.addParentStack(MainActivity.class)
+	        	    		.addNextIntent(resultIntent);
+	        	    PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+	        		
+	        		NotificationCompat.Builder mBuilder =
+	        		        new NotificationCompat.Builder(this)
+	        		        .setSmallIcon(R.drawable.record_start_notify)
+	        		        .setContentTitle(getString(R.string.app_name))
+	        		        .setOngoing(true)
+	        		        .setContentText(getString(R.string.gpx_recording))        
+	        	            .setContentIntent(resultPendingIntent);
+	        		
+	        	     Notification noti = mBuilder.getNotification();
+	        	     //noti.flags |= Notification.FLAG_FOREGROUND_SERVICE;//Notification.FLAG_NO_CLEAR | 
+	        	     NotificationManager mNotificationManager =
+	        	         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+	        	     mNotificationManager.notify(mNotifyId, noti);
+
 	        	}
         	}
 	        boolean bEnergyEconomy = prefs.getBoolean(PreferencesActivity.KEY_PREF_SW_ENERGY_ECO, true);
@@ -181,12 +219,8 @@ public class TrackerService extends Service {
         }
         return START_STICKY;
 	}
-	@Override
-	public IBinder onBind(Intent intent) {		
-		return null;
-	}
-    
-	protected void ScheduleNextUpdate(Context context, String action, long nMinTimeBetweenSend, boolean bEnergyEconomy, boolean bStart)
+	
+ 	 protected void ScheduleNextUpdate(Context context, String action, long nMinTimeBetweenSend, boolean bEnergyEconomy, boolean bStart)
 	 {
 		if(context == null)
 			return;
@@ -208,6 +242,23 @@ public class TrackerService extends Service {
 			alarmManager.set(AlarmManager.RTC, nextUpdateTimeMillis, pendingIntent);
 		else
 			alarmManager.set(AlarmManager.RTC_WAKEUP, nextUpdateTimeMillis, pendingIntent);
+	}
+	
+	@Override
+	public IBinder onBind(Intent arg0) {
+	    return mBinder;
+	}
+
+	public class TSBinder extends Binder {
+		TrackerService getService() {
+			return TrackerService.this;
+	    }
+	}
+	  
+	public ArrayList<RecordedGeoPoint> GetPath(){
+		if(trackerLocationListener == null)
+			return null;
+		return trackerLocationListener.mRecords;
 	}
 	
 	private final class TrackerLocationListener implements LocationListener {
@@ -233,6 +284,8 @@ public class TrackerService extends Service {
 		public static final String GPX_TAG_TRACK_SEGMENT_POINT_TIME = "<time>%s</time>";
 		public static final String GPX_TAG_TRACK_SEGMENT_POINT_SAT = "<sat>%d</sat>";
 		public static final String GPX_TAG_TRACK_SEGMENT_POINT_ELE = "<ele>%d</ele>";
+		
+		private String mGPXFileName = "";
 		
 		public TrackerLocationListener() {
 			super();
@@ -262,6 +315,18 @@ public class TrackerService extends Service {
 			if(bWriteTrack){
 				int nSatNum = location.getExtras().getInt("satellites");			
 				mRecords.add(new RecordedGeoPoint(location.getLatitude(), location.getLongitude(), System.currentTimeMillis(), nSatNum, location.getAltitude()));		
+				
+				StoreTrack(true);
+				
+				if(m_TrakAddPointHandler != null){
+		            Bundle bundle = new Bundle();
+		            bundle.putDouble("lat", location.getLatitude());
+		            bundle.putDouble("lon", location.getLongitude());
+		            
+		            Message msg = new Message();
+		            msg.setData(bundle);
+	            	m_TrakAddPointHandler.sendMessage(msg);
+				}
 			}
 	    }
 	
@@ -291,17 +356,23 @@ public class TrackerService extends Service {
 
 		public boolean setWriteTrack(boolean bWriteTrack) {
 			this.bWriteTrack = bWriteTrack;
+			
+			if(mGPXFileName.length() == 0){
+				String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+				mGPXFileName = "loc_" + timeStamp + ".gpx";
+			}
+			
 			return bWriteTrack;
 		}
 
-		public void StoreTrack() {
+		public void StoreTrack(boolean bAutoSave) {
 			Log.d(MainActivity.TAG, "store gpx track");
-		     NotificationManager mNotificationManager =
-			         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		     mNotificationManager.cancel(MainActivity.mNotifyId);
 			if(!mRecords.isEmpty()){
-				String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-				String gpxFileName = "loc_" + timeStamp + ".gpx";
+			
+				if(mGPXFileName.length() == 0){
+					String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+					mGPXFileName = "loc_" + timeStamp + ".gpx";
+				}
 				
 				final StringBuilder sb = new StringBuilder();
 				final Formatter f = new Formatter(sb);
@@ -346,32 +417,36 @@ public class TrackerService extends Service {
 			        }
 			    }				
 				
-		    	File file = new File(gpxStorageDir, gpxFileName);
+		    	File file = new File(gpxStorageDir, mGPXFileName);
 		    	try {  
-		            FileOutputStream os = new FileOutputStream(file, true);
+		            FileOutputStream os = new FileOutputStream(file, false);
 		            PrintWriter pw = new PrintWriter(os);
 		            pw.print(sb.toString());	            
 		            pw.flush();
 		            pw.close();
 		            os.close();
 		            
-		            MediaScannerConnection.scanFile(getApplicationContext(),
+		            if(!bAutoSave){
+		            	MediaScannerConnection.scanFile(getApplicationContext(),
 		                    new String[] { file.toString() }, null,
 		                    new MediaScannerConnection.OnScanCompletedListener() {
-		                public void onScanCompleted(String path, Uri uri) {
-		                    Log.i(MainActivity.TAG, "Scanned " + path + ":");
-		                    Log.i(MainActivity.TAG, "-> uri=" + uri);
-		                }
-		            });
-		            
-		            Toast.makeText( getApplicationContext(), getResources().getText(R.string.create_nex_gpx) + gpxFileName, Toast.LENGTH_LONG).show();
+		            		public void onScanCompleted(String path, Uri uri) {
+		            			Log.i(MainActivity.TAG, "Scanned " + path + ":");
+		                    	Log.i(MainActivity.TAG, "-> uri=" + uri);
+		                	}
+		            	});
+		            	Toast.makeText( getApplicationContext(), getResources().getText(R.string.create_nex_gpx) + mGPXFileName, Toast.LENGTH_LONG).show();
+		            }
 		    		
 		        } catch (IOException e) {
 		            Log.w(MainActivity.TAG, "Error writing " + file, e);
 		        }
 				
 				f.close();
-				mRecords.clear();
+				if(!bAutoSave){
+					mRecords.clear();
+					mGPXFileName = "";
+				}
 			}
 		}	
 	}
@@ -416,5 +491,9 @@ public class TrackerService extends Service {
 			utcFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 			return utcFormat.format(new Date(nTimeStamp));
 		}
-	}	
+	}
+	
+	public void setPathHanler(Handler h){
+		m_TrakAddPointHandler = h;
+	}
 }

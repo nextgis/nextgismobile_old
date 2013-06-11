@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.nextgis.mobile"
-    android:versionCode="2"
-    android:versionName="1.1" >
+    android:versionCode="3"
+    android:versionName="1.2" >
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -57,7 +57,6 @@
 		
         <service           
             android:name="com.nextgis.mobile.TrackerService"
-            android:process=":ng_tracker"			
 			android:label="@string/tracker_service_name"             
             android:exported="false" >
             <intent-filter>
@@ -70,7 +69,6 @@
         
         <service           
             android:name="com.nextgis.mobile.DataSendService"
-            android:process=":ng_sendpos"			
 			android:label="@string/sendpos_service_name"             
             android:exported="false" >
             <intent-filter>
