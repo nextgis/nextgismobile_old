@@ -46,7 +46,6 @@ import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
-import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
@@ -151,6 +150,17 @@ public class InputPointActivity extends SherlockFragmentActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        
+		if(descriptfrag != null)
+			descriptfrag.onStoreValues();
+		if(positionfrag != null)
+			positionfrag.onStoreValues();
+		if(camfrag != null)
+			camfrag.onStoreValues();
+		if(notefrag != null)
+			notefrag.onStoreValues();
+        
+        
         outState.putString("cat", m_sCat);
         outState.putString("subcat", m_sSubCat);
         outState.putFloat("az", m_fAzimuth);
@@ -296,6 +306,16 @@ public class InputPointActivity extends SherlockFragmentActivity {
    
     
     public void onFinish() {
+    	
+		if(descriptfrag != null)
+			descriptfrag.onStoreValues();
+		if(positionfrag != null)
+			positionfrag.onStoreValues();
+		if(camfrag != null)
+			camfrag.onStoreValues();
+		if(notefrag != null)
+			notefrag.onStoreValues();
+		
     	//add point to the file
     	File file = new File(getExternalFilesDir(null), "points.csv");
     	boolean bExist = file.exists();
