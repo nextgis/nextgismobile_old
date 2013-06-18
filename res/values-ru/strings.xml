@@ -9,7 +9,7 @@
     <string name="switch_track_service">Запуск службы трекера</string>
 	<string name="tracker_service_name">NGMTrackerService</string>
 	<string name="sendpos_service_name">NGMSendPosService</string>
-	<string name="about_app">Приложение для отследивания местоположения, отправки данных местоположения на сервер хранения в сети Интернет, показа карты и ввода геоданных. \n\nРазработчики:\n  Дмитрий Барышников\n\n\nДетали см. по ссылке</string>
+	<string name="about_app">Приложение для отслеживания местоположения, отправки данных местоположения на сервер хранения в сети Интернет, показа карты и ввода геоданных. \n\nРазработчики:\n  Дмитрий Барышников\n\n\nДетали см. по ссылке</string>
 	<string name="sMap">Карта</string>
 	<string name="sCompass">Компас</string>
 	
