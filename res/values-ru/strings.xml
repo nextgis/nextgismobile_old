@@ -61,7 +61,7 @@
 	<string name="pref_coordinates_format_dlg_title">Выберите формат координат</string>			
 	
 	<string name="pref_compass_vibration">Вибрация при касании компаса</string>
-	<string name="pref_compass_vibration_summary">при касании комапаса устройство будет вибрировать</string>
+	<string name="pref_compass_vibration_summary">при касании компаса устройство будет вибрировать</string>
 	<string name="pref_compass_wake_lock">Не выключать экран при активном компасе</string>	
 	<string name="pref_compass_wake_lock_summary">Не выключать экран если показан компас</string>
 	<string name="pref_compass_true_north">Показывать истинный полюс</string>
