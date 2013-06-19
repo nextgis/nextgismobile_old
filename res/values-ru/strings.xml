@@ -3,7 +3,8 @@
 
     <string name="app_name">NextGIS Mobile</string>
     <string name="sHomepage">http://nextgis.ru</string>
-    
+    <string name="sDetailpage">http://gis-lab.info/qa/nextgis-mobile.html</string>
+        
     <string name="action_settings">Настройки</string>
     
     <string name="switch_track_service">Запуск службы трекера</string>
