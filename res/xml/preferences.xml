@@ -3,7 +3,7 @@
 	Project:  NextGISDroid
  	Purpose:  Gathering position information and data
     Author:   Baryshnikov Dmitriy  (aka Bishop), polimax@mail.ru
-    Copyright (C) 2012 NextGIS
+    Copyright (C) 2012,2014 NextGIS
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,7 +113,7 @@
 		    android:summary="@string/pref_time_between_sendpos_summary"
 			android:defaultValue="5 min"
 			android:entries="@array/datapos_send_updates"
-			android:entryValues="@array/datapos_send_updates"
+			android:entryValues="@array/datapos_send_updates_val"
 			android:dialogTitle="@string/pref_time_between_sendpos_dlg_title" />
 		<CheckBoxPreference
 		    android:key="sw_energy_economy"
@@ -134,7 +134,7 @@
 		    android:summary="@string/pref_tracker_min_dist_update_summary"
 			android:defaultValue="5 m"
 			android:entries="@array/tracker_min_dist_update"
-			android:entryValues="@array/tracker_min_dist_update"
+			android:entryValues="@array/tracker_min_dist_update_val"
 			android:dialogTitle="@string/pref_tracker_min_dist_update_dlg_title" />
 		<ListPreference
 		    android:key="min_time_beetwen_updates"
@@ -142,7 +142,7 @@
 		    android:summary="@string/pref_tracker_min_time_between_updates_summary"
 		    android:defaultValue="1 min"
 			android:entries="@array/tracker_min_time_between_updates"
-			android:entryValues="@array/tracker_min_time_between_updates"
+			android:entryValues="@array/tracker_min_time_between_updates_val"
 			android:dialogTitle="@string/pref_tracker_min_time_between_updates_dlg_title" />	    
 		<CheckBoxPreference
 		    android:key="sw_track_service"

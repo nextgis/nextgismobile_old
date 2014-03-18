@@ -1,9 +1,9 @@
 /******************************************************************************
  * Project:  NextGIS mobile
  * Purpose:  Mobile GIS for Android.
- * Author:   Baryshnikov Dmitriy (aka Bishop), polimax@mail.ru
+ * Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
  ******************************************************************************
-*   Copyright (C) 2012-2013 NextGIS
+*   Copyright (C) 2012-2014 NextGIS
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -93,16 +93,16 @@ public class PreferencesActivity extends SherlockPreferenceActivity implements O
         
         addPreferencesFromResource(R.xml.preferences);
         
+        //path to track points receiver script
 	    StorageSitePref = (EditTextPreference) findPreference(KEY_PREF_STORAGE_SITE);
 	    StorageSitePref.setSummary((String) StorageSitePref.getText());
         
-        
+        //user identificator
 	    UserIdPref = (EditTextPreference) findPreference(KEY_PREF_USER_ID);
 	    if(UserIdPref.getText().length() == 0){
 	    	String szDevIDShort = GetDeviceId();
 	    	UserIdPref.setSummary(szDevIDShort);
-	    	UserIdPref.setText(szDevIDShort);
-	    	
+	    	UserIdPref.setText(szDevIDShort);	    	
 	    }
 	    else {
 	    	UserIdPref.setSummary((String) UserIdPref.getText());
@@ -115,13 +115,15 @@ public class PreferencesActivity extends SherlockPreferenceActivity implements O
         editor1.commit();   
 	    
 	    MinDistPref = (ListPreference) findPreference(KEY_PREF_MIN_DIST_CHNG_UPD);
-	    MinDistPref.setSummary((String) MinDistPref.getValue());
+	    CharSequence newVal = GetArrayKey(R.array.tracker_min_dist_update, R.array.tracker_min_dist_update_val, MinDistPref.getValue());            
+	    MinDistPref.setSummary((String) newVal);
 	    
 //	    TileSizePref = (ListPreference) findPreference(KEY_PREF_TILE_SIZE);
 //	    TileSizePref.setSummary((String) TileSizePref.getValue());
 	    
 	    MinTimePref = (ListPreference) findPreference(KEY_PREF_MIN_TIME_UPD);
-	    MinTimePref.setSummary((String) MinTimePref.getValue());	   
+	    newVal = GetArrayKey(R.array.tracker_min_time_between_updates, R.array.tracker_min_time_between_updates_val, MinTimePref.getValue());            
+	    MinTimePref.setSummary((String) newVal);	   
 	    
 	    TrackServicePref = (CheckBoxPreference) findPreference(KEY_PREF_SW_TRACK_SRV);
 	    TrackServicePref.setSummary(TrackServicePref.isChecked() ? R.string.pref_tracker_service_on : R.string.pref_tracker_service_off);	    
@@ -133,7 +135,8 @@ public class PreferencesActivity extends SherlockPreferenceActivity implements O
 	    SendPosInSuspendPref.setSummary(SendPosInSuspendPref.isChecked() ? R.string.pref_energy_economy_on : R.string.pref_energy_economy_off);	    
 	    
 	    MinTimePosSend = (ListPreference) findPreference(KEY_PREF_TIME_DATASEND);
-	    MinTimePosSend.setSummary((String) MinTimePosSend.getValue());
+	    newVal = GetArrayKey(R.array.datapos_send_updates, R.array.datapos_send_updates_val, MinTimePosSend.getValue());            
+	    MinTimePosSend.setSummary((String) newVal);
 	    
 	    coordinatesFormat = (ListPreference) findPreference(KEY_PREF_COORD_FORMAT);
 	    coordinatesFormat.setSummary((String) coordinatesFormat.getValue());
@@ -228,36 +231,55 @@ public class PreferencesActivity extends SherlockPreferenceActivity implements O
 		}
 		else if(key.equals(KEY_PREF_MIN_DIST_CHNG_UPD))
 		{
-			newVal = sharedPreferences.getString(key, "25 m");
-        	String toLongStr = ((String) newVal).substring(0, newVal.length() - 2);
+			newVal = sharedPreferences.getString(key, "25");			
+    		long nVal = Long.parseLong((String) newVal);
     		Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-    		editor.putLong(key + "_long", Long.parseLong(toLongStr));
+    		editor.putLong(key + "_long", nVal);
     		editor.commit();
     		
 			SharedPreferences mySharedPreferences = getSharedPreferences(SERVICE_PREF, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor1 = mySharedPreferences.edit();
-            editor1.putLong(key + "_long", Long.parseLong(toLongStr));
-            editor1.commit();     		
+            editor1.putLong(key + "_long", nVal);
+            editor1.commit();  
+            
+            newVal = GetArrayKey(R.array.tracker_min_dist_update, R.array.tracker_min_dist_update_val, newVal);            
 		}
-		else if(key.equals(KEY_PREF_MIN_TIME_UPD) || key.equals(KEY_PREF_TIME_DATASEND))
+		else if(key.equals(KEY_PREF_MIN_TIME_UPD))
 		{
-			newVal = sharedPreferences.getString(key, "0 min");
-        	String toLongStr = ((String) newVal).substring(0, newVal.length() - 4);
+			newVal = sharedPreferences.getString(key, "0");
+			long nVal = Long.parseLong((String) newVal) * DateUtils.SECOND_IN_MILLIS;
     		Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-    		editor.putLong(key + "_long", Long.parseLong(toLongStr) * DateUtils.MINUTE_IN_MILLIS);
+    		editor.putLong(key + "_long", nVal);
     		editor.commit();
     		
 			SharedPreferences mySharedPreferences = getSharedPreferences(SERVICE_PREF, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor1 = mySharedPreferences.edit();
-            editor1.putLong(key + "_long", Long.parseLong(toLongStr) * DateUtils.MINUTE_IN_MILLIS);
-            editor1.commit();    		
+            editor1.putLong(key + "_long", nVal);
+            editor1.commit();    
+            
+            newVal = GetArrayKey(R.array.tracker_min_time_between_updates, R.array.tracker_min_time_between_updates_val, newVal);            
+		}
+		else if(key.equals(KEY_PREF_TIME_DATASEND))
+		{
+			newVal = sharedPreferences.getString(key, "0");
+			long nVal = Long.parseLong((String) newVal) * DateUtils.MINUTE_IN_MILLIS;
+    		Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+    		editor.putLong(key + "_long", nVal);
+    		editor.commit();
+    		
+			SharedPreferences mySharedPreferences = getSharedPreferences(SERVICE_PREF, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor1 = mySharedPreferences.edit();
+            editor1.putLong(key + "_long", nVal);
+            editor1.commit();    
+            
+            newVal = GetArrayKey(R.array.datapos_send_updates, R.array.datapos_send_updates_val, newVal);
 		}
 		else if(key.equals(KEY_PREF_TILE_SIZE))
 		{
 			newVal = sharedPreferences.getString(key, "256");
-        	String toIntStr = (String) newVal;
+			int nVal = Integer.parseInt((String) newVal);
     		Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-    		editor.putInt(key + "_int", Integer.parseInt(toIntStr));
+    		editor.putInt(key + "_int", nVal);
     		editor.commit(); 		
 		}	
 		else if(key.equals(KEY_PREF_SW_TRACK_SRV))
@@ -318,6 +340,19 @@ public class PreferencesActivity extends SherlockPreferenceActivity implements O
 		
 		if(newVal.length() > 0)
         	Pref.setSummary(newVal);		
+	}
+	
+	public CharSequence GetArrayKey(int nKeyArray, int nValueArray, CharSequence nDefault){
+        CharSequence[] keys = getResources().getTextArray(nKeyArray);
+        CharSequence[] values = getResources().getTextArray(nValueArray);
+        int len = values.length;
+        for (int i = 0; i < len; i++) {
+            if (values[i].equals(nDefault)) {
+            	nDefault = keys[i];
+            	break;
+            }
+        }
+		return nDefault;		
 	}
 	
 }

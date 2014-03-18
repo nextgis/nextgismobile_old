@@ -1,7 +1,7 @@
 /******************************************************************************
  * Project:  NextGIS mobile
  * Purpose:  Mobile GIS for Android.
- * Author:   Baryshnikov Dmitriy (aka Bishop), polimax@mail.ru
+ * Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
  ******************************************************************************
 *   Copyright (C) 2012-2013 NextGIS
 *
@@ -39,13 +39,13 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.DirectedLocationOverlay;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
-import org.osmdroid.views.overlay.MyLocationOverlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.PathOverlay;
+import org.osmdroid.views.overlay.compass.CompassOverlay;
+import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -61,8 +61,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -93,9 +91,11 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	private MapView mOsmv;
 	private ResourceProxy mResourceProxy;	
 	//overlays
-	private MyLocationOverlay mLocationOverlay;
-	private PathOverlay mGPXOverlay;
+	private MyLocationNewOverlay mLocationOverlay;
+    private CompassOverlay mCompassOverlay;
 	private DirectedLocationOverlay mDirectedLocationOverlay;
+	//TODO: private RotationGestureOverlay mRotationGestureOverlay;
+	private PathOverlay mGPXOverlay;
 	private ItemizedIconOverlay<OverlayItem> mPointsOverlay;
 	
 	private RelativeLayout rl;
@@ -227,9 +227,15 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 			mOsmv = null;
 		}
 		mOsmv = new MapView(this, mnTileSize, mResourceProxy);
+		mOsmv.setUseSafeCanvas(true);
 		
 		//add overlays
-		mLocationOverlay = new MyLocationOverlay(this, mOsmv, mResourceProxy);
+		mLocationOverlay = new MyLocationNewOverlay(this, new GpsMyLocationProvider(this), mOsmv);
+		mCompassOverlay = new CompassOverlay(this, new InternalCompassOrientationProvider(this), mOsmv);
+		
+		//TODO: mRotationGestureOverlay = new RotationGestureOverlay(this, mOsmv);
+		//TODO: mRotationGestureOverlay.setEnabled(false);
+		
 		mDirectedLocationOverlay = new DirectedLocationOverlay(this, mResourceProxy);
 		mDirectedLocationOverlay.setShowAccuracy(true);
 		
@@ -260,7 +266,9 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		//m_Osmv.setBuiltInZoomControls(true);
 		mOsmv.getOverlays().add(mDirectedLocationOverlay);
 		mOsmv.getOverlays().add(mLocationOverlay);
+		mOsmv.getOverlays().add(mCompassOverlay);
 		mOsmv.getOverlays().add(mGPXOverlay);
+		//TODO: mOsmv.getOverlays().add(mRotationGestureOverlay);
 		
 		LoadPointsToOverlay();
 		
@@ -286,7 +294,8 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		edit.putInt(PREFS_SCROLL_Y, mOsmv.getScrollY());
 		edit.putInt(PREFS_ZOOM_LEVEL, mOsmv.getZoomLevel());
 		edit.putBoolean(PREFS_SHOW_LOCATION, mLocationOverlay.isMyLocationEnabled());
-		edit.putBoolean(PREFS_SHOW_COMPASS, mLocationOverlay.isCompassEnabled());
+		edit.putBoolean(PREFS_SHOW_COMPASS, mCompassOverlay.isCompassEnabled());
+		
 		edit.putBoolean(PREFS_SHOW_INFO, mbInfoOn);
 		
 		if(mbInfoOn)			
@@ -295,7 +304,7 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		edit.commit();
 		
 		mLocationOverlay.disableMyLocation();
-		mLocationOverlay.disableCompass();
+		mCompassOverlay.disableCompass();
 		
 		if(mbGpxRecord)
 			unbindService(mConnection);
@@ -321,7 +330,7 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 			mLocationOverlay.enableMyLocation();
 		}
 		if (prefs.getBoolean(PREFS_SHOW_COMPASS, false)) {
-			mLocationOverlay.enableCompass();
+			mCompassOverlay.enableCompass();
 		}
 		mbInfoOn = prefs.getBoolean(PREFS_SHOW_INFO, false);
 		if (mbInfoOn) {

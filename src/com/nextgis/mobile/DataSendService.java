@@ -1,7 +1,7 @@
 /******************************************************************************
  * Project:  NextGIS mobile
  * Purpose:  Mobile GIS for Android.
- * Author:   Baryshnikov Dmitriy (aka Bishop), polimax@mail.ru
+ * Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
  ******************************************************************************
 *   Copyright (C) 2012-2013 NextGIS
 *
@@ -90,9 +90,9 @@ public class DataSendService extends Service {
 	@Override
 	public void onDestroy() {
 		Log.d(MainActivity.TAG, "onDestroy()");
-		super.onDestroy();
-		
 		dbHelper.close();
+		
+		super.onDestroy();		
 	}
 
 	/* (non-Javadoc)

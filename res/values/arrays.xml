@@ -3,7 +3,7 @@
 	Project:  NextGISDroid
  	Purpose:  Gathering position information and data
     Author:   Bishop (aka Baryshnikov Dmitriy), polimax@mail.ru
-    Copyright (C) 2012 NextGIS
+    Copyright (C) 2012,2014 NextGIS
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,15 +33,53 @@
 		<item>200 m</item>
 		<item>300 m</item>
 	</string-array>
+	<string-array name="tracker_min_dist_update_val"  translatable="false">
+	    <item>0</item>
+		<item>1</item>
+		<item>5</item>
+		<item>10</item>
+		<item>25</item>
+		<item>50</item>
+		<item>75</item>
+		<item>100</item>
+		<item>150</item>
+		<item>200</item>
+		<item>300</item>
+	</string-array>	
 	<string-array name="tracker_min_time_between_updates">
-	    <item>0 min</item>
+	    <item>0 sec</item>
+	    <item>1 sec</item>
+	    <item>2 sec</item>
+	    <item>5 sec</item>
+	    <item>10 sec</item>
+	    <item>20 sec</item>
+	    <item>30 sec</item>
+	    <item>45 sec</item>
 		<item>1 min</item>
 		<item>2 min</item>
 		<item>5 min</item>
 		<item>10 min</item>
 		<item>20 min</item>
 		<item>30 min</item>
+		<item>45 min</item>
 	</string-array>
+	<string-array name="tracker_min_time_between_updates_val"  translatable="false">
+	    <item>0</item>
+		<item>1</item>
+		<item>2</item>
+		<item>5</item>
+		<item>10</item>
+		<item>20</item>
+		<item>30</item>
+		<item>45</item>
+		<item>60</item>
+		<item>120</item>
+		<item>300</item>
+		<item>600</item>
+		<item>1200</item>
+		<item>1800</item>
+		<item>2700</item>
+	</string-array>	
 	<string-array name="datapos_send_updates">
 	    <item>1 min</item>
 		<item>2 min</item>
@@ -53,6 +91,18 @@
 		<item>20 min</item>
 		<item>30 min</item>
 		<item>60 min</item>
+	</string-array>	
+		<string-array name="datapos_send_updates_val">
+	    <item>60</item>
+		<item>120</item>
+		<item>180</item>
+		<item>240</item>
+		<item>300</item>
+		<item>600</item>
+		<item>900</item>
+		<item>1800</item>
+		<item>2700</item>
+		<item>3600</item>
 	</string-array>	
 	<string-array name="coordinates_format">
 	    <item>DD-MM-SS.SS</item>
