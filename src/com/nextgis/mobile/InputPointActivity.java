@@ -340,17 +340,26 @@ public class InputPointActivity extends SherlockFragmentActivity {
             	sProv = m_CurrentLocation.getProvider();
             	nTime = m_CurrentLocation.getTime();
             }
+            
+            //filter out unsupported chars
+            m_sCat.replace(CSV_CHAR, "|");
+            m_sCat.replace("\n", "|");
+            m_sSubCat.replace(CSV_CHAR, "|");
+            m_sSubCat.replace("\n", "|");
+            m_sNote.replace(CSV_CHAR, "|");
+            m_sNote.replace("\n", "|");
+            
             pw.println(
             		java.text.DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime()) + CSV_CHAR + 	//0
-            		dfLat + CSV_CHAR + 														//1
-            		dfLon + CSV_CHAR + 														//2
-            		dfAcc + CSV_CHAR + 	
+            		dfLat + CSV_CHAR + 																					//1
+            		dfLon + CSV_CHAR + 																					//2
+            		dfAcc + CSV_CHAR + 						
             		CE + CSV_CHAR +
-            		dfAlt + CSV_CHAR + 														//4
-            		dfBearing + CSV_CHAR + 														//5
-            		sProv + CSV_CHAR + 														//6
-            		dfSpeed + CSV_CHAR + 															//7
-            		nTime + CSV_CHAR + 															//8
+            		dfAlt + CSV_CHAR + 																					//4
+            		dfBearing + CSV_CHAR + 																				//5
+            		sProv + CSV_CHAR + 																					//6
+            		dfSpeed + CSV_CHAR + 																				//7
+            		nTime + CSV_CHAR + 																					//8
             		m_sCat + CSV_CHAR + 																				//9
             		m_sSubCat + CSV_CHAR + 																				//10
         		    m_fAzimuth + CSV_CHAR + 																			//11
