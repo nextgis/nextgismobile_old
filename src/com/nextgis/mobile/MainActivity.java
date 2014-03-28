@@ -31,16 +31,24 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.api.IGeoPoint;
+import org.osmdroid.tileprovider.MapTileProviderBase;
+import org.osmdroid.tileprovider.MapTileProviderBasic;
+import org.osmdroid.tileprovider.tilesource.BitmapTileSourceBase;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
+import org.osmdroid.tileprovider.util.SimpleRegisterReceiver;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.DirectedLocationOverlay;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.PathOverlay;
+import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
@@ -52,6 +60,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
@@ -80,6 +89,7 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.internal.ResourcesCompat;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.Window;
 import com.nextgis.mobile.TrackerService.RecordedGeoPoint;
 import com.nextgis.mobile.TrackerService.TSBinder;
 
@@ -106,6 +116,7 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	
 	private boolean mbInfoOn;
 	private boolean mbGpxRecord;
+	private boolean mbCompassOn;
  	private int mnTileSize;
 	protected View mInfoView;
    
@@ -123,6 +134,7 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
     private final static int MENU_PAN = 3;
 	public final static int MENU_SETTINGS = 4;
 	public final static int MENU_ABOUT = 5;
+	public final static int MENU_COMPASS = 6;
 	
 	final static String CSV_CHAR = ";";
 	final static int margings = 10;
@@ -148,6 +160,7 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		mbInfoOn = prefs.getBoolean(PREFS_SHOW_INFO, false);
 		mbGpxRecord = prefs.getBoolean(PreferencesActivity.KEY_PREF_SW_TRACKGPX_SRV, false);
+		mbCompassOn = prefs.getBoolean(PREFS_SHOW_COMPASS, false);
 		
 	    ActionBar actionBar = getSupportActionBar();
 		Context context = actionBar.getThemedContext();
@@ -221,7 +234,7 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	
 	void InitMap(){
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		mnTileSize = prefs.getInt(PreferencesActivity.KEY_PREF_TILE_SIZE + "_int", 256);
+		mnTileSize = 256;//prefs.getInt(PreferencesActivity.KEY_PREF_TILE_SIZE + "_int", 256);
 		if(mOsmv != null){
 			rl.removeAllViews();
 			mOsmv = null;
@@ -232,6 +245,16 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		//add overlays
 		mLocationOverlay = new MyLocationNewOverlay(this, new GpsMyLocationProvider(this), mOsmv);
 		mCompassOverlay = new CompassOverlay(this, new InternalCompassOrientationProvider(this), mOsmv);
+		
+		addUserLayers();
+		
+		int nHeight = 0;
+		TypedValue typeValue = new TypedValue();
+		
+		getTheme().resolveAttribute(com.actionbarsherlock.R.attr.actionBarSize, typeValue, true);
+		nHeight = TypedValue.complexToDimensionPixelSize(typeValue.data,getResources().getDisplayMetrics());
+    
+		mCompassOverlay.setCompassCenter(40, nHeight + 20 );
 		
 		//TODO: mRotationGestureOverlay = new RotationGestureOverlay(this, mOsmv);
 		//TODO: mRotationGestureOverlay.setEnabled(false);
@@ -269,7 +292,8 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		mOsmv.getOverlays().add(mCompassOverlay);
 		mOsmv.getOverlays().add(mGPXOverlay);
 		//TODO: mOsmv.getOverlays().add(mRotationGestureOverlay);
-		
+		//ScaleBarOverlay		
+
 		LoadPointsToOverlay();
 		
 		rl.addView(mOsmv, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));		
@@ -363,6 +387,13 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
         menu.add(Menu.NONE, MENU_PAN, Menu.NONE, R.string.sPan)
         .setIcon(R.drawable.ic_pan2)
         .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);		
+        
+        menu.add(Menu.NONE, MENU_COMPASS, Menu.NONE, R.string.sCompass)
+        //.setIcon(R.drawable.ic_action_about)
+        .setIcon(mResourceProxy.getDrawable(ResourceProxy.bitmap.ic_menu_compass))
+		//.setCheckable(true)
+		.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+
         menu.add(Menu.NONE, MENU_SETTINGS, Menu.NONE, R.string.sSettings)
         .setIcon(R.drawable.ic_action_settings)
         .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
@@ -411,6 +442,15 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
         case MENU_MARK:        	
         	onMark();
             return true;
+        case MENU_COMPASS:        	
+        	if(mbCompassOn){
+        		mCompassOverlay.disableCompass();
+        	}
+        	else {
+        		mCompassOverlay.enableCompass();        		
+        	}
+        	mbCompassOn = !mbCompassOn;
+            return true;    
         }
 		return super.onOptionsItemSelected(item);
 	}
@@ -812,8 +852,24 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 			mLocationManager.removeUpdates(mChangeLocationListener);
 			rl.removeView(mInfoView);			
 		}
-	}		
-    
+	}
+	
+	protected void addUserLayers()
+	{
+		final MapTileProviderBase tileProvider = new MapTileProviderGroup(new SimpleRegisterReceiver(getApplicationContext()), null);
+		final TilesOverlay tilesOverlay = new TilesOverlay(tileProvider, this.getBaseContext());
+		tilesOverlay.setLoadingBackgroundColor(Color.TRANSPARENT);
+		mOsmv.getOverlays().add(tilesOverlay);
+		
+/*		final MapTileProviderBasic tileProvider = new MapTileProviderBasic(getApplicationContext());
+		final ITileSource tileSource = new XYTileSource("FietsRegionaal", null, 3, 18, 256, ".png",
+				new String[] { "http://overlay.openstreetmap.nl/openfietskaart-rcn/" });
+		tileProvider.setTileSource(tileSource);
+		final TilesOverlay tilesOverlay = new TilesOverlay(tileProvider, this.getBaseContext());
+		tilesOverlay.setLoadingBackgroundColor(Color.TRANSPARENT);
+		mOsmv.getOverlays().add(tilesOverlay);*/
+	}
+	
 	private final class ChangeLocationListener implements LocationListener {
 		
 		public void onLocationChanged(Location location) {
