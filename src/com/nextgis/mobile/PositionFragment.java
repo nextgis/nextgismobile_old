@@ -91,7 +91,7 @@ public class PositionFragment extends CompassFragment {
     	if(context == null || location == null)
     		return null;
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-    	int nFormat = prefs.getInt(PreferencesActivity.KEY_PREF_COORD_FORMAT + "_int", Location.FORMAT_SECONDS);
+    	int nFormat = prefs.getInt(NGMConstants.KEY_PREF_COORD_FORMAT + "_int", Location.FORMAT_SECONDS);
     	return formatLat(location.getLatitude(), nFormat, context.getResources()) + ", " + formatLng(location.getLongitude(), nFormat, context.getResources());
 	}
 

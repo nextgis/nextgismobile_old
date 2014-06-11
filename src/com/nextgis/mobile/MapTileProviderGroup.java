@@ -34,13 +34,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.tileprovider.IMapTileProviderCallback;
 import org.osmdroid.tileprovider.IRegisterReceiver;
+import org.osmdroid.tileprovider.modules.ArchiveFileFactory;
+import org.osmdroid.tileprovider.modules.IArchiveFile;
+import org.osmdroid.tileprovider.modules.MapTileFileArchiveProvider;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.tileprovider.MapTileProviderArray;
 
-import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 public class MapTileProviderGroup extends MapTileProviderArray  implements IMapTileProviderCallback {
 	final static String META = "meta.json";
@@ -49,6 +50,15 @@ public class MapTileProviderGroup extends MapTileProviderArray  implements IMapT
 		super(pTileSource, pRegisterReceiver);
 		
 		File f = new File(org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants.OSMDROID_PATH, "layers");
+		if(!f.exists())
+			return;
+		
+/*		final MapTileMBDBProvider tileProvider2 = new MapTileMBDBProvider(new File(f, "elista.mbtiles"), pRegisterReceiver);
+		final ITileSource tileSource = new XYTileSource( new File(f, "elista.mbtiles").getName(), null, 3, 12, 256, ".png", new String[]{ });
+		tileProvider2.setTileSource(tileSource);
+		mTileProviderList.add(tileProvider2);
+*/		
+	
 		File[] files = f.listFiles();
 		for (File inFile : files) {
 			boolean bHasMeta = false;
@@ -95,16 +105,16 @@ public class MapTileProviderGroup extends MapTileProviderArray  implements IMapT
 						e.printStackTrace();
 					}
 			    	//get cache levels
-			    	int nMaxX = 0;
-			    	int nMaxY = 0;
-			    	int nMinX = 10000000;
-			    	int nMinY = 10000000;
 			    	
 					
 			    	File[] zoomLevels = inFile.listFiles();
 			    	for (File zoomLevel : zoomLevels) {
 			    		if(zoomLevel.getName().equals(META))
 			    			continue;
+				    	int nMaxX = 0;
+				    	int nMinX = 10000000;
+				    	int nMaxY = 0;
+				    	int nMinY = 10000000;
 			    		int nLevel = Integer.parseInt(zoomLevel.getName());
 			    		if(nLevel > nMaxLevel)
 			    			nMaxLevel = nLevel;

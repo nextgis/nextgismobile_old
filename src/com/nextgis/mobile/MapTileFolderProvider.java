@@ -42,7 +42,7 @@ public class MapTileFolderProvider extends MapTileFileStorageProviderBase {
 	protected HashMap<Integer, TileCacheLevelDescItem> m_moLimits;
 
 	public MapTileFolderProvider(String sFolderPath, final IRegisterReceiver pRegisterReceiver) {
-		super(pRegisterReceiver, NUMBER_OF_TILE_FILESYSTEM_THREADS, TILE_FILESYSTEM_MAXIMUM_QUEUE_SIZE);
+		super(pRegisterReceiver, NUMBER_OF_TILE_FILESYSTEM_THREADS / 2, TILE_FILESYSTEM_MAXIMUM_QUEUE_SIZE / 2);
 		m_sFolderPath = sFolderPath;
 		
 		m_moLimits = new HashMap<Integer, TileCacheLevelDescItem>();
@@ -100,6 +100,8 @@ public class MapTileFolderProvider extends MapTileFileStorageProviderBase {
 		@Override
 		public Drawable loadTile(final MapTileRequestState pState) throws CantContinueException {
 
+			long startTime = System.currentTimeMillis();
+			
 			ITileSource tileSource = mTileSource.get();
 			if (tileSource == null) {
 				return null;
@@ -136,6 +138,12 @@ public class MapTileFolderProvider extends MapTileFileStorageProviderBase {
 
 				try {
 					final Drawable drawable = tileSource.getDrawable(file.getPath());
+					
+					long stopTime = System.currentTimeMillis();
+				    long elapsedTime = stopTime - startTime;
+				    
+				    Log.w(MainActivity.TAG, "Filesystem load tile time: " + elapsedTime);
+
 					return drawable;
 				} catch (final LowMemoryException e) {
 					// low memory so empty the queue
@@ -143,6 +151,11 @@ public class MapTileFolderProvider extends MapTileFileStorageProviderBase {
 					throw new CantContinueException(e);
 				}
 			}
+			long stopTime = System.currentTimeMillis();
+		    long elapsedTime = stopTime - startTime;
+		    
+		    Log.w(MainActivity.TAG, "Filesystem load tile time: " + elapsedTime);
+
 			// If we get here then there is no file in the file cache
 			return null;
 		}

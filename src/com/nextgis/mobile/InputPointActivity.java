@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -325,7 +326,7 @@ public class InputPointActivity extends SherlockFragmentActivity {
             }
             
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            final String CE = prefs.getString(PreferencesActivity.KEY_PREF_ACCURATE_CE, "None");
+            final String CE = prefs.getString(NGMConstants.KEY_PREF_ACCURATE_CE, "None");
             
             double dfLat = 0,dfLon = 0, dfAcc = 0, dfAlt = 0, dfBearing = 0, dfSpeed = 0;
             String sProv = "";

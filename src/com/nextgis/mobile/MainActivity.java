@@ -20,129 +20,50 @@
  ****************************************************************************/
 package com.nextgis.mobile;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.osmdroid.ResourceProxy;
-import org.osmdroid.api.IGeoPoint;
-import org.osmdroid.tileprovider.MapTileProviderBase;
-import org.osmdroid.tileprovider.MapTileProviderBasic;
-import org.osmdroid.tileprovider.tilesource.BitmapTileSourceBase;
-import org.osmdroid.tileprovider.tilesource.ITileSource;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.tileprovider.tilesource.XYTileSource;
-import org.osmdroid.tileprovider.util.SimpleRegisterReceiver;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.DirectedLocationOverlay;
-import org.osmdroid.views.overlay.ItemizedIconOverlay;
-import org.osmdroid.views.overlay.OverlayItem;
-import org.osmdroid.views.overlay.PathOverlay;
-import org.osmdroid.views.overlay.TilesOverlay;
-import org.osmdroid.views.overlay.compass.CompassOverlay;
-import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
-
-import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.SpinnerAdapter;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
 import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.internal.ResourcesCompat;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.view.Window;
-import com.nextgis.mobile.TrackerService.RecordedGeoPoint;
-import com.nextgis.mobile.TrackerService.TSBinder;
+import com.nextgis.mobile.map.NGMapView;
+import com.nextgis.mobile.services.TrackerService;
+import com.nextgis.mobile.services.TrackerService.RecordedGeoPoint;
+import com.nextgis.mobile.services.TrackerService.TSBinder;
 
 
-public class MainActivity extends SherlockActivity implements OnNavigationListener{
-	final static String TAG = "nextgismobile";	
-	final static String LOACTION_HINT = "com.nextgis.gis.location";	
-
-	private MapView mOsmv;
-	private ResourceProxy mResourceProxy;	
-	//overlays
-	private MyLocationNewOverlay mLocationOverlay;
-    private CompassOverlay mCompassOverlay;
-	private DirectedLocationOverlay mDirectedLocationOverlay;
-	//TODO: private RotationGestureOverlay mRotationGestureOverlay;
-	private PathOverlay mGPXOverlay;
-	private ItemizedIconOverlay<OverlayItem> mPointsOverlay;
+public class MainActivity extends SherlockActivity{
+	public final static String TAG = "nextgismobile";	
+	public final static String LOACTION_HINT = "com.nextgis.gis.location";	
 	
-	private RelativeLayout rl;
- 
-	private LocationManager mLocationManager;
-	protected ChangeLocationListener mChangeLocationListener;
-	private ArrayList<OverlayItem> maItems;
+	protected TrackerService m_oTrackerService;
+	protected Handler m_oTrakAddPointHandler;
 	
-	private boolean mbInfoOn;
-	private boolean mbGpxRecord;
-	private boolean mbCompassOn;
- 	private int mnTileSize;
-	protected View mInfoView;
-   
-	final static String PREFS_TILE_SOURCE = "map_tile_source";	
-	final static String PREFS_SCROLL_X = "map_scroll_x";
-	final static String PREFS_SCROLL_Y = "map_scroll_y";
-	final static String PREFS_ZOOM_LEVEL = "map_zoom_level";
-	final static String PREFS_SHOW_LOCATION = "map_show_loc";
-	final static String PREFS_SHOW_COMPASS = "map_show_compass";
-	final static String PREFS_SHOW_INFO = "map_show_info";
+	protected NGMapView m_oMap;
 	
-	private final static int MENU_MARK = 0;
-    private final static int MENU_RECORD_GPX = 1;
-	private final static int MENU_INFO = 2;
-    private final static int MENU_PAN = 3;
+	public final static int MENU_MARK = 0;
+	public final static int MENU_RECORD_GPX = 1;
+	public final static int MENU_INFO = 2;
+	public final static int MENU_PAN = 3;
 	public final static int MENU_SETTINGS = 4;
 	public final static int MENU_ABOUT = 5;
 	public final static int MENU_COMPASS = 6;
+	public final static int MENU_LAYERS = 7;	
 	
-	final static String CSV_CHAR = ";";
-	final static int margings = 10;
+	protected boolean m_bGpxRecord;
 	
-	protected ProgressDialog pd;
+	//protected ProgressDialog m_oProgressDlg;
 	
-	private TrackerService m_TrackerService;
-	private Handler m_TrakAddPointHandler;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -150,60 +71,158 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		
         // initialize the default settings
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-        
-		LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		mInfoView =  inflater.inflate(R.layout.infopane, null, true);
-       
-		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		mChangeLocationListener = new ChangeLocationListener();
+        		
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( this );
+		boolean bInfoOn = prefs.getBoolean(NGMConstants.PREFS_SHOW_INFO, false);
+		m_bGpxRecord = prefs.getBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, false);
+		boolean bCompassOn = prefs.getBoolean(NGMConstants.PREFS_SHOW_COMPASS, false);	
+		int nTileSize = 256;//prefs.getInt(NGMConstants.KEY_PREF_TILE_SIZE + "_int", 256);
+		int nZoom = prefs.getInt(NGMConstants.PREFS_ZOOM_LEVEL, 1);
+		int nScrollX = prefs.getInt(NGMConstants.PREFS_SCROLL_X, 0);
+		int nScrollY = prefs.getInt(NGMConstants.PREFS_SCROLL_Y, 0);
+		
+		m_oMap = new NGMapView(this);
+		m_oMap.initMap(nTileSize, nZoom, nScrollX, nScrollY);
+		m_oMap.showInfo(bInfoOn);
+		m_oMap.showCompass(bCompassOn);
+	}
+	
+	@Override
+	public void onPause() {
+		final SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(this).edit();
+		if(m_oMap != null){
+			m_oMap.onPause(edit);
+		}
+		
+		edit.putBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, m_bGpxRecord);
+
+		if(m_bGpxRecord){			
+			unbindService(m_oConnection);
+		}
+	
+		edit.commit();			
+		super.onPause();
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
 		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		mbInfoOn = prefs.getBoolean(PREFS_SHOW_INFO, false);
-		mbGpxRecord = prefs.getBoolean(PreferencesActivity.KEY_PREF_SW_TRACKGPX_SRV, false);
-		mbCompassOn = prefs.getBoolean(PREFS_SHOW_COMPASS, false);
 		
-	    ActionBar actionBar = getSupportActionBar();
-		Context context = actionBar.getThemedContext();
-		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context, R.array.views, R.layout.sherlock_spinner_dropdown_item);
-		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
-	    
-	    actionBar.setDisplayShowTitleEnabled(false);
-	    actionBar.setNavigationMode(com.actionbarsherlock.app.ActionBar.NAVIGATION_MODE_LIST);
-	    actionBar.setListNavigationCallbacks((SpinnerAdapter)adapter, this);
+		if(m_oMap != null){
+			m_oMap.onResume(prefs);
+		}
+		
+		m_bGpxRecord = prefs.getBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, false);
+		if (m_bGpxRecord) {
+			startGPXRecord();
+		}
+	}
+	
+	
+	@Override
+	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+		// TODO Auto-generated method stub
+		return super.onMenuItemSelected(featureId, item);
+	}
 
-		rl = new RelativeLayout(this);
-		
-	    mResourceProxy = new ResourceProxyImpl(context);
-		
-	    InitMap();
-	    
-		setContentView(rl);	
-		
-		PanToLocation();
-		
-		doBindService();
-		
-        Log.d(TAG, "MainActivity: onCreate");
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		//getSupportMenuInflater().inflate(R.menu.main, menu);
+        //menu.add(Menu.NONE, MENU_MARK, Menu.NONE, R.string.sMark)
+        //.setIcon(R.drawable.ic_location_place)
+        menu.add(Menu.NONE, MainActivity.MENU_LAYERS, Menu.NONE, R.string.sLayers)
+        .setIcon(R.drawable.ic_layers)
+        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        menu.add(Menu.NONE, MainActivity.MENU_RECORD_GPX, Menu.NONE, R.string.sGPXRecord)
+        .setIcon(R.drawable.ic_gpx_record_start)
+        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        menu.add(Menu.NONE, MainActivity.MENU_INFO, Menu.NONE, R.string.sInfo)
+        .setIcon(R.drawable.ic_action_about)
+        .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);		
+        menu.add(Menu.NONE, MainActivity.MENU_PAN, Menu.NONE, R.string.sPan)
+        .setIcon(R.drawable.ic_pan2)
+        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);		
+        
+        menu.add(Menu.NONE, MainActivity.MENU_COMPASS, Menu.NONE, R.string.sCompass)
+        //.setIcon(R.drawable.ic_action_about)
+        .setIcon(R.drawable.ic_menu_compass)
+		//.setCheckable(true)
+		.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+
+        menu.add(Menu.NONE, MainActivity.MENU_SETTINGS, Menu.NONE, R.string.sSettings)
+        .setIcon(R.drawable.ic_action_settings)
+        .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
+        menu.add(Menu.NONE, MainActivity.MENU_ABOUT, Menu.NONE, R.string.sAbout)
+        .setIcon(R.drawable.ic_action_about)
+        .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
+        
+		//mOsmv.getOverlayManager().onCreateOptionsMenu((android.view.Menu) menu, Menu.FIRST + 1, mOsmv);
+       return true;
+		//super.onCreateOptionsMenu(menu, inflater);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+        case android.R.id.home:
+            return false;
+        case MainActivity.MENU_SETTINGS:
+            // app icon in action bar clicked; go home
+            Intent intentSet = new Intent(this, PreferencesActivity.class);
+            intentSet.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intentSet);
+            return true;
+        case MainActivity.MENU_ABOUT:
+            Intent intentAbout = new Intent(this, AboutActivity.class);
+            intentAbout.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intentAbout);
+            return true;	  
+        case MainActivity.MENU_PAN:
+        	m_oMap.panToLocation();   	
+        	return true;
+        case MainActivity.MENU_INFO:
+        	m_oMap.switchInfo();
+        	return true;
+        case MainActivity.MENU_RECORD_GPX:
+        	onRecordGpx();
+        	return true;
+/*        case MENU_LAYERS:  
+        	try {
+				unzip();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	//onMark();
+            return true;*/
+        case MainActivity.MENU_COMPASS:        	
+        	m_oMap.switchCompass();
+            return true;    
+        }
+		return super.onOptionsItemSelected(item);
 	}
 	
 	void doBindService() {
 		
-		m_TrakAddPointHandler = new Handler() {
+		m_oTrakAddPointHandler = new Handler() {
             public void handleMessage(Message msg) {
             	super.handleMessage(msg);
             	
             	Bundle resultData = msg.getData();
             	double dfLat = resultData.getDouble("lat");
             	double dfLon = resultData.getDouble("lon");
-            	mGPXOverlay.addPoint((int)(dfLat * 1000000), (int)(dfLon * 1000000));
+            	m_oMap.addPointToRouteOverlay(dfLon, dfLat);
             }
         };
 
 		
-	    bindService(new Intent(this, TrackerService.class), mConnection, 0);
+	    bindService(new Intent(this, TrackerService.class), m_oConnection, 0);
 	  }
 	
-	private ServiceConnection mConnection = new ServiceConnection() {
+	private ServiceConnection m_oConnection = new ServiceConnection() {
 
 		@Override
 	    public void onServiceConnected(ComponentName className, IBinder binder) {
@@ -211,423 +230,37 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 			if(tsBinder == null)
 				return;
 			
-			m_TrackerService = tsBinder.getService();
-			if(m_TrackerService == null)
+			m_oTrackerService = tsBinder.getService();
+			if(m_oTrackerService == null)
 				return;
 			
-			m_TrackerService.setPathHanler(m_TrakAddPointHandler);
+			m_oTrackerService.setPathHanler(m_oTrakAddPointHandler);
 			//fill path
-			mGPXOverlay.clearPath();
-			ArrayList<RecordedGeoPoint> path = m_TrackerService.GetPath();
-			if(path != null){
-				for(int i = 0; i < path.size(); i++){
-					mGPXOverlay.addPoint((int)(path.get(i).mdfLat * 1000000), (int)(path.get(i).mdfLong * 1000000));					
-				}
-			}
+			ArrayList<RecordedGeoPoint> path = m_oTrackerService.GetPath();
+			m_oMap.addPointsToRouteOverlay(path);
 	    }
 
 		@Override
 	    public void onServiceDisconnected(ComponentName className) {
-			m_TrackerService = null;
+			m_oTrackerService = null;
 	    }
 	};	
 	
-	void InitMap(){
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		mnTileSize = 256;//prefs.getInt(PreferencesActivity.KEY_PREF_TILE_SIZE + "_int", 256);
-		if(mOsmv != null){
-			rl.removeAllViews();
-			mOsmv = null;
-		}
-		mOsmv = new MapView(this, mnTileSize, mResourceProxy);
-		mOsmv.setUseSafeCanvas(true);
-		
-		//add overlays
-		mLocationOverlay = new MyLocationNewOverlay(this, new GpsMyLocationProvider(this), mOsmv);
-		mCompassOverlay = new CompassOverlay(this, new InternalCompassOrientationProvider(this), mOsmv);
-		
-		addUserLayers();
-		
-		int nHeight = 0;
-		TypedValue typeValue = new TypedValue();
-		
-		getTheme().resolveAttribute(com.actionbarsherlock.R.attr.actionBarSize, typeValue, true);
-		nHeight = TypedValue.complexToDimensionPixelSize(typeValue.data,getResources().getDisplayMetrics());
-    
-		mCompassOverlay.setCompassCenter(40, nHeight + 20 );
-		
-		//TODO: mRotationGestureOverlay = new RotationGestureOverlay(this, mOsmv);
-		//TODO: mRotationGestureOverlay.setEnabled(false);
-		
-		mDirectedLocationOverlay = new DirectedLocationOverlay(this, mResourceProxy);
-		mDirectedLocationOverlay.setShowAccuracy(true);
-		
-		mGPXOverlay = new PathOverlay(android.graphics.Color.RED, mResourceProxy);
 
-		//auto enable follow location if position is closed to center
-		mOsmv.setOnTouchListener(new View.OnTouchListener() {
-			public boolean onTouch(View v, MotionEvent event) {
-				if(event.getAction() == MotionEvent.ACTION_UP) {
-					IGeoPoint map_center_pt = mOsmv.getMapCenter();					
-					GeoPoint pt = mLocationOverlay.getMyLocation();
-					if(map_center_pt == null || pt == null)
-						return false;
-					int nMaxDist = mOsmv.getBoundingBox().getDiagonalLengthInMeters() / 15;
-					int nDist = pt.distanceTo(map_center_pt);
-					if(nDist < nMaxDist){
-						mLocationOverlay.enableFollowLocation();
-					}
-					else {
-						mLocationOverlay.disableFollowLocation();
-					}
-				}
-				return false;
-			}
-	    });		
-
-		mOsmv.setMultiTouchControls(true);
-		//m_Osmv.setBuiltInZoomControls(true);
-		mOsmv.getOverlays().add(mDirectedLocationOverlay);
-		mOsmv.getOverlays().add(mLocationOverlay);
-		mOsmv.getOverlays().add(mCompassOverlay);
-		mOsmv.getOverlays().add(mGPXOverlay);
-		//TODO: mOsmv.getOverlays().add(mRotationGestureOverlay);
-		//ScaleBarOverlay		
-
-		LoadPointsToOverlay();
-		
-		rl.addView(mOsmv, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));		
-	
-		mOsmv.getController().setZoom(prefs.getInt(PREFS_ZOOM_LEVEL, 1));
-		mOsmv.scrollTo(prefs.getInt(PREFS_SCROLL_X, 0), prefs.getInt(PREFS_SCROLL_Y, 0));
-
-		//mLocationOverlay.enableMyLocation();
-		//m_LocationOverlay.enableCompass();
-		mLocationOverlay.setDrawAccuracyEnabled(true);
-
-		mOsmv.setKeepScreenOn(true);
-		
-		AddMapButtons(rl);
-	}
-
-	@Override
-	protected void onPause() {
-		final SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(this).edit();
-		edit.putString(PREFS_TILE_SOURCE, mOsmv.getTileProvider().getTileSource().name());
-		edit.putInt(PREFS_SCROLL_X, mOsmv.getScrollX());
-		edit.putInt(PREFS_SCROLL_Y, mOsmv.getScrollY());
-		edit.putInt(PREFS_ZOOM_LEVEL, mOsmv.getZoomLevel());
-		edit.putBoolean(PREFS_SHOW_LOCATION, mLocationOverlay.isMyLocationEnabled());
-		edit.putBoolean(PREFS_SHOW_COMPASS, mCompassOverlay.isCompassEnabled());
-		
-		edit.putBoolean(PREFS_SHOW_INFO, mbInfoOn);
-		
-		if(mbInfoOn)			
-			ShowInfo(false);		
-
-		edit.commit();
-		
-		mLocationOverlay.disableMyLocation();
-		mCompassOverlay.disableCompass();
-		
-		if(mbGpxRecord)
-			unbindService(mConnection);
-		
-		super.onPause();
-	}
-	
-	@Override
-	protected void onResume() {
-		super.onResume();
-
-		InitMap();
-		
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		final String tileSourceName = prefs.getString(PREFS_TILE_SOURCE, TileSourceFactory.DEFAULT_TILE_SOURCE.name());
-		try {
-			final ITileSource tileSource = TileSourceFactory.getTileSource(tileSourceName);
-			mOsmv.setTileSource(tileSource);
-		} catch (final IllegalArgumentException ignore) {
-		}
-		
-		if (prefs.getBoolean(PREFS_SHOW_LOCATION, true)) {
-			mLocationOverlay.enableMyLocation();
-		}
-		if (prefs.getBoolean(PREFS_SHOW_COMPASS, false)) {
-			mCompassOverlay.enableCompass();
-		}
-		mbInfoOn = prefs.getBoolean(PREFS_SHOW_INFO, false);
-		if (mbInfoOn) {
-			ShowInfo(true);
-		}
-		
-		mbGpxRecord = prefs.getBoolean(PreferencesActivity.KEY_PREF_SW_TRACKGPX_SRV, false);
-		if (mbGpxRecord) {
-			startGPXRecord();
-		}
-		
-		//AddPointsToOverlay();
-		
-		PanToLocation();
-	}	
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		//getSupportMenuInflater().inflate(R.menu.main, menu);
-        menu.add(Menu.NONE, MENU_MARK, Menu.NONE, R.string.sMark)
-        .setIcon(R.drawable.ic_location_place)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        menu.add(Menu.NONE, MENU_RECORD_GPX, Menu.NONE, R.string.sGPXRecord)
-        .setIcon(R.drawable.ic_gpx_record_start)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        menu.add(Menu.NONE, MENU_INFO, Menu.NONE, R.string.sInfo)
-        .setIcon(R.drawable.ic_action_about)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);		
-        menu.add(Menu.NONE, MENU_PAN, Menu.NONE, R.string.sPan)
-        .setIcon(R.drawable.ic_pan2)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);		
-        
-        menu.add(Menu.NONE, MENU_COMPASS, Menu.NONE, R.string.sCompass)
-        //.setIcon(R.drawable.ic_action_about)
-        .setIcon(mResourceProxy.getDrawable(ResourceProxy.bitmap.ic_menu_compass))
-		//.setCheckable(true)
-		.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-
-        menu.add(Menu.NONE, MENU_SETTINGS, Menu.NONE, R.string.sSettings)
-        .setIcon(R.drawable.ic_action_settings)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
-        menu.add(Menu.NONE, MENU_ABOUT, Menu.NONE, R.string.sAbout)
-        .setIcon(R.drawable.ic_action_about)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
-        
-		//mOsmv.getOverlayManager().onCreateOptionsMenu((android.view.Menu) menu, Menu.FIRST + 1, mOsmv);
-       return true;
-	}
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-        case android.R.id.home:
-            return false;
-        case MENU_SETTINGS:
-            // app icon in action bar clicked; go home
-            Intent intentSet = new Intent(this, PreferencesActivity.class);
-            intentSet.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intentSet);
-            return true;
-        case MENU_ABOUT:
-            Intent intentAbout = new Intent(this, AboutActivity.class);
-            intentAbout.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intentAbout);
-            return true;	  
-        case MENU_PAN:
-			GeoPoint pt = mLocationOverlay.getMyLocation();
-			if(pt != null)
-			{
-				mOsmv.getController().animateTo(pt);
-				mLocationOverlay.enableFollowLocation();
-			}
-			else
-			{
-				Toast.makeText(this, R.string.error_loc_fix, Toast.LENGTH_SHORT).show();
-			}   	
-        	return true;
-        case MENU_INFO:
-        	ShowInfo();
-        	return true;
-        case MENU_RECORD_GPX:
-        	onRecordGpx();
-        	return true;
-        case MENU_MARK:        	
-        	onMark();
-            return true;
-        case MENU_COMPASS:        	
-        	if(mbCompassOn){
-        		mCompassOverlay.disableCompass();
-        	}
-        	else {
-        		mCompassOverlay.enableCompass();        		
-        	}
-        	mbCompassOn = !mbCompassOn;
-            return true;    
-        }
-		return super.onOptionsItemSelected(item);
-	}
- 
-    @Override
-	public boolean onNavigationItemSelected(int position, long itemId) {
-		if(position == 1){ 
-			startActivity (new Intent(getApplicationContext(), com.nextgis.mobile.CompassActivity.class));
-			return true;
-	    }
-		return true;
-	}
-
-	protected void AddMapButtons(RelativeLayout rl){
-		final ImageView ivZoomIn = new ImageView(this);
-		ivZoomIn.setImageResource(R.drawable.ic_plus);
-		ivZoomIn.setId(R.drawable.ic_plus);
-		
-		final ImageView ivZoomOut = new ImageView(this);
-		ivZoomOut.setImageResource(R.drawable.ic_minus);	
-		ivZoomOut.setId(R.drawable.ic_minus);			
-
-		ivZoomIn.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				mOsmv.getController().zoomIn();
-				ivZoomOut.getDrawable().setAlpha(255);	
-				if(!mOsmv.canZoomIn())
-				{
-					ivZoomIn.getDrawable().setAlpha(50);						
-				}
-			}
-		});				
-		
-		ivZoomOut.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				mOsmv.getController().zoomOut();
-				
-				ivZoomIn.getDrawable().setAlpha(255);
-				if(!mOsmv.canZoomOut())
-				{						
-					ivZoomOut.getDrawable().setAlpha(50);
-				}
-			}
-		});
-		
-		final RelativeLayout.LayoutParams RightParams1 = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		RightParams1.setMargins(margings, margings, margings, margings);
-		RightParams1.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-		RightParams1.addRule(RelativeLayout.CENTER_IN_PARENT);//ALIGN_PARENT_TOP
-		rl.addView(ivZoomIn, RightParams1);
-		
-		final RelativeLayout.LayoutParams RightParams2 = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		RightParams2.setMargins(margings, margings, margings, margings);
-		RightParams2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);			
-		RightParams2.addRule(RelativeLayout.BELOW, R.drawable.ic_plus);
-		rl.addView(ivZoomOut, RightParams2);	
-	}
-	
-	protected void PanToLocation(){
-		Location loc = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		if(loc != null){
-			GeoPoint pt = new GeoPoint(loc.getLatitude(), loc.getLongitude());
-			mOsmv.getController().animateTo(pt);
-		}
-	}	
-	
-	protected void AddPointsToOverlay(){
-		//add new point		
-		File file = new File(getExternalFilesDir(null), "points.csv");
-		if (file != null && file.exists()) {
-			Drawable ivPt10 = getResources().getDrawable(R.drawable.dot10);
-        	InputStream in;
-			try {
-				in = new BufferedInputStream(new FileInputStream(file));
-
-       	
-				BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-
-		        String line = reader.readLine();
-		        int nCounter = 0;
-		        while ((line = reader.readLine()) != null) {
-		        	 nCounter++;
-		        	 if( maItems.size() >= nCounter)
-		        		 continue;
-		             String[] RowData = line.split(CSV_CHAR);
- 					 String sLat = RowData[1];
- 					 String sLong = RowData[2];
- 					 int nLatE6 = (int) (Float.parseFloat(sLat) * 1000000);
- 					 int nLonE6 = (int) (Float.parseFloat(sLong) * 1000000);
-		             OverlayItem item = new OverlayItem(RowData[9], RowData[10], new GeoPoint(nLatE6, nLonE6));
-		             item.setMarker(ivPt10);
-		             
-		             mPointsOverlay.addItem(item);
-		        }
-		        
-		        reader.close();
-		        if (in != null) {
-		        	in.close();
-		    	} 
-		    }
-		    catch (IOException ex) {
-		    	ex.printStackTrace();
-			}			
-		}
-	}
-	
-	protected void LoadPointsToOverlay(){
-		maItems = new ArrayList<OverlayItem>();
-		Drawable ivPt10 = getResources().getDrawable(R.drawable.dot10);
-		
-		File file = new File(getExternalFilesDir(null), "points.csv");
-		if (file != null) {
-        	InputStream in;
-			try {
-				in = new BufferedInputStream(new FileInputStream(file));
-       	
-				BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-
-		        String line = reader.readLine();
-		        while ((line = reader.readLine()) != null) {
-		             String[] RowData = line.split(CSV_CHAR);
- 					 String sLat = RowData[1];
- 					 String sLong = RowData[2];
- 					 int nLatE6 = (int) (Float.parseFloat(sLat) * 1000000);
- 					 int nLonE6 = (int) (Float.parseFloat(sLong) * 1000000);
-		             OverlayItem item = new OverlayItem(RowData[9], RowData[10], new GeoPoint(nLatE6, nLonE6));
-		             item.setMarker(ivPt10);
-		             
-		             maItems.add(item);
-		        }
-		        
-		        reader.close();
-		        if (in != null) {
-		        	in.close();
-		    	} 
-		    }
-		    catch (IOException ex) {
-		    	ex.printStackTrace();
-			}			
-		}
-		
-		mPointsOverlay = new ItemizedIconOverlay<OverlayItem>(maItems, new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
-			public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
-				//TODO: provide some text to tap
-				//Toast.makeText( getApplicationContext(), "Item '" + item.mTitle + "' (index=" + index + ") got single tapped up", Toast.LENGTH_LONG).show();
-				return true; // We 'handled' this event.
-			}
-
-			public boolean onItemLongPress(final int index, final OverlayItem item) {
-				//TODO: provide some text to tap
-				//Toast.makeText( getApplicationContext(), "Item '" + item.mTitle + "' (index=" + index + ") got long pressed", Toast.LENGTH_LONG).show();
-				return false;
-			}
-		}
-		, mResourceProxy);
-		
-		mOsmv.getOverlays().add(mPointsOverlay);
-	}
-	
 	void onRecordGpx(){
-		mbGpxRecord = !mbGpxRecord;	
+		m_bGpxRecord = !m_bGpxRecord;	
 		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		final SharedPreferences.Editor edit = prefs.edit();
-		edit.putBoolean(PreferencesActivity.KEY_PREF_SW_TRACKGPX_SRV, mbGpxRecord);
+		edit.putBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, m_bGpxRecord);
 		edit.commit();
 		
         final SharedPreferences.Editor editor1 = getSharedPreferences("preferences", Context.MODE_PRIVATE).edit();
-        editor1.putBoolean(PreferencesActivity.KEY_PREF_SW_TRACKGPX_SRV, mbGpxRecord);
+        editor1.putBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, m_bGpxRecord);
         editor1.commit();   
 
 		
-		if(mbGpxRecord){
+		if(m_bGpxRecord){
 			//start record
 			startGPXRecord();
 		}
@@ -640,22 +273,16 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	void startGPXRecord(){
 		startService(new Intent(TrackerService.ACTION_START_GPX));
 		
-	    bindService(new Intent(this, TrackerService.class), mConnection, Context.BIND_AUTO_CREATE);
+	    bindService(new Intent(this, TrackerService.class), m_oConnection, Context.BIND_AUTO_CREATE);
      }
 	
 	void stopGPXRecord(){
 		 startService(new Intent(TrackerService.ACTION_STOP_GPX));
-		 unbindService(mConnection);
+		 unbindService(m_oConnection);
 	}
 
-	void ShowInfo()
-	{
-		mbInfoOn = !mbInfoOn;
-		ShowInfo(mbInfoOn);
-	}
-	
 	void onMark(){
-       
+    /* TODO:   
 		final Location loc = mLocationOverlay.getLastFix();
 		
 		if(loc == null)
@@ -821,92 +448,148 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 				newIntent.putExtra(LOACTION_HINT, loc);
 				startActivity (newIntent);
 			}
-		}
+		}*/
 	}
 	
-	void ShowInfo(boolean bShow){
-		if(bShow){
-			mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mChangeLocationListener);
-	        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mChangeLocationListener);
-		
-			final RelativeLayout.LayoutParams RightParams = new RelativeLayout.LayoutParams(
-					RelativeLayout.LayoutParams.WRAP_CONTENT,
-					RelativeLayout.LayoutParams.WRAP_CONTENT);
-					RightParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-					
-					int nHeight = 0;
-					if(ResourcesCompat.getResources_getBoolean(MainActivity.this, R.bool.abs__split_action_bar_is_narrow)){
-					//if(getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE){
-						TypedValue typeValue = new TypedValue();
-						
-						getTheme().resolveAttribute(com.actionbarsherlock.R.attr.actionBarSize, typeValue, true);
-						nHeight = TypedValue.complexToDimensionPixelSize(typeValue.data,getResources().getDisplayMetrics());
-				    
-						//getTheme().resolveAttribute(android.R.attr.actionBarSize, typeValue, true);
-						//nHeight = TypedValue.complexToDimensionPixelSize(typeValue.data,getResources().getDisplayMetrics());
-					}
-					RightParams.setMargins(0, 0, 0, nHeight);
-		    
-			rl.addView(mInfoView, RightParams);					
-		} else {
-			mLocationManager.removeUpdates(mChangeLocationListener);
-			rl.removeView(mInfoView);			
-		}
-	}
+	/*//////////////////////////////////////////////////////////////////////////////////////////////
 	
-	protected void addUserLayers()
-	{
-		final MapTileProviderBase tileProvider = new MapTileProviderGroup(new SimpleRegisterReceiver(getApplicationContext()), null);
-		final TilesOverlay tilesOverlay = new TilesOverlay(tileProvider, this.getBaseContext());
-		tilesOverlay.setLoadingBackgroundColor(Color.TRANSPARENT);
-		mOsmv.getOverlays().add(tilesOverlay);
-		
-/*		final MapTileProviderBasic tileProvider = new MapTileProviderBasic(getApplicationContext());
-		final ITileSource tileSource = new XYTileSource("FietsRegionaal", null, 3, 18, 256, ".png",
-				new String[] { "http://overlay.openstreetmap.nl/openfietskaart-rcn/" });
-		tileProvider.setTileSource(tileSource);
-		final TilesOverlay tilesOverlay = new TilesOverlay(tileProvider, this.getBaseContext());
-		tilesOverlay.setLoadingBackgroundColor(Color.TRANSPARENT);
-		mOsmv.getOverlays().add(tilesOverlay);*/
-	}
 	
-	private final class ChangeLocationListener implements LocationListener {
-		
-		public void onLocationChanged(Location location) {
-			
-			TextView speedText = (TextView)mInfoView.findViewById(R.id.speed_text);
-			DecimalFormat df = new DecimalFormat("0.0");
-			double dfSpeed = location.getSpeed() * 3.6;//to km/h
-			speedText.setText("" + df.format(dfSpeed) + " " + getString(R.string.info_speed_val));
-			
-			TextView heightText = (TextView)mInfoView.findViewById(R.id.height_text);
-			double dfHeight = location.getAltitude();
-			heightText.setText("" + df.format(dfHeight) + " " + getString(R.string.info_height_val));
-			
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        	int nFormat = prefs.getInt(PreferencesActivity.KEY_PREF_COORD_FORMAT + "_int", Location.FORMAT_SECONDS);
-			
-			TextView latText = (TextView)mInfoView.findViewById(R.id.lat_text);
-			latText.setText(PositionFragment.formatLat(location.getLatitude(), nFormat, getResources()) + getResources().getText(R.string.coord_lat));
-			
-			TextView lonText = (TextView)mInfoView.findViewById(R.id.lon_text);
-			lonText.setText(PositionFragment.formatLng(location.getLongitude(), nFormat, getResources()) + getResources().getText(R.string.coord_lon));			
+	public void unzip() throws IOException {
+		ProgressDialog oDownloadDialog = new ProgressDialog(this);
+		oDownloadDialog.setMessage("extracting");//moContext.getResources().getString(R.string.sZipExtractionProcess));
+		oDownloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		oDownloadDialog.setCancelable(true);
+		oDownloadDialog.show();
+		File oInputFile = new File(org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants.OSMDROID_PATH, "sss.zip");
+		File oOutputFileDir = new File(org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants.OSMDROID_PATH, "layers");
+		File oOutputFile = new File(oOutputFileDir, ".test_zip");
+    	new UnZipTask(oInputFile, oOutputFile.getAbsolutePath(), oDownloadDialog).execute();
+    }
+    
+    private class UnZipTask extends AsyncTask<String, Void, Boolean> {
+    	private File msInputPath;
+    	private String msOutputPath;
+    	private ProgressDialog moDownloadDialog;
+    	private int per = 0;
+    	
+        public UnZipTask(File sInputPath, String sOutputPath, ProgressDialog oDownloadDialog) {        
+            super();
+            msInputPath = sInputPath;
+            msOutputPath = sOutputPath;
+            moDownloadDialog = oDownloadDialog;
+        }
+        
+    	@Override
+    	protected Boolean doInBackground(String... params) {
+    		
+   		try {
+    			//DeleteRecursive(new File(msPath));
+    			ZipFile zipfile = new ZipFile(msInputPath);
+    			moDownloadDialog.setMax(zipfile.size());
+    			for (Enumeration<? extends ZipEntry> e = zipfile.entries(); e.hasMoreElements();) {
+    				ZipEntry entry = (ZipEntry) e.nextElement();
+    				unzipEntry(zipfile, entry, msOutputPath);
+    				per++;
+    				moDownloadDialog.setProgress(per);
+    			}
+    			zipfile.close();
+//    			archive.delete();
+    		
+    			/*JSONObject oJSONRoot = new JSONObject();
 
-		}
+            	oJSONRoot.put("name", msName);
+				oJSONRoot.put("name_" + Locale.getDefault().getLanguage(), msLocName);
+				oJSONRoot.put("ver", mnVer);
+				oJSONRoot.put("directed", mbDirected);            
+            
+	            String sJSON = oJSONRoot.toString();
+	            File file = new File(msPath, MainActivity.META);
+	            if(MainActivity.writeToFile(file, sJSON)){
+	            	//store data
+	            	//create sqlite db
+	            	//Creating and saving the graph
+		            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, false);
+	            } 
+	            else{
+		            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
+	                bundle.putString(MainActivity.BUNDLE_MSG_KEY, "write failed");
+	            }*//*
+    		
+			} 
+    		/*catch (JSONException e) {
+				e.printStackTrace();
+	            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
+				bundle.putString(MainActivity.BUNDLE_MSG_KEY, e.getLocalizedMessage());
+			}*//*
+			catch (Exception e) {
+				e.printStackTrace();
+	            /*bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
+	            bundle.putString(MainActivity.BUNDLE_MSG_KEY, e.getLocalizedMessage());*//*
+				return false;
+			}    		
+                  
+            /*Message msg = new Message();
+            msg.setData(bundle);
+            if(moEventReceiver != null){
+            	moEventReceiver.sendMessage(msg);
+            }   	*/	/*
+    		return true;
+    	}
+    	
+    	@Override
+    	protected void onPostExecute(Boolean result) {
+    		moDownloadDialog.dismiss();
+    	}
+    	
+    	private void unzipEntry(ZipFile zipfile, ZipEntry entry, String outputDir) throws IOException {
+    		if (entry.isDirectory()) {
+    			createDir(new File(outputDir, entry.getName()));
+    			return;
+    		}
+    		File outputFile = new File(outputDir, entry.getName());
+    		if (!outputFile.getParentFile().exists()) {
+    			createDir(outputFile.getParentFile());
+    		}
 
-		public void onProviderDisabled(String arg0) {
-			// TODO Auto-generated method stub
-			
-		}
+    		BufferedInputStream inputStream = new BufferedInputStream(zipfile.getInputStream(entry));
+    		BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+    		try {
+    			byte[] _buffer = new byte[1024];
+    			copyStream(inputStream, outputStream, _buffer, 1024);
+    		} finally {
+    			outputStream.flush();
+    			outputStream.close();
+    			inputStream.close();
+    		}
+    	}
+    	
+    	private void copyStream( InputStream is, OutputStream os, byte[] buffer, int bufferSize ) throws IOException {
+			try {
+				for (;;) {
+					int count = is.read( buffer, 0, bufferSize );
+					if ( count == -1 ) { break; }
+					os.write( buffer, 0, count );
+				}
+			} catch ( IOException e ) {
+				throw e;
+			}
+		}    	
+    	
+    	private void createDir(File dir) {
+    		if (dir.exists()) {
+    			return;
+    		}
+    		if (!dir.mkdirs()) {
+    			throw new RuntimeException("Can not create dir " + dir);
+    		}
+    	}
+    	
+    	private void DeleteRecursive(File fileOrDirectory) {
+    	    if (fileOrDirectory.isDirectory())
+    	        for (File child : fileOrDirectory.listFiles())
+    	            DeleteRecursive(child);
 
-		public void onProviderEnabled(String provider) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		public void onStatusChanged(String provider, int status, Bundle extras) {
-			// TODO Auto-generated method stub
-			
-		}   
-	}
+    	    fileOrDirectory.delete();
+    	}
+    }*/
 }
