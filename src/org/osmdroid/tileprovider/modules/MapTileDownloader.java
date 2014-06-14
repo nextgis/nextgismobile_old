@@ -150,6 +150,13 @@ public class MapTileDownloader extends MapTileModuleProviderBase {
 		@Override
 		public Drawable loadTile(final MapTileRequestState aState) throws CantContinueException {
 
+			if (mNetworkAvailablityCheck == null || !mNetworkAvailablityCheck.getNetworkAvailable()) {
+				if (DEBUGMODE) {
+					Log.d(OSMD_TAG, "Skipping " + getName() + " due to NetworkAvailabliltyCheck.");
+				}
+				return null;
+			}
+			
 			OnlineTileSourceBase tileSource = mTileSource.get();
 			if (tileSource == null) {
 				return null;
@@ -161,13 +168,7 @@ public class MapTileDownloader extends MapTileModuleProviderBase {
 
 			try {
 
-				if (mNetworkAvailablityCheck != null
-						&& !mNetworkAvailablityCheck.getNetworkAvailable()) {
-					if (DEBUGMODE) {
-						Log.d(OSMD_TAG, "Skipping " + getName() + " due to NetworkAvailabliltyCheck.");
-					}
-					return null;
-				}
+
 
 				final String tileURLString = tileSource.getTileURLString(tile);
 

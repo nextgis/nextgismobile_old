@@ -261,16 +261,16 @@ public class InputPointActivity extends SherlockFragmentActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		//getSupportMenuInflater().inflate(R.menu.main, menu);
-       menu.add(Menu.NONE, MENU_ADD, Menu.NONE, R.string.sMark)
+       menu.add(Menu.NONE, MENU_ADD, Menu.NONE, R.string.mark)
        .setIcon(R.drawable.ic_navigation_accept)
        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);//MenuItem.SHOW_AS_ACTION_WITH_TEXT | 
-       menu.add(Menu.NONE, MENU_CANCEL, Menu.NONE, R.string.sCancel)
+       menu.add(Menu.NONE, MENU_CANCEL, Menu.NONE, R.string.cancel)
        .setIcon(R.drawable.ic_navigation_cancel)
        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-       menu.add(Menu.NONE, MENU_SETTINGS, Menu.NONE, R.string.sSettings)
+       menu.add(Menu.NONE, MENU_SETTINGS, Menu.NONE, R.string.settings)
        .setIcon(R.drawable.ic_action_settings)
        .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
-       menu.add(Menu.NONE, MENU_ABOUT, Menu.NONE, R.string.sAbout)
+       menu.add(Menu.NONE, MENU_ABOUT, Menu.NONE, R.string.about)
        .setIcon(R.drawable.ic_action_about)
        .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
       return true;

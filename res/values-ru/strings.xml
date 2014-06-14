@@ -2,8 +2,8 @@
 <resources>
 
     <string name="app_name">NextGIS Mobile</string>
-    <string name="sHomepage">http://nextgis.ru</string>
-    <string name="sDetailpage">http://gis-lab.info/qa/nextgis-mobile.html</string>
+    <string name="home_page">http://nextgis.ru</string>
+    <string name="detail_page">http://gis-lab.info/qa/nextgis-mobile.html</string>
         
     <string name="action_settings">Настройки</string>
     
@@ -11,17 +11,14 @@
 	<string name="tracker_service_name">NGMTrackerService</string>
 	<string name="sendpos_service_name">NGMSendPosService</string>
 	<string name="about_app">Приложение для отслеживания местоположения, отправки данных местоположения на сервер хранения в сети Интернет, показа карты и ввода геоданных. \n\nРазработчики:\n  Дмитрий Барышников\n\n\nДетали см. по ссылке</string>
-	<string name="sMap">Карта</string>
-	<string name="sCompass">Компас</string>
 	
-	<string name="sSettings">Настройки</string>
-	<string name="sAbout">О программе</string>
-	<string name="sMark">Добавить точку</string>
-	<string name="sLayers">Управление слоями</string>
-	<string name="sCancel">Отмена</string>
-	<string name="sGPXRecord">Записать трек GPX</string>	
-	<string name="sInfo">Показать/скрыть инфопанель</string>
-	<string name="sPan">Центрировать</string>
+	<string name="settings">Настройки</string>
+	<string name="about">О программе</string>
+	<string name="mark">Добавить точку</string>
+	<string name="cancel">Отмена</string>
+	<string name="GPXRecord">Записать трек GPX</string>	
+	<string name="info">Показать/скрыть инфопанель</string>
+	<string name="pan">Центрировать</string>
 		
 	<string name="pref_title">Настройки NextGIS Mobile</string>
 	<string name="pref_cat_main">Основные установки</string>
@@ -76,7 +73,8 @@
 		
 	<string name="default_azimuth">0°С</string>	
 	<string name="compass_title">Компас</string>
-	<string name="map_title">Карта</string>
+	<string name="map_title">Карта</string>	
+	<string name="layers_title">Управление слоями</string>
 	<string name="tabs_position_tab">Координаты</string>
 	<string name="tabs_description_tab">Описание</string>
 	<string name="tabs_camera_tab">Фото</string>

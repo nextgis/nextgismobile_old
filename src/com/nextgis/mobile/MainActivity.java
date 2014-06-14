@@ -32,8 +32,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentTransaction;
+import android.util.DisplayMetrics;
 
-import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.nextgis.mobile.map.NGMapView;
@@ -42,7 +44,7 @@ import com.nextgis.mobile.services.TrackerService.RecordedGeoPoint;
 import com.nextgis.mobile.services.TrackerService.TSBinder;
 
 
-public class MainActivity extends SherlockActivity{
+public class MainActivity extends SherlockFragmentActivity{
 	public final static String TAG = "nextgismobile";	
 	public final static String LOACTION_HINT = "com.nextgis.gis.location";	
 	
@@ -58,16 +60,19 @@ public class MainActivity extends SherlockActivity{
 	public final static int MENU_SETTINGS = 4;
 	public final static int MENU_ABOUT = 5;
 	public final static int MENU_COMPASS = 6;
-	public final static int MENU_LAYERS = 7;	
+	public final static int MENU_LAYERS = 7;		
+
+	protected static final int MAX_WIDTH = 750;
 	
 	protected boolean m_bGpxRecord;
-	
-	//protected ProgressDialog m_oProgressDlg;
+	protected boolean m_bShowLayersList;
 	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		setContentView(R.layout.activity_main);
 		
         // initialize the default settings
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -75,6 +80,7 @@ public class MainActivity extends SherlockActivity{
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( this );
 		boolean bInfoOn = prefs.getBoolean(NGMConstants.PREFS_SHOW_INFO, false);
 		m_bGpxRecord = prefs.getBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, false);
+		m_bShowLayersList = prefs.getBoolean(NGMConstants.KEY_PREF_SHOW_LAYES_LIST, false);
 		boolean bCompassOn = prefs.getBoolean(NGMConstants.PREFS_SHOW_COMPASS, false);	
 		int nTileSize = 256;//prefs.getInt(NGMConstants.KEY_PREF_TILE_SIZE + "_int", 256);
 		int nZoom = prefs.getInt(NGMConstants.PREFS_ZOOM_LEVEL, 1);
@@ -85,6 +91,18 @@ public class MainActivity extends SherlockActivity{
 		m_oMap.initMap(nTileSize, nZoom, nScrollX, nScrollY);
 		m_oMap.showInfo(bInfoOn);
 		m_oMap.showCompass(bCompassOn);
+		
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        MapFragment oMapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("MAP");
+        if(oMapFragment == null){
+        	oMapFragment = new MapFragment();
+        	fragmentTransaction.add(R.id.map, oMapFragment, "MAP").commit();  
+        }
+      
+        getSupportFragmentManager().executePendingTransactions();
+
+		
+		showLayersList(m_bShowLayersList);
 	}
 	
 	@Override
@@ -133,29 +151,29 @@ public class MainActivity extends SherlockActivity{
 		//getSupportMenuInflater().inflate(R.menu.main, menu);
         //menu.add(Menu.NONE, MENU_MARK, Menu.NONE, R.string.sMark)
         //.setIcon(R.drawable.ic_location_place)
-        menu.add(Menu.NONE, MainActivity.MENU_LAYERS, Menu.NONE, R.string.sLayers)
+        menu.add(Menu.NONE, MainActivity.MENU_LAYERS, Menu.NONE, R.string.layers)
         .setIcon(R.drawable.ic_layers)
         .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        menu.add(Menu.NONE, MainActivity.MENU_RECORD_GPX, Menu.NONE, R.string.sGPXRecord)
+        menu.add(Menu.NONE, MainActivity.MENU_RECORD_GPX, Menu.NONE, R.string.GPXRecord)
         .setIcon(R.drawable.ic_gpx_record_start)
         .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        menu.add(Menu.NONE, MainActivity.MENU_INFO, Menu.NONE, R.string.sInfo)
+        menu.add(Menu.NONE, MainActivity.MENU_INFO, Menu.NONE, R.string.info)
         .setIcon(R.drawable.ic_action_about)
         .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);		
-        menu.add(Menu.NONE, MainActivity.MENU_PAN, Menu.NONE, R.string.sPan)
+        menu.add(Menu.NONE, MainActivity.MENU_PAN, Menu.NONE, R.string.pan)
         .setIcon(R.drawable.ic_pan2)
         .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);		
         
-        menu.add(Menu.NONE, MainActivity.MENU_COMPASS, Menu.NONE, R.string.sCompass)
+        menu.add(Menu.NONE, MainActivity.MENU_COMPASS, Menu.NONE, R.string.compass_title)
         //.setIcon(R.drawable.ic_action_about)
         .setIcon(R.drawable.ic_menu_compass)
 		//.setCheckable(true)
 		.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
 
-        menu.add(Menu.NONE, MainActivity.MENU_SETTINGS, Menu.NONE, R.string.sSettings)
+        menu.add(Menu.NONE, MainActivity.MENU_SETTINGS, Menu.NONE, R.string.settings)
         .setIcon(R.drawable.ic_action_settings)
         .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
-        menu.add(Menu.NONE, MainActivity.MENU_ABOUT, Menu.NONE, R.string.sAbout)
+        menu.add(Menu.NONE, MainActivity.MENU_ABOUT, Menu.NONE, R.string.about)
         .setIcon(R.drawable.ic_action_about)
         .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
         
@@ -189,15 +207,9 @@ public class MainActivity extends SherlockActivity{
         case MainActivity.MENU_RECORD_GPX:
         	onRecordGpx();
         	return true;
-/*        case MENU_LAYERS:  
-        	try {
-				unzip();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        	//onMark();
-            return true;*/
+        case MENU_LAYERS:
+        	switchLayersList();
+            return true;
         case MainActivity.MENU_COMPASS:        	
         	m_oMap.switchCompass();
             return true;    
@@ -279,6 +291,55 @@ public class MainActivity extends SherlockActivity{
 	void stopGPXRecord(){
 		 startService(new Intent(TrackerService.ACTION_STOP_GPX));
 		 unbindService(m_oConnection);
+	}
+	
+	public void showLayersList(boolean bShow){
+    	DisplayMetrics metrics = new DisplayMetrics();
+    	getWindowManager().getDefaultDisplay().getMetrics(metrics);
+    	boolean bTwoPaneMode = false;
+    	if(metrics.widthPixels > MAX_WIDTH){
+    		bTwoPaneMode = true;
+    	}
+    	
+    	if(bShow){
+    		if(bTwoPaneMode){
+    			//add new fragment
+    	        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+    	        LayersFragment oLayersFragment = (LayersFragment) getSupportFragmentManager().findFragmentByTag("LAYERS");
+    	        if(oLayersFragment == null){
+    	        	oLayersFragment = new LayersFragment();
+    	        	fragmentTransaction.add(R.id.map_layers, oLayersFragment, "LAYERS").commit();  
+    	        }
+    	      
+    	        getSupportFragmentManager().executePendingTransactions();
+    			
+    		}
+    		else{
+    			//start new activity
+    		}
+    	}
+    	else {
+    		//if list is in fragment manager - remove it
+	        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+	        LayersFragment oLayersFragment = (LayersFragment) getSupportFragmentManager().findFragmentByTag("LAYERS");
+	        if(oLayersFragment != null){
+	        	fragmentTransaction.remove(oLayersFragment).commit();
+	        }
+	        getSupportFragmentManager().executePendingTransactions();
+    	}
+    	m_bShowLayersList = bShow;
+	}
+	
+	public void showLayersList(){
+		showLayersList(true);
+	}
+	
+	public void hideLayersList(){
+		showLayersList(false);
+	}
+	
+	public void switchLayersList(){
+		showLayersList(!m_bShowLayersList);
 	}
 
 	void onMark(){
@@ -450,146 +511,12 @@ public class MainActivity extends SherlockActivity{
 			}
 		}*/
 	}
-	
-	/*//////////////////////////////////////////////////////////////////////////////////////////////
-	
-	
-	public void unzip() throws IOException {
-		ProgressDialog oDownloadDialog = new ProgressDialog(this);
-		oDownloadDialog.setMessage("extracting");//moContext.getResources().getString(R.string.sZipExtractionProcess));
-		oDownloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		oDownloadDialog.setCancelable(true);
-		oDownloadDialog.show();
-		File oInputFile = new File(org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants.OSMDROID_PATH, "sss.zip");
-		File oOutputFileDir = new File(org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants.OSMDROID_PATH, "layers");
-		File oOutputFile = new File(oOutputFileDir, ".test_zip");
-    	new UnZipTask(oInputFile, oOutputFile.getAbsolutePath(), oDownloadDialog).execute();
-    }
-    
-    private class UnZipTask extends AsyncTask<String, Void, Boolean> {
-    	private File msInputPath;
-    	private String msOutputPath;
-    	private ProgressDialog moDownloadDialog;
-    	private int per = 0;
-    	
-        public UnZipTask(File sInputPath, String sOutputPath, ProgressDialog oDownloadDialog) {        
-            super();
-            msInputPath = sInputPath;
-            msOutputPath = sOutputPath;
-            moDownloadDialog = oDownloadDialog;
-        }
-        
-    	@Override
-    	protected Boolean doInBackground(String... params) {
-    		
-   		try {
-    			//DeleteRecursive(new File(msPath));
-    			ZipFile zipfile = new ZipFile(msInputPath);
-    			moDownloadDialog.setMax(zipfile.size());
-    			for (Enumeration<? extends ZipEntry> e = zipfile.entries(); e.hasMoreElements();) {
-    				ZipEntry entry = (ZipEntry) e.nextElement();
-    				unzipEntry(zipfile, entry, msOutputPath);
-    				per++;
-    				moDownloadDialog.setProgress(per);
-    			}
-    			zipfile.close();
-//    			archive.delete();
-    		
-    			/*JSONObject oJSONRoot = new JSONObject();
 
-            	oJSONRoot.put("name", msName);
-				oJSONRoot.put("name_" + Locale.getDefault().getLanguage(), msLocName);
-				oJSONRoot.put("ver", mnVer);
-				oJSONRoot.put("directed", mbDirected);            
-            
-	            String sJSON = oJSONRoot.toString();
-	            File file = new File(msPath, MainActivity.META);
-	            if(MainActivity.writeToFile(file, sJSON)){
-	            	//store data
-	            	//create sqlite db
-	            	//Creating and saving the graph
-		            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, false);
-	            } 
-	            else{
-		            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
-	                bundle.putString(MainActivity.BUNDLE_MSG_KEY, "write failed");
-	            }*//*
-    		
-			} 
-    		/*catch (JSONException e) {
-				e.printStackTrace();
-	            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
-				bundle.putString(MainActivity.BUNDLE_MSG_KEY, e.getLocalizedMessage());
-			}*//*
-			catch (Exception e) {
-				e.printStackTrace();
-	            /*bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
-	            bundle.putString(MainActivity.BUNDLE_MSG_KEY, e.getLocalizedMessage());*//*
-				return false;
-			}    		
-                  
-            /*Message msg = new Message();
-            msg.setData(bundle);
-            if(moEventReceiver != null){
-            	moEventReceiver.sendMessage(msg);
-            }   	*/	/*
-    		return true;
-    	}
-    	
-    	@Override
-    	protected void onPostExecute(Boolean result) {
-    		moDownloadDialog.dismiss();
-    	}
-    	
-    	private void unzipEntry(ZipFile zipfile, ZipEntry entry, String outputDir) throws IOException {
-    		if (entry.isDirectory()) {
-    			createDir(new File(outputDir, entry.getName()));
-    			return;
-    		}
-    		File outputFile = new File(outputDir, entry.getName());
-    		if (!outputFile.getParentFile().exists()) {
-    			createDir(outputFile.getParentFile());
-    		}
+	public NGMapView getMap() {
+		return m_oMap;
+	}
 
-    		BufferedInputStream inputStream = new BufferedInputStream(zipfile.getInputStream(entry));
-    		BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
-    		try {
-    			byte[] _buffer = new byte[1024];
-    			copyStream(inputStream, outputStream, _buffer, 1024);
-    		} finally {
-    			outputStream.flush();
-    			outputStream.close();
-    			inputStream.close();
-    		}
-    	}
-    	
-    	private void copyStream( InputStream is, OutputStream os, byte[] buffer, int bufferSize ) throws IOException {
-			try {
-				for (;;) {
-					int count = is.read( buffer, 0, bufferSize );
-					if ( count == -1 ) { break; }
-					os.write( buffer, 0, count );
-				}
-			} catch ( IOException e ) {
-				throw e;
-			}
-		}    	
-    	
-    	private void createDir(File dir) {
-    		if (dir.exists()) {
-    			return;
-    		}
-    		if (!dir.mkdirs()) {
-    			throw new RuntimeException("Can not create dir " + dir);
-    		}
-    	}
-    	
-    	private void DeleteRecursive(File fileOrDirectory) {
-    	    if (fileOrDirectory.isDirectory())
-    	        for (File child : fileOrDirectory.listFiles())
-    	            DeleteRecursive(child);
-
-    	    fileOrDirectory.delete();
-    	}
-    }*/
+	public void setMap(NGMapView oMap) {
+		this.m_oMap = oMap;
+	}
 }

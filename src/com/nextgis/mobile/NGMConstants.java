@@ -35,6 +35,7 @@ public interface NGMConstants {
 	public static final String KEY_PREF_MIN_TIME_UPD = "min_time_beetwen_updates";
 	public static final String KEY_PREF_SW_TRACK_SRV = "sw_track_service";
 	public static final String KEY_PREF_SW_TRACKGPX_SRV = "sw_trackgpx_service";
+	public static final String KEY_PREF_SHOW_LAYES_LIST = "show_layers_list";
 	public static final String KEY_PREF_SW_SENDPOS_SRV = "sw_sendpos_service";
 	public static final String KEY_PREF_SW_ENERGY_ECO = "sw_energy_economy";
 	public static final String KEY_PREF_TIME_DATASEND = "time_between_datasend";
@@ -50,4 +51,6 @@ public interface NGMConstants {
 	public static final String KEY_PREF_COMPASS_WAKE_LOCK = "compass_wake_lock";
 	
 	public static final String SERVICE_PREF = "preferences";
+
+	public static final int MAP_RELATIVE_LAYOUT = 777;
 }

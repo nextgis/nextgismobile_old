@@ -25,7 +25,9 @@ public class NetworkAvailabliltyCheck implements INetworkAvailablityCheck {
 	@Override
 	public boolean getNetworkAvailable() {
 		final NetworkInfo networkInfo = mConnectionManager.getActiveNetworkInfo();
-		return networkInfo != null && networkInfo.isAvailable();
+		if(networkInfo == null)
+			return false;
+		return  networkInfo.isAvailable();
 	}
 
 	@Override

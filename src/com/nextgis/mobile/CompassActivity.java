@@ -41,10 +41,10 @@ public class CompassActivity extends SherlockFragmentActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(Menu.NONE, MainActivity.MENU_SETTINGS, Menu.NONE, R.string.sSettings)
+        menu.add(Menu.NONE, MainActivity.MENU_SETTINGS, Menu.NONE, R.string.settings)
         .setIcon(R.drawable.ic_action_settings)
         .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
-        menu.add(Menu.NONE, MainActivity.MENU_ABOUT, Menu.NONE, R.string.sAbout)
+        menu.add(Menu.NONE, MainActivity.MENU_ABOUT, Menu.NONE, R.string.about)
         .setIcon(R.drawable.ic_action_about)
         .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
        return true;

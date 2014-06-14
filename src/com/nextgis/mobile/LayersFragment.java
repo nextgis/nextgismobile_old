@@ -20,8 +20,27 @@
  ****************************************************************************/
 package com.nextgis.mobile;
 
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
 import com.actionbarsherlock.app.SherlockFragment;
+import com.nextgis.mobile.map.NGMapView;
 
 public class LayersFragment extends SherlockFragment {
+
+	protected NGMapView m_oMap;   
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		if(m_oMap == null){
+			MainActivity activity = (MainActivity) getSherlockActivity();
+			m_oMap = activity.getMap();
+		}
+		
+    	View view = inflater.inflate(R.layout.layersfragment, container, false);
+ 
+		return view;
+	}
 
 }

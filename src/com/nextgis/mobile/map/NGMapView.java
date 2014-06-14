@@ -85,7 +85,7 @@ public class NGMapView {
 	protected LocationManager m_oLocationManager;
 	protected ChangeLocationListener m_oChangeLocationListener;
 	
-	private RelativeLayout m_oRelativeLayout;
+	protected RelativeLayout m_oRelativeLayout;
 	 
 	protected ArrayList<OverlayItem> m_aoItems;
 	
@@ -95,6 +95,7 @@ public class NGMapView {
 
 	protected final static String CSV_CHAR = ";";
 	protected final static int margings = 10;
+	
 	
 	public NGMapView(Context oContext){
 		m_oContext = oContext;
@@ -107,7 +108,8 @@ public class NGMapView {
 				
 		m_oResourceProxy = new ResourceProxyImpl(m_oContext);
 
-	    m_oRelativeLayout = new RelativeLayout(m_oContext);		
+	    m_oRelativeLayout = new RelativeLayout(m_oContext);	
+	    m_oRelativeLayout.setId(NGMConstants.MAP_RELATIVE_LAYOUT);
 	}
 	
 	public void addPointToRouteOverlay(double dfX, double dfY){    	
@@ -134,6 +136,7 @@ public class NGMapView {
 		}
 		m_oOsmv = new MapView(m_oContext, nTileSize, m_oResourceProxy);
 		m_oOsmv.setUseSafeCanvas(true);
+		m_oOsmv.setBackgroundColor(m_oContext.getResources().getColor(R.color.abs__bright_foreground_disabled_holo_light));
 		
 		//add overlays
 		m_oLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(m_oContext), m_oOsmv, m_oResourceProxy);
@@ -463,11 +466,11 @@ public class NGMapView {
 	}
 	
 	public void showCompass(){
-		
+		showCompass(true);
 	}
 	
 	public void hideCompass(){
-		
+		showCompass(false);
 	}
 	
 	public void switchCompass(){
@@ -579,4 +582,160 @@ public class NGMapView {
 			
 		}   
 	}
+
+	public RelativeLayout getRelativeLayout() {
+		return m_oRelativeLayout;
+	}
 }
+
+/*        case MENU_LAYERS:  
+try {
+	unzip();
+} catch (IOException e) {
+	// TODO Auto-generated catch block
+	e.printStackTrace();
+}
+//onMark();
+return true;*/
+
+/*//////////////////////////////////////////////////////////////////////////////////////////////
+
+
+public void unzip() throws IOException {
+	ProgressDialog oDownloadDialog = new ProgressDialog(this);
+	oDownloadDialog.setMessage("extracting");//moContext.getResources().getString(R.string.sZipExtractionProcess));
+	oDownloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+	oDownloadDialog.setCancelable(true);
+	oDownloadDialog.show();
+	File oInputFile = new File(org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants.OSMDROID_PATH, "sss.zip");
+	File oOutputFileDir = new File(org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants.OSMDROID_PATH, "layers");
+	File oOutputFile = new File(oOutputFileDir, ".test_zip");
+	new UnZipTask(oInputFile, oOutputFile.getAbsolutePath(), oDownloadDialog).execute();
+}
+
+private class UnZipTask extends AsyncTask<String, Void, Boolean> {
+	private File msInputPath;
+	private String msOutputPath;
+	private ProgressDialog moDownloadDialog;
+	private int per = 0;
+	
+    public UnZipTask(File sInputPath, String sOutputPath, ProgressDialog oDownloadDialog) {        
+        super();
+        msInputPath = sInputPath;
+        msOutputPath = sOutputPath;
+        moDownloadDialog = oDownloadDialog;
+    }
+    
+	@Override
+	protected Boolean doInBackground(String... params) {
+		
+		try {
+			//DeleteRecursive(new File(msPath));
+			ZipFile zipfile = new ZipFile(msInputPath);
+			moDownloadDialog.setMax(zipfile.size());
+			for (Enumeration<? extends ZipEntry> e = zipfile.entries(); e.hasMoreElements();) {
+				ZipEntry entry = (ZipEntry) e.nextElement();
+				unzipEntry(zipfile, entry, msOutputPath);
+				per++;
+				moDownloadDialog.setProgress(per);
+			}
+			zipfile.close();
+//			archive.delete();
+		
+			/*JSONObject oJSONRoot = new JSONObject();
+
+        	oJSONRoot.put("name", msName);
+			oJSONRoot.put("name_" + Locale.getDefault().getLanguage(), msLocName);
+			oJSONRoot.put("ver", mnVer);
+			oJSONRoot.put("directed", mbDirected);            
+        
+            String sJSON = oJSONRoot.toString();
+            File file = new File(msPath, MainActivity.META);
+            if(MainActivity.writeToFile(file, sJSON)){
+            	//store data
+            	//create sqlite db
+            	//Creating and saving the graph
+	            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, false);
+            } 
+            else{
+	            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
+                bundle.putString(MainActivity.BUNDLE_MSG_KEY, "write failed");
+            }*//*
+		
+		} 
+		/*catch (JSONException e) {
+			e.printStackTrace();
+            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
+			bundle.putString(MainActivity.BUNDLE_MSG_KEY, e.getLocalizedMessage());
+		}*//*
+		catch (Exception e) {
+			e.printStackTrace();
+            /*bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
+            bundle.putString(MainActivity.BUNDLE_MSG_KEY, e.getLocalizedMessage());*//*
+			return false;
+		}    		
+              
+        /*Message msg = new Message();
+        msg.setData(bundle);
+        if(moEventReceiver != null){
+        	moEventReceiver.sendMessage(msg);
+        }   	*/	/*
+		return true;
+	}
+	
+	@Override
+	protected void onPostExecute(Boolean result) {
+		moDownloadDialog.dismiss();
+	}
+	
+	private void unzipEntry(ZipFile zipfile, ZipEntry entry, String outputDir) throws IOException {
+		if (entry.isDirectory()) {
+			createDir(new File(outputDir, entry.getName()));
+			return;
+		}
+		File outputFile = new File(outputDir, entry.getName());
+		if (!outputFile.getParentFile().exists()) {
+			createDir(outputFile.getParentFile());
+		}
+
+		BufferedInputStream inputStream = new BufferedInputStream(zipfile.getInputStream(entry));
+		BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+		try {
+			byte[] _buffer = new byte[1024];
+			copyStream(inputStream, outputStream, _buffer, 1024);
+		} finally {
+			outputStream.flush();
+			outputStream.close();
+			inputStream.close();
+		}
+	}
+	
+	private void copyStream( InputStream is, OutputStream os, byte[] buffer, int bufferSize ) throws IOException {
+		try {
+			for (;;) {
+				int count = is.read( buffer, 0, bufferSize );
+				if ( count == -1 ) { break; }
+				os.write( buffer, 0, count );
+			}
+		} catch ( IOException e ) {
+			throw e;
+		}
+	}    	
+	
+	private void createDir(File dir) {
+		if (dir.exists()) {
+			return;
+		}
+		if (!dir.mkdirs()) {
+			throw new RuntimeException("Can not create dir " + dir);
+		}
+	}
+	
+	private void DeleteRecursive(File fileOrDirectory) {
+	    if (fileOrDirectory.isDirectory())
+	        for (File child : fileOrDirectory.listFiles())
+	            DeleteRecursive(child);
+
+	    fileOrDirectory.delete();
+	}
+}*/

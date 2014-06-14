@@ -27,6 +27,8 @@
     <fragment
         android:id="@+id/compass_fragment"
         android:name="com.nextgis.mobile.CompassFragment"
-        style="@style/FillParent" />
+        android:layout_width="fill_parent"
+    	android:layout_height="fill_parent"
+     />
     
 </FrameLayout>

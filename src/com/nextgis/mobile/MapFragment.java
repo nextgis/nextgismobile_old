@@ -24,20 +24,30 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.actionbarsherlock.app.SherlockFragment;
+import com.nextgis.mobile.map.NGMapView;
 
 public class MapFragment extends SherlockFragment {
-   
+	protected NGMapView m_oMap;   
 
+	
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {		
 		
-	    
-	    //container.addView(m_oRelativeLayout);
+		if(m_oMap == null){
+			MainActivity activity = (MainActivity) getSherlockActivity();
+			m_oMap = activity.getMap();
+		}
 		
-		
-		return super.onCreateView(inflater, container, savedInstanceState);
+    	View view = inflater.inflate(R.layout.mapfragment, container, false);
+    	FrameLayout layout = (FrameLayout) view.findViewById(R.id.mapholder);
+    	//search relative view of map, if not found - add it 
+    	if(m_oMap != null && layout.findViewById(NGMConstants.MAP_RELATIVE_LAYOUT) == null){
+    		layout.addView(m_oMap.getRelativeLayout());
+    	}
+		return view;
 	}
 
 }

@@ -125,7 +125,9 @@
 		    android:layout_height="fill_parent"
 		    android:layout_gravity="center" >
 		
-		    <LinearLayout style="@style/FillParent" >
+		    <LinearLayout 
+		        android:layout_width="fill_parent"
+				android:layout_height="fill_parent" >
 		
 		        <com.nextgis.mobile.BubbleSurfaceView
 		            android:id="@+id/bubbleSurfaceView"
@@ -135,7 +137,7 @@
 		    
 		    <LinearLayout
 		        android:id="@+id/compassLayout"
-		        style="@style/FillParent.Center" >
+		        android:gravity="center" >
 		
 		        <com.nextgis.mobile.CompassImage
 		            android:id="@+id/compass"
@@ -144,14 +146,14 @@
 		            android:src="@drawable/compass_bezel" />
 		    </LinearLayout>
 		
-		    <LinearLayout style="@style/FillParent.Center" >
+		    <LinearLayout android:gravity="center" >
 		        <ImageView
 		            android:layout_width="250dip"
 		            android:layout_height="250dip"
 		            android:src="@drawable/compass_baseplate" />
 		    </LinearLayout>
 		
-		    <LinearLayout style="@style/FillParent.Center" >
+		    <LinearLayout android:gravity="center" >
 		
 		        <com.nextgis.mobile.CompassImage
 		            android:id="@+id/compassNeedleMagnetic"
@@ -161,7 +163,7 @@
 		            android:visibility="invisible" />
 		    </LinearLayout>
 		
-		    <LinearLayout style="@style/FillParent.Center" >
+		    <LinearLayout android:gravity="center" >
 		
 		        <com.nextgis.mobile.CompassImage
 		            android:id="@+id/compassNeedle"
@@ -171,8 +173,8 @@
 		    </LinearLayout>
 						
 		    <LinearLayout
-		        style="@style/FillParent"
-		        android:layout_width="match_parent"
+		        android:layout_height="fill_parent"
+				android:layout_width="match_parent"
 		        android:layout_gravity="center"
 		        android:gravity="right|bottom" >
 

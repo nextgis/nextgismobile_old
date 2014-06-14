@@ -28,7 +28,7 @@ public class HttpClientFactory {
 
 	public static HttpClient createHttpClient() {
 		final DefaultHttpClient client = new DefaultHttpClient();
-		client.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "osmdroid");
+		client.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "nextgis mobile");
 		return client;
 	}
 
