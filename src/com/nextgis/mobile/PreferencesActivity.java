@@ -20,6 +20,7 @@
  ****************************************************************************/
 package com.nextgis.mobile;
 
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -32,17 +33,16 @@ import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.util.Log;
+import android.view.MenuItem;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockPreferenceActivity;
-import com.actionbarsherlock.view.MenuItem;
 import com.nextgis.mobile.services.DataSendService;
 import com.nextgis.mobile.services.TrackerService;
 
-public class PreferencesActivity extends SherlockPreferenceActivity implements OnSharedPreferenceChangeListener {
+public class PreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 	
 	CheckBoxPreference TrackServicePref;
 	CheckBoxPreference SendPosServicePref;
@@ -67,7 +67,7 @@ public class PreferencesActivity extends SherlockPreferenceActivity implements O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ActionBar ab = getSupportActionBar();
+        ActionBar ab = getActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
         
         addPreferencesFromResource(R.xml.preferences);

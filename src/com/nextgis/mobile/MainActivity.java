@@ -33,18 +33,19 @@ import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentTransaction;
-import android.util.DisplayMetrics;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
 import com.nextgis.mobile.map.NGMapView;
 import com.nextgis.mobile.services.TrackerService;
 import com.nextgis.mobile.services.TrackerService.RecordedGeoPoint;
 import com.nextgis.mobile.services.TrackerService.TSBinder;
 
 
-public class MainActivity extends SherlockFragmentActivity{
+public class MainActivity extends ActionBarActivity {
 	public final static String TAG = "nextgismobile";	
 	public final static String LOACTION_HINT = "com.nextgis.gis.location";	
 	
@@ -60,13 +61,14 @@ public class MainActivity extends SherlockFragmentActivity{
 	public final static int MENU_SETTINGS = 4;
 	public final static int MENU_ABOUT = 5;
 	public final static int MENU_COMPASS = 6;
-	public final static int MENU_LAYERS = 7;		
+	public final static int MENU_ADD = 7;		
 
 	protected static final int MAX_WIDTH = 750;
 	
 	protected boolean m_bGpxRecord;
-	protected boolean m_bShowLayersList;
-	
+
+	protected LayersFragment m_oLayersFragment;
+
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,18 +82,23 @@ public class MainActivity extends SherlockFragmentActivity{
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( this );
 		boolean bInfoOn = prefs.getBoolean(NGMConstants.PREFS_SHOW_INFO, false);
 		m_bGpxRecord = prefs.getBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, false);
-		m_bShowLayersList = prefs.getBoolean(NGMConstants.KEY_PREF_SHOW_LAYES_LIST, false);
 		boolean bCompassOn = prefs.getBoolean(NGMConstants.PREFS_SHOW_COMPASS, false);	
 		int nTileSize = 256;//prefs.getInt(NGMConstants.KEY_PREF_TILE_SIZE + "_int", 256);
 		int nZoom = prefs.getInt(NGMConstants.PREFS_ZOOM_LEVEL, 1);
 		int nScrollX = prefs.getInt(NGMConstants.PREFS_SCROLL_X, 0);
 		int nScrollY = prefs.getInt(NGMConstants.PREFS_SCROLL_Y, 0);
 		
+		ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		
 		m_oMap = new NGMapView(this);
 		m_oMap.initMap(nTileSize, nZoom, nScrollX, nScrollY);
 		m_oMap.showInfo(bInfoOn);
 		m_oMap.showCompass(bCompassOn);
-		
+
+		m_oLayersFragment = (LayersFragment) getSupportFragmentManager().findFragmentById(R.id.layers);
+
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         MapFragment oMapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("MAP");
         if(oMapFragment == null){
@@ -101,8 +108,13 @@ public class MainActivity extends SherlockFragmentActivity{
       
         getSupportFragmentManager().executePendingTransactions();
 
-		
+        LayersFragment layersFragment = (LayersFragment) getSupportFragmentManager().findFragmentById(R.id.layers);
+
+		// Set up the drawer.
+        layersFragment.setUp(R.id.layers, (DrawerLayout) findViewById(R.id.drawer_layout));
+/*		
 		showLayersList(m_bShowLayersList);
+*/		
 	}
 	
 	@Override
@@ -138,44 +150,45 @@ public class MainActivity extends SherlockFragmentActivity{
 		}
 	}
 	
-	
-	@Override
-	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-		// TODO Auto-generated method stub
-		return super.onMenuItemSelected(featureId, item);
-	}
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
+		if(!m_oLayersFragment.isDrawerOpen()){
+			getMenuInflater().inflate(R.menu.main, menu);
+			restoreActionBar();
+		}
+		
+		
 		//getSupportMenuInflater().inflate(R.menu.main, menu);
         //menu.add(Menu.NONE, MENU_MARK, Menu.NONE, R.string.sMark)
         //.setIcon(R.drawable.ic_location_place)
-        menu.add(Menu.NONE, MainActivity.MENU_LAYERS, Menu.NONE, R.string.layers)
-        .setIcon(R.drawable.ic_layers)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+       
+//		menu.add(Menu.NONE, MainActivity.MENU_ADD, Menu.NONE, R.string.layers)
+//        .setIcon(R.drawable.ic_layers)
+//        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+		
         menu.add(Menu.NONE, MainActivity.MENU_RECORD_GPX, Menu.NONE, R.string.GPXRecord)
-        .setIcon(R.drawable.ic_gpx_record_start)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        .setIcon(R.drawable.ic_gpx_record_start);
+        //.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         menu.add(Menu.NONE, MainActivity.MENU_INFO, Menu.NONE, R.string.info)
-        .setIcon(R.drawable.ic_action_about)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);		
+        .setIcon(R.drawable.ic_action_about);
+        //.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);		
         menu.add(Menu.NONE, MainActivity.MENU_PAN, Menu.NONE, R.string.pan)
-        .setIcon(R.drawable.ic_pan2)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);		
+        .setIcon(R.drawable.ic_pan2);
+        //.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);		
         
         menu.add(Menu.NONE, MainActivity.MENU_COMPASS, Menu.NONE, R.string.compass_title)
         //.setIcon(R.drawable.ic_action_about)
-        .setIcon(R.drawable.ic_menu_compass)
+        .setIcon(R.drawable.ic_menu_compass);
 		//.setCheckable(true)
-		.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+		//.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
 
         menu.add(Menu.NONE, MainActivity.MENU_SETTINGS, Menu.NONE, R.string.settings)
-        .setIcon(R.drawable.ic_action_settings)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
+        .setIcon(R.drawable.ic_action_settings);
+        //.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
         menu.add(Menu.NONE, MainActivity.MENU_ABOUT, Menu.NONE, R.string.about)
-        .setIcon(R.drawable.ic_action_about)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
+        .setIcon(R.drawable.ic_action_about);
+        //.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
         
 		//mOsmv.getOverlayManager().onCreateOptionsMenu((android.view.Menu) menu, Menu.FIRST + 1, mOsmv);
        return true;
@@ -185,8 +198,6 @@ public class MainActivity extends SherlockFragmentActivity{
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-        case android.R.id.home:
-            return false;
         case MainActivity.MENU_SETTINGS:
             // app icon in action bar clicked; go home
             Intent intentSet = new Intent(this, PreferencesActivity.class);
@@ -207,14 +218,17 @@ public class MainActivity extends SherlockFragmentActivity{
         case MainActivity.MENU_RECORD_GPX:
         	onRecordGpx();
         	return true;
-        case MENU_LAYERS:
-        	switchLayersList();
-            return true;
         case MainActivity.MENU_COMPASS:        	
         	m_oMap.switchCompass();
             return true;    
         }
 		return super.onOptionsItemSelected(item);
+	}
+
+	public void restoreActionBar() {
+		ActionBar actionBar = getSupportActionBar();
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		actionBar.setDisplayShowTitleEnabled(true);
 	}
 	
 	void doBindService() {
@@ -293,55 +307,6 @@ public class MainActivity extends SherlockFragmentActivity{
 		 unbindService(m_oConnection);
 	}
 	
-	public void showLayersList(boolean bShow){
-    	DisplayMetrics metrics = new DisplayMetrics();
-    	getWindowManager().getDefaultDisplay().getMetrics(metrics);
-    	boolean bTwoPaneMode = false;
-    	if(metrics.widthPixels > MAX_WIDTH){
-    		bTwoPaneMode = true;
-    	}
-    	
-    	if(bShow){
-    		if(bTwoPaneMode){
-    			//add new fragment
-    	        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-    	        LayersFragment oLayersFragment = (LayersFragment) getSupportFragmentManager().findFragmentByTag("LAYERS");
-    	        if(oLayersFragment == null){
-    	        	oLayersFragment = new LayersFragment();
-    	        	fragmentTransaction.add(R.id.map_layers, oLayersFragment, "LAYERS").commit();  
-    	        }
-    	      
-    	        getSupportFragmentManager().executePendingTransactions();
-    			
-    		}
-    		else{
-    			//start new activity
-    		}
-    	}
-    	else {
-    		//if list is in fragment manager - remove it
-	        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-	        LayersFragment oLayersFragment = (LayersFragment) getSupportFragmentManager().findFragmentByTag("LAYERS");
-	        if(oLayersFragment != null){
-	        	fragmentTransaction.remove(oLayersFragment).commit();
-	        }
-	        getSupportFragmentManager().executePendingTransactions();
-    	}
-    	m_bShowLayersList = bShow;
-	}
-	
-	public void showLayersList(){
-		showLayersList(true);
-	}
-	
-	public void hideLayersList(){
-		showLayersList(false);
-	}
-	
-	public void switchLayersList(){
-		showLayersList(!m_bShowLayersList);
-	}
-
 	void onMark(){
     /* TODO:   
 		final Location loc = mLocationOverlay.getLastFix();

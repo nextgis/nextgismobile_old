@@ -118,7 +118,7 @@
 	<string name="sum_dist">Расстояние: </string>
 	<string name="coord_lat">Ш</string>
 	<string name="coord_lon">Д</string>
-	<string name="create_nex_gpx">Запись GPX файла: </string>
+	<string name="create_next_gpx">Запись GPX файла: </string>
 	<string name="gpx_recording">Запись GPX&#8230;</string>
 	
 	<string name="set_mode_offline">Перевести в оффлайн режим</string>

@@ -34,8 +34,7 @@ import java.util.Map;
 
 import org.xmlpull.v1.XmlPullParser;
 
-import com.actionbarsherlock.app.SherlockFragment;
-
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.Xml;
 import android.view.LayoutInflater;
@@ -48,7 +47,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.os.Bundle;
 
-public class DescriptionFragment extends SherlockFragment{
+public class DescriptionFragment extends Fragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -58,19 +57,19 @@ public class DescriptionFragment extends SherlockFragment{
 
     	View view = inflater.inflate(R.layout.descriptfragment, container, false);
 
-        final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(getSherlockActivity(), android.R.layout.simple_spinner_item);
+        final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(getActivity(), android.R.layout.simple_spinner_item);
         
         final Map<String, ArrayList<String>> mlCategories = new HashMap<String, ArrayList<String>>();
         //fill spinners from xml data
         
         XmlPullParser parser = Xml.newPullParser();
         try {
-        	File file = new File(getSherlockActivity().getExternalFilesDir(null), "categories.xml");
+        	File file = new File(getActivity().getExternalFilesDir(null), "categories.xml");
             if (file != null) {
             	if(!file.exists())
             	{
             		createExternalStoragePrivateFile();
-            		file = new File(getSherlockActivity().getExternalFilesDir(null), "categories.xml");
+            		file = new File(getActivity().getExternalFilesDir(null), "categories.xml");
             	}
             	
             	InputStream in = new BufferedInputStream(new FileInputStream(file));
@@ -135,7 +134,7 @@ public class DescriptionFragment extends SherlockFragment{
             	{
             		textview.setEnabled(false);
             	}
-            	ArrayAdapter<String> subadapter = new ArrayAdapter<String>(getSherlockActivity(), android.R.layout.simple_spinner_item, mlCategories.get(sCat));
+            	ArrayAdapter<String> subadapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, mlCategories.get(sCat));
             	subadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             	subspinner.setAdapter(subadapter);
             }
@@ -153,7 +152,7 @@ public class DescriptionFragment extends SherlockFragment{
     boolean hasExternalStoragePrivateFile() {
         // Get path for the file on external storage.  If external
         // storage is not currently mounted this will fail.
-        File file = new File(getSherlockActivity().getExternalFilesDir(null), "categories.xml");
+        File file = new File(getActivity().getExternalFilesDir(null), "categories.xml");
         if (file != null) {
             return file.exists();
         }
@@ -163,7 +162,7 @@ public class DescriptionFragment extends SherlockFragment{
     void createExternalStoragePrivateFile() {
         // Create a path where we will place our private file on external
         // storage.
-        File file = new File(getSherlockActivity().getExternalFilesDir(null), "categories.xml");
+        File file = new File(getActivity().getExternalFilesDir(null), "categories.xml");
 
         try {        	         
             FileOutputStream os = new FileOutputStream(file);
@@ -198,7 +197,7 @@ public class DescriptionFragment extends SherlockFragment{
     void deleteExternalStoragePrivateFile() {
         // Get path for the file on external storage.  If external
         // storage is not currently mounted this will fail.
-        File file = new File(getSherlockActivity().getExternalFilesDir(null), "categories.xml");
+        File file = new File(getActivity().getExternalFilesDir(null), "categories.xml");
         if (file != null) {
             file.delete();
         }
@@ -208,7 +207,7 @@ public class DescriptionFragment extends SherlockFragment{
 		
 		if(getView() != null)
 		{
-			InputPointActivity activity = (InputPointActivity) getSherlockActivity();
+			InputPointActivity activity = (InputPointActivity) getActivity();
 			if(activity == null)
 				return;
 			

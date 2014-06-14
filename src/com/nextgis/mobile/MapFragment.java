@@ -21,15 +21,15 @@
 package com.nextgis.mobile;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.nextgis.mobile.map.NGMapView;
 
-public class MapFragment extends SherlockFragment {
+public class MapFragment extends Fragment {
 	protected NGMapView m_oMap;   
 
 	
@@ -37,7 +37,7 @@ public class MapFragment extends SherlockFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {		
 		
 		if(m_oMap == null){
-			MainActivity activity = (MainActivity) getSherlockActivity();
+			MainActivity activity = (MainActivity) getActivity();
 			m_oMap = activity.getMap();
 		}
 		

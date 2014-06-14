@@ -49,7 +49,8 @@ public interface NGMConstants {
 	public static final String KEY_PREF_COMPASS_TRUE_NORTH = "compass_true_north";
 	public static final String KEY_PREF_COMPASS_SHOW_MAGNET = "compass_show_magnetic";
 	public static final String KEY_PREF_COMPASS_WAKE_LOCK = "compass_wake_lock";
-	
+	public static final String KEY_PREF_USER_LEARNED_DRAWER = "layers_drawer_learned";
+
 	public static final String SERVICE_PREF = "preferences";
 
 	public static final int MAP_RELATIVE_LAYOUT = 777;

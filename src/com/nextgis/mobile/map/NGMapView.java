@@ -39,7 +39,6 @@ import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
-import com.actionbarsherlock.internal.ResourcesCompat;
 import com.nextgis.mobile.NGMConstants;
 import com.nextgis.mobile.PositionFragment;
 import com.nextgis.mobile.PreferencesActivity;
@@ -49,6 +48,7 @@ import com.nextgis.mobile.services.TrackerService.RecordedGeoPoint;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -136,7 +136,7 @@ public class NGMapView {
 		}
 		m_oOsmv = new MapView(m_oContext, nTileSize, m_oResourceProxy);
 		m_oOsmv.setUseSafeCanvas(true);
-		m_oOsmv.setBackgroundColor(m_oContext.getResources().getColor(R.color.abs__bright_foreground_disabled_holo_light));
+		m_oOsmv.setBackgroundColor(m_oContext.getResources().getColor(android.R.color.darker_gray));
 		
 		//add overlays
 		m_oLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(m_oContext), m_oOsmv, m_oResourceProxy);
@@ -147,7 +147,7 @@ public class NGMapView {
 		int nHeight = 0;
 		TypedValue typeValue = new TypedValue();
 		
-		m_oContext.getTheme().resolveAttribute(com.actionbarsherlock.R.attr.actionBarSize, typeValue, true);
+		m_oContext.getTheme().resolveAttribute(android.R.attr.actionBarSize, typeValue, true);
 		nHeight = TypedValue.complexToDimensionPixelSize(typeValue.data,m_oContext.getResources().getDisplayMetrics());
     
 		m_oCompassOverlay.setCompassCenter(40, nHeight + 20 );
@@ -183,10 +183,12 @@ public class NGMapView {
 
 		m_oOsmv.setMultiTouchControls(true);
 		//m_Osmv.setBuiltInZoomControls(true);
-		m_oOsmv.getOverlays().add(m_oDirectedLocationOverlay);
-		m_oOsmv.getOverlays().add(m_oLocationOverlay);
-		m_oOsmv.getOverlays().add(m_oCompassOverlay);
-		m_oOsmv.getOverlays().add(m_oGPXOverlay);
+		
+		//m_oOsmv.getOverlays().add(m_oDirectedLocationOverlay);
+		//m_oOsmv.getOverlays().add(m_oLocationOverlay);
+		//m_oOsmv.getOverlays().add(m_oCompassOverlay);
+		//m_oOsmv.getOverlays().add(m_oGPXOverlay);
+		
 		//TODO: mOsmv.getOverlays().add(mRotationGestureOverlay);
 		//ScaleBarOverlay		
 
@@ -423,11 +425,10 @@ public class NGMapView {
 					RightParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 					
 					int nHeight = 0;
-					if(ResourcesCompat.getResources_getBoolean(m_oContext, R.bool.abs__split_action_bar_is_narrow)){
-					//if(getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE){
+					if(m_oContext.getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE){
 						TypedValue typeValue = new TypedValue();
 						
-						m_oContext.getTheme().resolveAttribute(com.actionbarsherlock.R.attr.actionBarSize, typeValue, true);
+						m_oContext.getTheme().resolveAttribute(android.R.attr.actionBarSize, typeValue, true);
 						nHeight = TypedValue.complexToDimensionPixelSize(typeValue.data,m_oContext.getResources().getDisplayMetrics());
 				    
 						//getTheme().resolveAttribute(android.R.attr.actionBarSize, typeValue, true);

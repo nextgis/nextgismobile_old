@@ -62,7 +62,7 @@ public class PositionFragment extends CompassFragment {
 			((TextView) view.findViewById(R.id.azimuth)).setOnLongClickListener(resetCompass);
 		}
 		
-		InputPointActivity activity = (InputPointActivity) getSherlockActivity();
+		InputPointActivity activity = (InputPointActivity) getActivity();
 		if(activity != null)
 			mCurrentLocation = activity.getLocation();
 
@@ -210,7 +210,7 @@ public class PositionFragment extends CompassFragment {
 	public void onStoreValues() {	
 		if(getView() != null)
 		{
-			InputPointActivity activity1 = (InputPointActivity) getSherlockActivity();
+			InputPointActivity activity1 = (InputPointActivity) getActivity();
 			if(activity1 == null)
 				return;
 			

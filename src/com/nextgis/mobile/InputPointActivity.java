@@ -27,6 +27,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -34,22 +36,20 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.ActionBar.Tab;
-import com.actionbarsherlock.app.SherlockFragment;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
 
-public class InputPointActivity extends SherlockFragmentActivity {
+public class InputPointActivity extends FragmentActivity {
 	private static final int NUM_ITEMS = 4;
 	
 	private FragmentRollAdapter m_Adapter;
@@ -89,7 +89,7 @@ public class InputPointActivity extends SherlockFragmentActivity {
         setContentView(R.layout.input_point);
 
        // setup action bar for tabs
-        final ActionBar actionBar = getSupportActionBar();
+        final ActionBar actionBar = getActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setHomeButtonEnabled(false);
@@ -126,22 +126,22 @@ public class InputPointActivity extends SherlockFragmentActivity {
         
         Tab tab = actionBar.newTab()
                 .setText(R.string.tabs_description_tab)
-                .setTabListener(new TabListener<SherlockFragment>(0 + "", m_Pager));
+                .setTabListener(new TabListener<Fragment>(0 + "", m_Pager));
         actionBar.addTab(tab);
 
         tab = actionBar.newTab()
             .setText(R.string.tabs_position_tab)
-            .setTabListener(new TabListener<SherlockFragment>(1 + "", m_Pager));
+            .setTabListener(new TabListener<Fragment>(1 + "", m_Pager));
         actionBar.addTab(tab); 
         
         tab = actionBar.newTab()
             .setText(R.string.tabs_camera_tab)
-            .setTabListener(new TabListener<SherlockFragment>(2 + "", m_Pager));
+            .setTabListener(new TabListener<Fragment>(2 + "", m_Pager));
         actionBar.addTab(tab);       
         
         tab = actionBar.newTab()
             .setText(R.string.tabs_note_tab)
-            .setTabListener(new TabListener<SherlockFragment>(3 + "", m_Pager));
+            .setTabListener(new TabListener<Fragment>(3 + "", m_Pager));
         actionBar.addTab(tab);       
     }
     
@@ -190,7 +190,7 @@ public class InputPointActivity extends SherlockFragmentActivity {
     	 }
     } 
     
-     public static class TabListener<T extends SherlockFragment> implements ActionBar.TabListener {
+     public static class TabListener<T extends Fragment> implements ActionBar.TabListener {
     	 private final String m_Tag;
     	 private ViewPager m_Pager;
     	 
@@ -201,19 +201,23 @@ public class InputPointActivity extends SherlockFragmentActivity {
    	    
 
 		@Override
-		public void onTabSelected(Tab tab, FragmentTransaction ft) {
-			int nTag = Integer.parseInt(m_Tag);
-			m_Pager.setCurrentItem(nTag);
-		}
-
-		@Override
-		public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+		public void onTabReselected(Tab arg0,
+				android.app.FragmentTransaction arg1) {
 			// TODO Auto-generated method stub
 			
 		}
 
+
 		@Override
-		public void onTabReselected(Tab tab, FragmentTransaction ft) {
+		public void onTabSelected(Tab arg0, android.app.FragmentTransaction arg1) {
+			// TODO Auto-generated method stub
+			
+		}
+
+
+		@Override
+		public void onTabUnselected(Tab arg0,
+				android.app.FragmentTransaction arg1) {
 			// TODO Auto-generated method stub
 			
 		}
@@ -236,21 +240,21 @@ public class InputPointActivity extends SherlockFragmentActivity {
        	}
 
 		@Override
-		public SherlockFragment getItem(int arg0) {
+		public Fragment getItem(int arg0) {
 			switch(arg0)
 			{
 			case 0:
 				descriptfrag = new DescriptionFragment();
-				return (SherlockFragment) descriptfrag;//
+				return (Fragment) descriptfrag;//
 			case 1:
 				positionfrag = new PositionFragment();
-				return (SherlockFragment) positionfrag;//
+				return (Fragment) positionfrag;//
 			case 2:
 				camfrag = new CameraFragment();
-				return (SherlockFragment) camfrag;//
+				return (Fragment) camfrag;//
 			case 3:
 				notefrag = new NoteFragment();
-				return (SherlockFragment) notefrag;//
+				return (Fragment) notefrag;//
 			default:
 				return null;
 			}

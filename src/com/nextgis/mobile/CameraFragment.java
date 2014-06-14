@@ -32,8 +32,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import com.actionbarsherlock.app.SherlockFragment;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -48,6 +46,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -58,7 +57,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
-public class CameraFragment extends SherlockFragment  {
+public class CameraFragment extends Fragment  {
 
 	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 7;
 	private String fileName; 
@@ -103,7 +102,7 @@ public class CameraFragment extends SherlockFragment  {
         
         photoList.setAdapter(adapter);
         
-		final LocationManager locationManager = (LocationManager) getSherlockActivity().getSystemService(Context.LOCATION_SERVICE);
+		final LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 		
 		if(currentLocation == null)
 		{
@@ -115,7 +114,7 @@ public class CameraFragment extends SherlockFragment  {
 		long now = System.currentTimeMillis();
 		declination = CompassFragment.getDeclination(currentLocation, now);
         
-		sensorManager = (SensorManager) getSherlockActivity().getSystemService(Context.SENSOR_SERVICE);
+		sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
 
         
         return view;
@@ -124,7 +123,7 @@ public class CameraFragment extends SherlockFragment  {
 	public void onStoreValues() {		
 		if(getView() != null)
 		{
-			InputPointActivity activity = (InputPointActivity) getSherlockActivity();
+			InputPointActivity activity = (InputPointActivity) getActivity();
 			if(activity == null)
 				return;
 			
@@ -142,7 +141,7 @@ public class CameraFragment extends SherlockFragment  {
 	private File getOutputMediaFile(){
 	    // To be safe, you should check that the SDCard is mounted
 	    // using Environment.getExternalStorageState() before doing this.
-		File mediaStorageDir = new File(getSherlockActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "");
+		File mediaStorageDir = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "");
 		
 	    // Create the storage directory if it does not exist
 	    if (! mediaStorageDir.exists()){
@@ -197,11 +196,11 @@ public class CameraFragment extends SherlockFragment  {
 	
 	public int getDeviceRotation() {
 
-		if(getSherlockActivity() == null)
+		if(getActivity() == null)
 			return 0;
-		if(getSherlockActivity().getWindowManager() == null)
+		if(getActivity().getWindowManager() == null)
 			return 0;
-		Display display = getSherlockActivity().getWindowManager().getDefaultDisplay();
+		Display display = getActivity().getWindowManager().getDefaultDisplay();
 		if(display != null)
 		{
 			if (display.getRotation() == Surface.ROTATION_90) {
@@ -273,7 +272,7 @@ public class CameraFragment extends SherlockFragment  {
 
             adapter.notifyDataSetChanged();
             
-            InputPointActivity activity = (InputPointActivity) getSherlockActivity();
+            InputPointActivity activity = (InputPointActivity) getActivity();
 			if(activity == null)
 				return;
 			activity.AddImage(listItem, dfAngle);

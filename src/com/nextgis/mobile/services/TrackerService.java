@@ -34,9 +34,6 @@ import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.NGMConstants;
 import com.nextgis.mobile.PositionDatabase;
 import com.nextgis.mobile.PreferencesActivity;
-import com.nextgis.mobile.R;
-import com.nextgis.mobile.R.drawable;
-import com.nextgis.mobile.R.string;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -64,6 +61,8 @@ import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.nextgis.mobile.R;
 
 public class TrackerService extends Service {
     public static final String ACTION_START = "com.nextgis.mobile.tracker.action.START";
@@ -443,7 +442,7 @@ public class TrackerService extends Service {
 		                    	Log.i(MainActivity.TAG, "-> uri=" + uri);
 		                	}
 		            	});
-		            	Toast.makeText( getApplicationContext(), getResources().getText(R.string.create_nex_gpx) + mGPXFileName, Toast.LENGTH_LONG).show();
+		            	Toast.makeText( getApplicationContext(), getResources().getText(R.string.create_next_gpx) + mGPXFileName, Toast.LENGTH_LONG).show();
 		            }
 		    		
 		        } catch (IOException e) {

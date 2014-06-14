@@ -20,19 +20,19 @@
  ****************************************************************************/
 package com.nextgis.mobile;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.MenuItem;
 
-public class AboutActivity extends SherlockActivity {
+public class AboutActivity extends Activity {
     private TextView txtVersion;
     private TextView txtDescription;
     private ImageView imgLogo;
@@ -65,8 +65,8 @@ public class AboutActivity extends SherlockActivity {
 
         txtVersion.setText("v. " + versionName + " (rev. " + versionCode + ")");
         
-       	getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+       	getActionBar().setHomeButtonEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private void onLogoClicked() {

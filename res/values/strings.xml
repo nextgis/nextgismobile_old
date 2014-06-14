@@ -115,7 +115,7 @@
 	<string name="sum_dist">Distance: </string>
 	<string name="coord_lat"></string>
 	<string name="coord_lon"></string>
-	<string name="create_nex_gpx">Create GPX file: </string>
+	<string name="create_next_gpx">Create GPX file: </string>
 	<string name="gpx_recording">GPX recording...</string>
 	
 	<string name="set_mode_offline">Set to offline mode</string>
@@ -139,4 +139,7 @@
 
 	<string name="pref_accurate_ce">Circular error</string>
 	<string name="pref_accurate_ce_summary">Circular error probability</string>
+	
+	<string name="layers_drawer_open">Open layers list</string>
+    <string name="layers_drawer_close">Close layers list</string>
 </resources>

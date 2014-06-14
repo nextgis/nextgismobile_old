@@ -20,15 +20,14 @@
  ****************************************************************************/
 package com.nextgis.mobile;
 
-import com.actionbarsherlock.app.SherlockFragment;
-
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.os.Bundle;
 
-public class NoteFragment extends SherlockFragment {
+public class NoteFragment extends Fragment {
 	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -46,7 +45,7 @@ public class NoteFragment extends SherlockFragment {
 	public void onStoreValues() {		
 		if(getView() != null)
 		{
-			InputPointActivity activity = (InputPointActivity) getSherlockActivity();
+			InputPointActivity activity = (InputPointActivity) getActivity();
 			if(activity == null)
 				return;
 			
@@ -60,11 +59,11 @@ public class NoteFragment extends SherlockFragment {
 	protected void UpdateSummary(){
 		if(getView() != null )
 		{
-			InputPointActivity activity = (InputPointActivity) getSherlockActivity();
+			InputPointActivity activity = (InputPointActivity) getActivity();
 			if(activity == null)
 				return;
 	    	
-	        String sCoords = PositionFragment.getLocationText(getSherlockActivity(), activity.getLocation());
+	        String sCoords = PositionFragment.getLocationText(getActivity(), activity.getLocation());
 			if (getView().findViewById(R.id.poi_summary_text) != null) {
 				TextView summary = (TextView)getView().findViewById(R.id.poi_summary_text);
 		        summary.setText(
