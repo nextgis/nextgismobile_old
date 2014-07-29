@@ -7,7 +7,7 @@
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
+*    the Free Software Foundation, either version 2 of the License, or
 *    (at your option) any later version.
 *
 *    This program is distributed in the hope that it will be useful,
@@ -20,59 +20,58 @@
  ****************************************************************************/
 package com.nextgis.mobile;
 
-import java.util.ArrayList;
-
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.Toast;
 
-import com.nextgis.mobile.map.NGMapView;
+import com.nextgis.mobile.map.MapView;
 import com.nextgis.mobile.services.TrackerService;
-import com.nextgis.mobile.services.TrackerService.RecordedGeoPoint;
 import com.nextgis.mobile.services.TrackerService.TSBinder;
+import com.nextgis.mobile.util.Constants;
 
+import static com.nextgis.mobile.util.Constants.*;
 
 public class MainActivity extends ActionBarActivity {
-	public final static String TAG = "nextgismobile";	
-	public final static String LOACTION_HINT = "com.nextgis.gis.location";	
 	
-	protected TrackerService m_oTrackerService;
-	protected Handler m_oTrakAddPointHandler;
-	
-	protected NGMapView m_oMap;
-	
-	public final static int MENU_MARK = 0;
-	public final static int MENU_RECORD_GPX = 1;
-	public final static int MENU_INFO = 2;
-	public final static int MENU_PAN = 3;
-	public final static int MENU_SETTINGS = 4;
-	public final static int MENU_ABOUT = 5;
-	public final static int MENU_COMPASS = 6;
-	public final static int MENU_ADD = 7;		
-
-	protected static final int MAX_WIDTH = 750;
-	
-	protected boolean m_bGpxRecord;
-
-	protected LayersFragment m_oLayersFragment;
-
+	protected TrackerService mTrackerService;
+	protected Handler mTrackAddPointHandler;
+    protected MapView mMap;
+	protected boolean mbGpxRecord;
+	protected LayersFragment mLayersFragment;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+        mMap = new MapView(this);
+        //mMap.initMap(nTileSize, nZoom, nScrollX, nScrollY);
+        //mMap.showInfo(bInfoOn);
+        //mMap.showCompass(bCompassOn);
 		
 		setContentView(R.layout.activity_main);
 		
@@ -80,24 +79,19 @@ public class MainActivity extends ActionBarActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( this );
-		boolean bInfoOn = prefs.getBoolean(NGMConstants.PREFS_SHOW_INFO, false);
-		m_bGpxRecord = prefs.getBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, false);
-		boolean bCompassOn = prefs.getBoolean(NGMConstants.PREFS_SHOW_COMPASS, false);	
+		boolean bInfoOn = prefs.getBoolean(Constants.PREFS_SHOW_INFO, false);
+		mbGpxRecord = prefs.getBoolean(Constants.KEY_PREF_SW_TRACKGPX_SRV, false);
+		boolean bCompassOn = prefs.getBoolean(Constants.PREFS_SHOW_COMPASS, false);
 		int nTileSize = 256;//prefs.getInt(NGMConstants.KEY_PREF_TILE_SIZE + "_int", 256);
-		int nZoom = prefs.getInt(NGMConstants.PREFS_ZOOM_LEVEL, 1);
-		int nScrollX = prefs.getInt(NGMConstants.PREFS_SCROLL_X, 0);
-		int nScrollY = prefs.getInt(NGMConstants.PREFS_SCROLL_Y, 0);
+		int nZoom = prefs.getInt(Constants.PREFS_ZOOM_LEVEL, 1);
+		int nScrollX = prefs.getInt(Constants.PREFS_SCROLL_X, 0);
+		int nScrollY = prefs.getInt(Constants.PREFS_SCROLL_Y, 0);
 		
 		ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 		
-		m_oMap = new NGMapView(this);
-		m_oMap.initMap(nTileSize, nZoom, nScrollX, nScrollY);
-		m_oMap.showInfo(bInfoOn);
-		m_oMap.showCompass(bCompassOn);
-
-		m_oLayersFragment = (LayersFragment) getSupportFragmentManager().findFragmentById(R.id.layers);
+		mLayersFragment = (LayersFragment) getSupportFragmentManager().findFragmentById(R.id.layers);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         MapFragment oMapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("MAP");
@@ -119,14 +113,14 @@ public class MainActivity extends ActionBarActivity {
 	
 	@Override
 	public void onPause() {
-		final SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(this).edit();
-		if(m_oMap != null){
-			m_oMap.onPause(edit);
+		if(mMap != null){
+			mMap.onPause();
 		}
-		
-		edit.putBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, m_bGpxRecord);
 
-		if(m_bGpxRecord){			
+        final SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(this).edit();
+		edit.putBoolean(Constants.KEY_PREF_SW_TRACKGPX_SRV, mbGpxRecord);
+
+		if(mbGpxRecord){
 			unbindService(m_oConnection);
 		}
 	
@@ -137,90 +131,74 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
+
+		if(mMap != null) {
+            mMap.onResume();
+        }
+
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		
-		if(m_oMap != null){
-			m_oMap.onResume(prefs);
-		}
-		
-		m_bGpxRecord = prefs.getBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, false);
-		if (m_bGpxRecord) {
+		mbGpxRecord = prefs.getBoolean(Constants.KEY_PREF_SW_TRACKGPX_SRV, false);
+		if (mbGpxRecord) {
 			startGPXRecord();
 		}
 	}
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        if(mMap != null){
+            mMap.onStart();
+        }
+    }
+
+    @Override
+    public void onStop(){
+        if(mMap != null){
+            mMap.onStop();
+        }
+        super.onStop();
+    }
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		if(!m_oLayersFragment.isDrawerOpen()){
+		if(!mLayersFragment.isDrawerOpen()){
 			getMenuInflater().inflate(R.menu.main, menu);
 			restoreActionBar();
 		}
-		
-		
-		//getSupportMenuInflater().inflate(R.menu.main, menu);
-        //menu.add(Menu.NONE, MENU_MARK, Menu.NONE, R.string.sMark)
-        //.setIcon(R.drawable.ic_location_place)
-       
-//		menu.add(Menu.NONE, MainActivity.MENU_ADD, Menu.NONE, R.string.layers)
-//        .setIcon(R.drawable.ic_layers)
-//        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		
-        menu.add(Menu.NONE, MainActivity.MENU_RECORD_GPX, Menu.NONE, R.string.GPXRecord)
-        .setIcon(R.drawable.ic_gpx_record_start);
-        //.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        menu.add(Menu.NONE, MainActivity.MENU_INFO, Menu.NONE, R.string.info)
-        .setIcon(R.drawable.ic_action_about);
-        //.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);		
-        menu.add(Menu.NONE, MainActivity.MENU_PAN, Menu.NONE, R.string.pan)
-        .setIcon(R.drawable.ic_pan2);
-        //.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);		
-        
-        menu.add(Menu.NONE, MainActivity.MENU_COMPASS, Menu.NONE, R.string.compass_title)
-        //.setIcon(R.drawable.ic_action_about)
-        .setIcon(R.drawable.ic_menu_compass);
-		//.setCheckable(true)
-		//.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
 
-        menu.add(Menu.NONE, MainActivity.MENU_SETTINGS, Menu.NONE, R.string.settings)
-        .setIcon(R.drawable.ic_action_settings);
-        //.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
-        menu.add(Menu.NONE, MainActivity.MENU_ABOUT, Menu.NONE, R.string.about)
-        .setIcon(R.drawable.ic_action_about);
-        //.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
-        
-		//mOsmv.getOverlayManager().onCreateOptionsMenu((android.view.Menu) menu, Menu.FIRST + 1, mOsmv);
        return true;
-		//super.onCreateOptionsMenu(menu, inflater);
 	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-        case MainActivity.MENU_SETTINGS:
-            // app icon in action bar clicked; go home
+        case R.id.menu_settings:
             Intent intentSet = new Intent(this, PreferencesActivity.class);
             intentSet.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intentSet);
             return true;
-        case MainActivity.MENU_ABOUT:
+        case R.id.menu_about:
             Intent intentAbout = new Intent(this, AboutActivity.class);
             intentAbout.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intentAbout);
             return true;	  
-        case MainActivity.MENU_PAN:
-        	m_oMap.panToLocation();   	
+        case R.id.menu_pan:
+//        	mMap.panToLocation();
         	return true;
-        case MainActivity.MENU_INFO:
-        	m_oMap.switchInfo();
+        case R.id.menu_info:
+//        	mMap.switchInfo();
         	return true;
-        case MainActivity.MENU_RECORD_GPX:
+        case R.id.menu_record_gpx:
         	onRecordGpx();
         	return true;
-        case MainActivity.MENU_COMPASS:        	
-        	m_oMap.switchCompass();
-            return true;    
+        case R.id.menu_compass:
+//        	mMap.switchCompass();
+            return true;
+        case R.id.menu_add_zip:
+            onAdd(DS_TYPE_ZIP);
+            return true;
         }
 		return super.onOptionsItemSelected(item);
 	}
@@ -233,14 +211,14 @@ public class MainActivity extends ActionBarActivity {
 	
 	void doBindService() {
 		
-		m_oTrakAddPointHandler = new Handler() {
+		mTrackAddPointHandler = new Handler() {
             public void handleMessage(Message msg) {
             	super.handleMessage(msg);
             	
             	Bundle resultData = msg.getData();
             	double dfLat = resultData.getDouble("lat");
             	double dfLon = resultData.getDouble("lon");
-            	m_oMap.addPointToRouteOverlay(dfLon, dfLat);
+//            	mMap.addPointToRouteOverlay(dfLon, dfLat);
             }
         };
 
@@ -256,37 +234,37 @@ public class MainActivity extends ActionBarActivity {
 			if(tsBinder == null)
 				return;
 			
-			m_oTrackerService = tsBinder.getService();
-			if(m_oTrackerService == null)
+			mTrackerService = tsBinder.getService();
+			if(mTrackerService == null)
 				return;
 			
-			m_oTrackerService.setPathHanler(m_oTrakAddPointHandler);
+			mTrackerService.setPathHanler(mTrackAddPointHandler);
 			//fill path
-			ArrayList<RecordedGeoPoint> path = m_oTrackerService.GetPath();
-			m_oMap.addPointsToRouteOverlay(path);
+//			ArrayList<RecordedGeoPoint> path = mTrackerService.GetPath();
+//			mMap.addPointsToRouteOverlay(path);
 	    }
 
 		@Override
 	    public void onServiceDisconnected(ComponentName className) {
-			m_oTrackerService = null;
+			mTrackerService = null;
 	    }
 	};	
 	
 
 	void onRecordGpx(){
-		m_bGpxRecord = !m_bGpxRecord;	
+		mbGpxRecord = !mbGpxRecord;
 		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		final SharedPreferences.Editor edit = prefs.edit();
-		edit.putBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, m_bGpxRecord);
+		edit.putBoolean(Constants.KEY_PREF_SW_TRACKGPX_SRV, mbGpxRecord);
 		edit.commit();
 		
         final SharedPreferences.Editor editor1 = getSharedPreferences("preferences", Context.MODE_PRIVATE).edit();
-        editor1.putBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, m_bGpxRecord);
+        editor1.putBoolean(Constants.KEY_PREF_SW_TRACKGPX_SRV, mbGpxRecord);
         editor1.commit();   
 
 		
-		if(m_bGpxRecord){
+		if(mbGpxRecord){
 			//start record
 			startGPXRecord();
 		}
@@ -306,6 +284,117 @@ public class MainActivity extends ActionBarActivity {
 		 startService(new Intent(TrackerService.ACTION_STOP_GPX));
 		 unbindService(m_oConnection);
 	}
+
+    protected void onAdd(int nType){
+
+        switch(nType){
+            case DS_TYPE_ZIP:
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("application/zip");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+                try {
+                    startActivityForResult(
+                            Intent.createChooser(intent, "Select a File to Upload"),  DS_TYPE_ZIP);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    // Potentially direct the user to the Market with a Dialog
+                    Toast.makeText(this, R.string.error_file_manager, Toast.LENGTH_SHORT).show();
+                }
+
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case DS_TYPE_ZIP:
+                if (resultCode == RESULT_OK) {
+                    // Get the Uri of the selected file
+                    final Uri uri = data.getData();
+                    Log.d(TAG, "File Uri: " + uri.toString());
+
+                    final LinearLayout linearLayout = new LinearLayout(this);
+                    final EditText input = new EditText(this);
+                    String sName = getFileNameByUri(uri, "new layer.zip");
+                    input.setText(sName.subSequence(0, sName.length() - 4));
+
+                    final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_item);
+                    final Spinner spinner = new Spinner(this);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinner.setAdapter(adapter);
+
+                    adapter.add(getString(R.string.tmstype_qtiles));
+                    adapter.add(getString(R.string.tmstype_osm));
+                    adapter.add(getString(R.string.tmstype_normal));
+                    adapter.add(getString(R.string.tmstype_ngw));
+
+                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+                    linearLayout.addView(input);
+                    linearLayout.addView(spinner);
+
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.input_layer_name_and_type)
+//                                    .setMessage(message)
+                            .setView(linearLayout)
+                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                    int tmsType = 0;
+                                    switch (spinner.getSelectedItemPosition()){
+                                        case 0:
+                                            tmsType = TMSTYPE_OSM;
+                                            break;
+                                        case 1:
+                                            tmsType = TMSTYPE_OSM;
+                                            break;
+                                        case 2:
+                                            tmsType = TMSTYPE_NORMAL;
+                                            break;
+                                        case 3:
+                                            tmsType = TMSTYPE_NORMAL;
+                                            break;
+                                        }
+                                    mMap.CreateLocalTMSLayer(input.getText().toString(), tmsType, uri);
+                                }
+                            }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            // Do nothing.
+                            Toast.makeText(getApplicationContext(), R.string.error_cancel_by_user, Toast.LENGTH_SHORT).show();
+                        }
+                    }).show();
+
+                    return;
+                }
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    protected String getFileNameByUri(Uri uri, String defaultName)
+    {
+        String fileName = defaultName;
+        Uri filePathUri = uri;
+        try {
+            if (uri.getScheme().toString().compareTo("content") == 0) {
+                Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+                if (cursor.moveToFirst()) {
+                    int column_index = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+                    //Instead of "MediaStore.Images.Media.DATA" can be used "_data"
+                    filePathUri = Uri.parse(cursor.getString(column_index));
+                    fileName = filePathUri.getLastPathSegment().toString();
+                }
+            } else if (uri.getScheme().compareTo("file") == 0) {
+                fileName = filePathUri.getLastPathSegment().toString();
+            } else {
+                fileName = fileName + "_" + filePathUri.getLastPathSegment();
+            }
+        }
+        catch (Exception e){
+            //do nothing, only return default file name;
+            Log.d(TAG, e.getLocalizedMessage());
+        }
+        return fileName;
+    }
 	
 	void onMark(){
     /* TODO:   
@@ -477,11 +566,11 @@ public class MainActivity extends ActionBarActivity {
 		}*/
 	}
 
-	public NGMapView getMap() {
-		return m_oMap;
+	public MapView getMap() {
+		return mMap;
 	}
 
-	public void setMap(NGMapView oMap) {
-		this.m_oMap = oMap;
+	public void setMap(MapView map) {
+		this.mMap = map;
 	}
 }

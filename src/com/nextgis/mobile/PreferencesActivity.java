@@ -7,7 +7,7 @@
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
+*    the Free Software Foundation, either version 2 of the License, or
 *    (at your option) any later version.
 *
 *    This program is distributed in the hope that it will be useful,
@@ -41,6 +41,9 @@ import android.view.MenuItem;
 
 import com.nextgis.mobile.services.DataSendService;
 import com.nextgis.mobile.services.TrackerService;
+import com.nextgis.mobile.util.Constants;
+
+import static com.nextgis.mobile.util.Constants.*;
 
 public class PreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 	
@@ -73,11 +76,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         addPreferencesFromResource(R.xml.preferences);
         
         //path to track points receiver script
-	    StorageSitePref = (EditTextPreference) findPreference(NGMConstants.KEY_PREF_STORAGE_SITE);
+	    StorageSitePref = (EditTextPreference) findPreference(Constants.KEY_PREF_STORAGE_SITE);
 	    StorageSitePref.setSummary((String) StorageSitePref.getText());
         
         //user identificator
-	    UserIdPref = (EditTextPreference) findPreference(NGMConstants.KEY_PREF_USER_ID);
+	    UserIdPref = (EditTextPreference) findPreference(Constants.KEY_PREF_USER_ID);
 	    if(UserIdPref.getText().length() == 0){
 	    	String szDevIDShort = GetDeviceId();
 	    	UserIdPref.setSummary(szDevIDShort);
@@ -88,50 +91,50 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	    	UserIdPref.setText((String) UserIdPref.getText());
 	    }
 	    
-		SharedPreferences mySharedPreferences = getSharedPreferences(NGMConstants.SERVICE_PREF, Context.MODE_PRIVATE);
+		SharedPreferences mySharedPreferences = getSharedPreferences(Constants.SERVICE_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor1 = mySharedPreferences.edit();
-        editor1.putString(NGMConstants.KEY_PREF_USER_ID, (String) UserIdPref.getText());
+        editor1.putString(Constants.KEY_PREF_USER_ID, (String) UserIdPref.getText());
         editor1.commit();   
 	    
-	    MinDistPref = (ListPreference) findPreference(NGMConstants.KEY_PREF_MIN_DIST_CHNG_UPD);
+	    MinDistPref = (ListPreference) findPreference(Constants.KEY_PREF_MIN_DIST_CHNG_UPD);
 	    CharSequence newVal = GetArrayKey(R.array.tracker_min_dist_update, R.array.tracker_min_dist_update_val, MinDistPref.getValue());            
 	    MinDistPref.setSummary((String) newVal);
 	    
 //	    TileSizePref = (ListPreference) findPreference(KEY_PREF_TILE_SIZE);
 //	    TileSizePref.setSummary((String) TileSizePref.getValue());
 	    
-	    MinTimePref = (ListPreference) findPreference(NGMConstants.KEY_PREF_MIN_TIME_UPD);
+	    MinTimePref = (ListPreference) findPreference(Constants.KEY_PREF_MIN_TIME_UPD);
 	    newVal = GetArrayKey(R.array.tracker_min_time_between_updates, R.array.tracker_min_time_between_updates_val, MinTimePref.getValue());            
 	    MinTimePref.setSummary((String) newVal);	   
 	    
-	    TrackServicePref = (CheckBoxPreference) findPreference(NGMConstants.KEY_PREF_SW_TRACK_SRV);
+	    TrackServicePref = (CheckBoxPreference) findPreference(Constants.KEY_PREF_SW_TRACK_SRV);
 	    TrackServicePref.setSummary(TrackServicePref.isChecked() ? R.string.pref_tracker_service_on : R.string.pref_tracker_service_off);	    
 	    
-	    SendPosServicePref = (CheckBoxPreference) findPreference(NGMConstants.KEY_PREF_SW_SENDPOS_SRV);
+	    SendPosServicePref = (CheckBoxPreference) findPreference(Constants.KEY_PREF_SW_SENDPOS_SRV);
 	    SendPosServicePref.setSummary(SendPosServicePref.isChecked() ? R.string.pref_sendpos_service_on : R.string.pref_sendpos_service_off);	    
 	    
-	    SendPosInSuspendPref = (CheckBoxPreference) findPreference(NGMConstants.KEY_PREF_SW_ENERGY_ECO);
+	    SendPosInSuspendPref = (CheckBoxPreference) findPreference(Constants.KEY_PREF_SW_ENERGY_ECO);
 	    SendPosInSuspendPref.setSummary(SendPosInSuspendPref.isChecked() ? R.string.pref_energy_economy_on : R.string.pref_energy_economy_off);	    
 	    
-	    MinTimePosSend = (ListPreference) findPreference(NGMConstants.KEY_PREF_TIME_DATASEND);
+	    MinTimePosSend = (ListPreference) findPreference(Constants.KEY_PREF_TIME_DATASEND);
 	    newVal = GetArrayKey(R.array.datapos_send_updates, R.array.datapos_send_updates_val, MinTimePosSend.getValue());            
 	    MinTimePosSend.setSummary((String) newVal);
 	    
-	    coordinatesFormat = (ListPreference) findPreference(NGMConstants.KEY_PREF_COORD_FORMAT);
+	    coordinatesFormat = (ListPreference) findPreference(Constants.KEY_PREF_COORD_FORMAT);
 	    coordinatesFormat.setSummary((String) coordinatesFormat.getValue());
 	    
-	    runServicesOnStartPref = (CheckBoxPreference) findPreference(NGMConstants.KEY_PREF_START_SVC_ON_STARTUP);
+	    runServicesOnStartPref = (CheckBoxPreference) findPreference(Constants.KEY_PREF_START_SVC_ON_STARTUP);
 	    
-	    vibration = (CheckBoxPreference) findPreference(NGMConstants.KEY_PREF_COMPASS_VIBRO);
-		showTrueNorth = (CheckBoxPreference) findPreference(NGMConstants.KEY_PREF_COMPASS_TRUE_NORTH);
-		showMagnetic = (CheckBoxPreference) findPreference(NGMConstants.KEY_PREF_COMPASS_SHOW_MAGNET);
-		wakeLock = (CheckBoxPreference) findPreference(NGMConstants.KEY_PREF_COMPASS_WAKE_LOCK);
-		moreAccuratePosPref = (CheckBoxPreference) findPreference(NGMConstants.KEY_PREF_ACCURATE_LOC);
+	    vibration = (CheckBoxPreference) findPreference(Constants.KEY_PREF_COMPASS_VIBRO);
+		showTrueNorth = (CheckBoxPreference) findPreference(Constants.KEY_PREF_COMPASS_TRUE_NORTH);
+		showMagnetic = (CheckBoxPreference) findPreference(Constants.KEY_PREF_COMPASS_SHOW_MAGNET);
+		wakeLock = (CheckBoxPreference) findPreference(Constants.KEY_PREF_COMPASS_WAKE_LOCK);
+		moreAccuratePosPref = (CheckBoxPreference) findPreference(Constants.KEY_PREF_ACCURATE_LOC);
 
-		moreAccureatePosCountPref = (EditTextPreference) findPreference(NGMConstants.KEY_PREF_ACCURATE_GPSCOUNT);
+		moreAccureatePosCountPref = (EditTextPreference) findPreference(Constants.KEY_PREF_ACCURATE_GPSCOUNT);
 	    moreAccureatePosCountPref.setSummary((String) moreAccureatePosCountPref.getText());
 	    
-	    moreAccurateCEPref = (ListPreference) findPreference(NGMConstants.KEY_PREF_ACCURATE_CE);
+	    moreAccurateCEPref = (ListPreference) findPreference(Constants.KEY_PREF_ACCURATE_CE);
 	    moreAccurateCEPref.setSummary((String) moreAccurateCEPref.getValue());        
     }
     
@@ -151,8 +154,8 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);		
 		sharedPref.unregisterOnSharedPreferenceChangeListener(this);
 		
-		onTrackService(sharedPref.getBoolean(NGMConstants.KEY_PREF_SW_TRACK_SRV, false));
-		onSendPosService(sharedPref.getBoolean(NGMConstants.KEY_PREF_SW_SENDPOS_SRV, false));
+		onTrackService(sharedPref.getBoolean(Constants.KEY_PREF_SW_TRACK_SRV, false));
+		onSendPosService(sharedPref.getBoolean(Constants.KEY_PREF_SW_SENDPOS_SRV, false));
 		super.onPause();
 	}
 	
@@ -165,7 +168,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     }	
 	
     public void onTrackService(boolean bStart) {
-    	Log.d(MainActivity.TAG, "Preferences: onTrackService " + bStart);
+    	Log.d(TAG, "Preferences: onTrackService " + bStart);
     	if(bStart)
 			startService(new Intent(TrackerService.ACTION_START));
 		else
@@ -173,7 +176,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     }
     
     public void onSendPosService(boolean bStart) {
-    	Log.d(MainActivity.TAG, "Preferences: onSendPosService " + bStart);
+    	Log.d(TAG, "Preferences: onSendPosService " + bStart);
     	if(bStart)
 			startService(new Intent(DataSendService.ACTION_START));
 		else
@@ -196,19 +199,19 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		CharSequence newVal = "";
 		Preference Pref = findPreference(key);
-		if (key.equals(NGMConstants.KEY_PREF_STORAGE_SITE) || key.equals(NGMConstants.KEY_PREF_USER_ID)) {            
+		if (key.equals(Constants.KEY_PREF_STORAGE_SITE) || key.equals(Constants.KEY_PREF_USER_ID)) {
             // Set summary to be the user-description for the selected value
             newVal = sharedPreferences.getString(key, "");
             
-			SharedPreferences mySharedPreferences = getSharedPreferences(NGMConstants.SERVICE_PREF, Context.MODE_PRIVATE);
+			SharedPreferences mySharedPreferences = getSharedPreferences(Constants.SERVICE_PREF, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor1 = mySharedPreferences.edit();
             editor1.putString(key, (String) newVal);
             editor1.commit();            
         }	
-		else if (key.equals(NGMConstants.KEY_PREF_ACCURATE_CE)) {  
+		else if (key.equals(Constants.KEY_PREF_ACCURATE_CE)) {
             newVal = sharedPreferences.getString(key, "");
 		}
-		else if(key.equals(NGMConstants.KEY_PREF_MIN_DIST_CHNG_UPD))
+		else if(key.equals(Constants.KEY_PREF_MIN_DIST_CHNG_UPD))
 		{
 			newVal = sharedPreferences.getString(key, "25");			
     		long nVal = Long.parseLong((String) newVal);
@@ -216,14 +219,14 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     		editor.putLong(key + "_long", nVal);
     		editor.commit();
     		
-			SharedPreferences mySharedPreferences = getSharedPreferences(NGMConstants.SERVICE_PREF, Context.MODE_PRIVATE);
+			SharedPreferences mySharedPreferences = getSharedPreferences(Constants.SERVICE_PREF, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor1 = mySharedPreferences.edit();
             editor1.putLong(key + "_long", nVal);
             editor1.commit();  
             
             newVal = GetArrayKey(R.array.tracker_min_dist_update, R.array.tracker_min_dist_update_val, newVal);            
 		}
-		else if(key.equals(NGMConstants.KEY_PREF_MIN_TIME_UPD))
+		else if(key.equals(Constants.KEY_PREF_MIN_TIME_UPD))
 		{
 			newVal = sharedPreferences.getString(key, "0");
 			long nVal = Long.parseLong((String) newVal) * DateUtils.SECOND_IN_MILLIS;
@@ -231,14 +234,14 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     		editor.putLong(key + "_long", nVal);
     		editor.commit();
     		
-			SharedPreferences mySharedPreferences = getSharedPreferences(NGMConstants.SERVICE_PREF, Context.MODE_PRIVATE);
+			SharedPreferences mySharedPreferences = getSharedPreferences(Constants.SERVICE_PREF, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor1 = mySharedPreferences.edit();
             editor1.putLong(key + "_long", nVal);
             editor1.commit();    
             
             newVal = GetArrayKey(R.array.tracker_min_time_between_updates, R.array.tracker_min_time_between_updates_val, newVal);            
 		}
-		else if(key.equals(NGMConstants.KEY_PREF_TIME_DATASEND))
+		else if(key.equals(Constants.KEY_PREF_TIME_DATASEND))
 		{
 			newVal = sharedPreferences.getString(key, "0");
 			long nVal = Long.parseLong((String) newVal) * DateUtils.MINUTE_IN_MILLIS;
@@ -246,14 +249,14 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     		editor.putLong(key + "_long", nVal);
     		editor.commit();
     		
-			SharedPreferences mySharedPreferences = getSharedPreferences(NGMConstants.SERVICE_PREF, Context.MODE_PRIVATE);
+			SharedPreferences mySharedPreferences = getSharedPreferences(Constants.SERVICE_PREF, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor1 = mySharedPreferences.edit();
             editor1.putLong(key + "_long", nVal);
             editor1.commit();    
             
             newVal = GetArrayKey(R.array.datapos_send_updates, R.array.datapos_send_updates_val, newVal);
 		}
-		else if(key.equals(NGMConstants.KEY_PREF_TILE_SIZE))
+		else if(key.equals(Constants.KEY_PREF_TILE_SIZE))
 		{
 			newVal = sharedPreferences.getString(key, "256");
 			int nVal = Integer.parseInt((String) newVal);
@@ -261,37 +264,37 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     		editor.putInt(key + "_int", nVal);
     		editor.commit(); 		
 		}	
-		else if(key.equals(NGMConstants.KEY_PREF_SW_TRACK_SRV))
+		else if(key.equals(Constants.KEY_PREF_SW_TRACK_SRV))
 		{
 			boolean bPref = sharedPreferences.getBoolean(key, false); 
 			newVal = bPref ? getText(R.string.pref_tracker_service_on) : getText(R.string.pref_tracker_service_off);
 			
-			SharedPreferences mySharedPreferences = getSharedPreferences(NGMConstants.SERVICE_PREF, Context.MODE_PRIVATE);
+			SharedPreferences mySharedPreferences = getSharedPreferences(Constants.SERVICE_PREF, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = mySharedPreferences.edit();
             editor.putBoolean(key, bPref);
             editor.commit();			
 		}		
-		else if(key.equals(NGMConstants.KEY_PREF_SW_SENDPOS_SRV))
+		else if(key.equals(Constants.KEY_PREF_SW_SENDPOS_SRV))
 		{
 			boolean bPref = sharedPreferences.getBoolean(key, false); 
 			newVal = bPref ? getText(R.string.pref_sendpos_service_on) : getText(R.string.pref_sendpos_service_off);
 			
-			SharedPreferences mySharedPreferences = getSharedPreferences(NGMConstants.SERVICE_PREF, Context.MODE_PRIVATE);
+			SharedPreferences mySharedPreferences = getSharedPreferences(Constants.SERVICE_PREF, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = mySharedPreferences.edit();
             editor.putBoolean(key, bPref);
             editor.commit();			
 		}       
-		else if(key.equals(NGMConstants.KEY_PREF_SW_ENERGY_ECO))
+		else if(key.equals(Constants.KEY_PREF_SW_ENERGY_ECO))
 		{
 			boolean bPref = sharedPreferences.getBoolean(key, false); 
 			newVal = bPref ? getText(R.string.pref_energy_economy_on) : getText(R.string.pref_energy_economy_off);	
 			
-			SharedPreferences mySharedPreferences = getSharedPreferences(NGMConstants.SERVICE_PREF, Context.MODE_PRIVATE);
+			SharedPreferences mySharedPreferences = getSharedPreferences(Constants.SERVICE_PREF, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = mySharedPreferences.edit();
             editor.putBoolean(key, bPref);
             editor.commit();
 		} 	    
-		else if(key.equals(NGMConstants.KEY_PREF_ACCURATE_GPSCOUNT))
+		else if(key.equals(Constants.KEY_PREF_ACCURATE_GPSCOUNT))
 		{
 			newVal = sharedPreferences.getString(key, "");
 			int nVal = Integer.parseInt((String) newVal);
@@ -299,7 +302,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     		editor.putInt(key + "_int", nVal);
     		editor.commit();
 		} 		
-		else if(key.equals(NGMConstants.KEY_PREF_COORD_FORMAT))
+		else if(key.equals(Constants.KEY_PREF_COORD_FORMAT))
 		{		
 			int nIndex = coordinatesFormat.findIndexOfValue(coordinatesFormat.getValue());
 			int nVal;

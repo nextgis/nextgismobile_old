@@ -7,7 +7,7 @@
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
+*    the Free Software Foundation, either version 2 of the License, or
 *    (at your option) any later version.
 *
 *    This program is distributed in the hope that it will be useful,
@@ -20,9 +20,7 @@
  ****************************************************************************/
 package com.nextgis.mobile.services;
 
-import com.nextgis.mobile.MainActivity;
-import com.nextgis.mobile.NGMConstants;
-import com.nextgis.mobile.PreferencesActivity;
+import com.nextgis.mobile.util.Constants;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -30,6 +28,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import static com.nextgis.mobile.util.Constants.*;
 
 public class StartupReceiver extends BroadcastReceiver {
 
@@ -38,13 +37,13 @@ public class StartupReceiver extends BroadcastReceiver {
 		try
 		{
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(arg0);
-			boolean startImmediately = prefs.getBoolean(NGMConstants.KEY_PREF_START_SVC_ON_STARTUP, false);
-			Log.i(MainActivity.TAG, "Did the user ask for start on bootup? - " + String.valueOf(startImmediately));
+			boolean startImmediately = prefs.getBoolean(Constants.KEY_PREF_START_SVC_ON_STARTUP, false);
+			Log.i(TAG, "Did the user ask for start on bootup? - " + String.valueOf(startImmediately));
 
 			if (startImmediately)
 			{
-				Log.i(MainActivity.TAG, "Launching services");
-				boolean startTrackService = prefs.getBoolean(NGMConstants.KEY_PREF_SW_TRACK_SRV, false);
+				Log.i(TAG, "Launching services");
+				boolean startTrackService = prefs.getBoolean(Constants.KEY_PREF_SW_TRACK_SRV, false);
 				if(startTrackService){
 					Intent trackerServiceIntent = new Intent(TrackerService.ACTION_START);
 					//Intent serviceIntent = new Intent(arg0, GpsLoggingService.class);
@@ -52,7 +51,7 @@ public class StartupReceiver extends BroadcastReceiver {
 					arg0.startService(trackerServiceIntent);
 				}
 				
-				boolean startDSService = prefs.getBoolean(NGMConstants.KEY_PREF_SW_SENDPOS_SRV, false);
+				boolean startDSService = prefs.getBoolean(Constants.KEY_PREF_SW_SENDPOS_SRV, false);
 				if(startDSService) {
 					Intent datasendServiceIntent = new Intent(DataSendService.ACTION_START);
 					arg0.startService(datasendServiceIntent);

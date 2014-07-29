@@ -3,11 +3,11 @@
  * Purpose:  Mobile GIS for Android.
  * Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
  ******************************************************************************
-*   Copyright (C) 2012-2014 NextGIS
+*   Copyright (C) 2014 NextGIS
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
+*    the Free Software Foundation, either version 2 of the License, or
 *    (at your option) any later version.
 *
 *    This program is distributed in the hope that it will be useful,
@@ -37,20 +37,23 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.Toast;
 
-import com.nextgis.mobile.map.NGMapView;
+import com.nextgis.mobile.map.Layer;
+import com.nextgis.mobile.map.MapEventListener;
+import com.nextgis.mobile.map.MapView;
+import com.nextgis.mobile.util.Constants;
 
-public class LayersFragment extends Fragment {
+public class LayersFragment extends Fragment implements MapEventListener{
 	protected ActionBarDrawerToggle mDrawerToggle;
 
     protected DrawerLayout mDrawerLayout;
-    //protected ListView mDrawerListView;
+    protected ListView mLayersListView;
     protected View mFragmentContainerView;
+    protected LayersListAdapter mListAdapter;
 
     protected boolean mFromSavedInstanceState;
     protected boolean mUserLearnedDrawer;
-	protected NGMapView m_oMap;   
+	protected MapView mMap;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,7 +62,7 @@ public class LayersFragment extends Fragment {
         // Read in the flag indicating whether or not the user has demonstrated awareness of the
         // drawer. See PREF_USER_LEARNED_DRAWER for details.
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        mUserLearnedDrawer = sp.getBoolean(NGMConstants.KEY_PREF_USER_LEARNED_DRAWER, false);
+        mUserLearnedDrawer = sp.getBoolean(Constants.KEY_PREF_USER_LEARNED_DRAWER, false);
 
         if (savedInstanceState != null) {
             mFromSavedInstanceState = true;
@@ -76,9 +79,10 @@ public class LayersFragment extends Fragment {
     
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		if(m_oMap == null){
+		if(mMap == null){
 			MainActivity activity = (MainActivity) getActivity();
-			m_oMap = activity.getMap();
+			mMap = activity.getMap();
+            mMap.addListener(this);
 		}
 		
     	View view = inflater.inflate(R.layout.layersfragment, container, false);
@@ -99,6 +103,10 @@ public class LayersFragment extends Fragment {
      */
     public void setUp(int fragmentId, DrawerLayout drawerLayout) {
         mFragmentContainerView = getActivity().findViewById(fragmentId);
+        mLayersListView = (ListView) mFragmentContainerView.findViewById(R.id.layer_list);
+        mListAdapter = new LayersListAdapter(mMap);
+        mLayersListView.setAdapter(mListAdapter);
+
         mDrawerLayout = drawerLayout;
 
         // set a custom shadow that overlays the main content when the drawer opens
@@ -139,9 +147,8 @@ public class LayersFragment extends Fragment {
                     // The user manually opened the drawer; store this flag to prevent auto-showing
                     // the navigation drawer automatically in the future.
                     mUserLearnedDrawer = true;
-                    SharedPreferences sp = PreferenceManager
-                            .getDefaultSharedPreferences(getActivity());
-                    sp.edit().putBoolean(NGMConstants.KEY_PREF_USER_LEARNED_DRAWER, true).commit();
+                    SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                    sp.edit().putBoolean(Constants.KEY_PREF_USER_LEARNED_DRAWER, true).commit();
                 }
 
                 getActivity().supportInvalidateOptionsMenu(); // calls onPrepareOptionsMenu()
@@ -202,5 +209,26 @@ public class LayersFragment extends Fragment {
         super.onConfigurationChanged(newConfig);
         // Forward the new configuration the drawer toggle component.
         mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public void onLayerAdded(Layer layer) {
+        if(mListAdapter != null){
+            mListAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onLayerDeleted(int id) {
+        if(mListAdapter != null){
+            mListAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onLayerChanged(Layer layer) {
+        if(mListAdapter != null){
+            mListAdapter.notifyDataSetInvalidated();
+        }
     }
 }

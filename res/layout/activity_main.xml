@@ -34,6 +34,7 @@
         android:name="com.nextgis.mobile.LayersFragment"
         android:layout_width="@dimen/navigation_drawer_width"
         android:layout_height="match_parent"
-        android:layout_gravity="start" />
+        android:layout_gravity="start"
+        android:layout_marginTop="?attr/actionBarSize"/>
 
 </android.support.v4.widget.DrawerLayout>

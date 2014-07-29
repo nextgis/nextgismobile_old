@@ -7,7 +7,7 @@
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
+*    the Free Software Foundation, either version 2 of the License, or
 *    (at your option) any later version.
 *
 *    This program is distributed in the hope that it will be useful,
@@ -41,12 +41,7 @@ public class CompassActivity extends FragmentActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(Menu.NONE, MainActivity.MENU_SETTINGS, Menu.NONE, R.string.settings)
-        .setIcon(R.drawable.ic_action_settings)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
-        menu.add(Menu.NONE, MainActivity.MENU_ABOUT, Menu.NONE, R.string.about)
-        .setIcon(R.drawable.ic_action_about)
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
+        getMenuInflater().inflate(R.menu.compass, menu);
        return true;
 	}
 	
@@ -60,13 +55,13 @@ public class CompassActivity extends FragmentActivity {
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 return true;
-            case MainActivity.MENU_SETTINGS:
+            case R.id.menu_settings:
                 // app icon in action bar clicked; go home
                 Intent intentSet = new Intent(this, PreferencesActivity.class);
                 intentSet.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intentSet);
                 return true;
-            case MainActivity.MENU_ABOUT:
+            case R.id.menu_about:
                 Intent intentAbout = new Intent(this, AboutActivity.class);
                 intentAbout.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intentAbout);

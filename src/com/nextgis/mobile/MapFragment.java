@@ -7,7 +7,7 @@
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
+*    the Free Software Foundation, either version 2 of the License, or
 *    (at your option) any later version.
 *
 *    This program is distributed in the hope that it will be useful,
@@ -27,25 +27,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import com.nextgis.mobile.map.NGMapView;
+import com.nextgis.mobile.map.MapView;
+
+import static com.nextgis.mobile.util.Constants.*;
 
 public class MapFragment extends Fragment {
-	protected NGMapView m_oMap;   
+	protected MapView mMap;
 
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {		
 		
-		if(m_oMap == null){
+		if(mMap == null){
 			MainActivity activity = (MainActivity) getActivity();
-			m_oMap = activity.getMap();
+			mMap = activity.getMap();
 		}
 		
     	View view = inflater.inflate(R.layout.mapfragment, container, false);
     	FrameLayout layout = (FrameLayout) view.findViewById(R.id.mapholder);
     	//search relative view of map, if not found - add it 
-    	if(m_oMap != null && layout.findViewById(NGMConstants.MAP_RELATIVE_LAYOUT) == null){
-    		layout.addView(m_oMap.getRelativeLayout());
+    	if(mMap != null && layout.findViewById(MAP_RELATIVE_LAYOUT) == null){
+    		layout.addView(mMap);//.getRelativeLayout());
     	}
 		return view;
 	}

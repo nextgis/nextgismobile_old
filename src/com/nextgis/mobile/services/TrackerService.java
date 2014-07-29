@@ -7,7 +7,7 @@
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
+*    the Free Software Foundation, either version 2 of the License, or
 *    (at your option) any later version.
 *
 *    This program is distributed in the hope that it will be useful,
@@ -30,8 +30,8 @@ import java.util.Date;
 import java.util.Formatter;
 import java.util.TimeZone;
 
+import com.nextgis.mobile.util.Constants;
 import com.nextgis.mobile.MainActivity;
-import com.nextgis.mobile.NGMConstants;
 import com.nextgis.mobile.PositionDatabase;
 import com.nextgis.mobile.PreferencesActivity;
 
@@ -63,6 +63,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.nextgis.mobile.R;
+import static com.nextgis.mobile.util.Constants.*;
 
 public class TrackerService extends Service {
     public static final String ACTION_START = "com.nextgis.mobile.tracker.action.START";
@@ -84,7 +85,7 @@ public class TrackerService extends Service {
 
 	@Override
 	public void onCreate() {
-		Log.d(MainActivity.TAG, "onCreate()");
+		Log.d(TAG, "onCreate()");
 		super.onCreate();
 		
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -94,7 +95,7 @@ public class TrackerService extends Service {
 
 	@Override
 	public void onDestroy() {
-		Log.d(MainActivity.TAG, "onDestroy()");
+		Log.d(TAG, "onDestroy()");
 		super.onDestroy();
 		
 		locationManager.removeUpdates(trackerLocationListener);
@@ -102,9 +103,9 @@ public class TrackerService extends Service {
 		if(trackerLocationListener.isWriteTrack())
 			trackerLocationListener.StoreTrack(false);
 		
-		SharedPreferences prefs = getSharedPreferences(NGMConstants.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS); 
+		SharedPreferences prefs = getSharedPreferences(Constants.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS);
 		final SharedPreferences.Editor edit = prefs.edit();
-		edit.putBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, false);
+		edit.putBoolean(Constants.KEY_PREF_SW_TRACKGPX_SRV, false);
 		edit.commit();
 		
 		trackerLocationListener = null;
@@ -117,7 +118,7 @@ public class TrackerService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		
-		Log.d(MainActivity.TAG, "Received start id " + startId + ": " + intent);
+		Log.d(TAG, "Received start id " + startId + ": " + intent);
 		
 		super.onStartCommand(intent, flags, startId);
 		
@@ -128,7 +129,7 @@ public class TrackerService extends Service {
 		if(action == null)
 			return START_STICKY;
 		
-		Log.d(MainActivity.TAG, "action " + action);
+		Log.d(TAG, "action " + action);
         if (action.equals(ACTION_STOP))
         {
         	trackerLocationListener.setWritePostion(false);
@@ -150,8 +151,8 @@ public class TrackerService extends Service {
         }
         else if(action.equals(ACTION_START))
         {	
-    		SharedPreferences prefs = getSharedPreferences(NGMConstants.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS); 
-        	boolean isStrarted = prefs.getBoolean(NGMConstants.KEY_PREF_SW_TRACK_SRV, false);
+    		SharedPreferences prefs = getSharedPreferences(Constants.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS);
+        	boolean isStrarted = prefs.getBoolean(Constants.KEY_PREF_SW_TRACK_SRV, false);
         	
         	if(isStrarted)
         	{ 	
@@ -162,27 +163,27 @@ public class TrackerService extends Service {
 	        		dbHelper = new PositionDatabase(getApplicationContext());
 	        		PositionDB = dbHelper.getWritableDatabase();
 	        		
-		    		long nMinDistChangeForUpdates = prefs.getLong(NGMConstants.KEY_PREF_MIN_DIST_CHNG_UPD + "_long", 25);
-		    		long nMinTimeBetweenUpdates = prefs.getLong(NGMConstants.KEY_PREF_MIN_TIME_UPD + "_long", 0);
+		    		long nMinDistChangeForUpdates = prefs.getLong(Constants.KEY_PREF_MIN_DIST_CHNG_UPD + "_long", 25);
+		    		long nMinTimeBetweenUpdates = prefs.getLong(Constants.KEY_PREF_MIN_TIME_UPD + "_long", 0);
 		    		
-		    		Log.d(MainActivity.TAG, "start LocationManager MinDist:" + nMinDistChangeForUpdates + " MinTime:" + nMinTimeBetweenUpdates); 
+		    		Log.d(TAG, "start LocationManager MinDist:" + nMinDistChangeForUpdates + " MinTime:" + nMinTimeBetweenUpdates);
         	
-		        	Log.d(MainActivity.TAG, "start LocationManager.GPS_PROVIDER");
+		        	Log.d(TAG, "start LocationManager.GPS_PROVIDER");
 			        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, nMinTimeBetweenUpdates, nMinDistChangeForUpdates, trackerLocationListener);
-			        Log.d(MainActivity.TAG, "start LocationManager.NETWORK_PROVIDER");
+			        Log.d(TAG, "start LocationManager.NETWORK_PROVIDER");
 			        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, nMinTimeBetweenUpdates, nMinDistChangeForUpdates, trackerLocationListener);
-			        Log.d(MainActivity.TAG, "request end");
+			        Log.d(TAG, "request end");
 			        
 	        	}
-		        boolean bEnergyEconomy = prefs.getBoolean(NGMConstants.KEY_PREF_SW_ENERGY_ECO, true);
-		        long nMinTimeBetweenSend = prefs.getLong(NGMConstants.KEY_PREF_TIME_DATASEND + "_long", DateUtils.MINUTE_IN_MILLIS); 
+		        boolean bEnergyEconomy = prefs.getBoolean(Constants.KEY_PREF_SW_ENERGY_ECO, true);
+		        long nMinTimeBetweenSend = prefs.getLong(Constants.KEY_PREF_TIME_DATASEND + "_long", DateUtils.MINUTE_IN_MILLIS);
 	        	ScheduleNextUpdate(this.getApplicationContext(), TrackerService.ACTION_START, nMinTimeBetweenSend, bEnergyEconomy, isStrarted);
         	}        	
         }
         else if(action.equals(ACTION_START_GPX))
         {
-    		SharedPreferences prefs = getSharedPreferences(NGMConstants.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS); 
-        	boolean isStrarted_GPX = prefs.getBoolean(NGMConstants.KEY_PREF_SW_TRACKGPX_SRV, false);
+    		SharedPreferences prefs = getSharedPreferences(Constants.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS);
+        	boolean isStrarted_GPX = prefs.getBoolean(Constants.KEY_PREF_SW_TRACKGPX_SRV, false);
 
         	if(isStrarted_GPX)
         	{ 	
@@ -190,12 +191,12 @@ public class TrackerService extends Service {
 	        	{
 	        		trackerLocationListener.setWriteTrack(true);
 
-	        		long nMinDistChangeForUpdates = prefs.getLong(NGMConstants.KEY_PREF_MIN_DIST_CHNG_UPD + "_long", 25);
-	        		long nMinTimeBetweenUpdates = prefs.getLong(NGMConstants.KEY_PREF_MIN_TIME_UPD + "_long", 0);
+	        		long nMinDistChangeForUpdates = prefs.getLong(Constants.KEY_PREF_MIN_DIST_CHNG_UPD + "_long", 25);
+	        		long nMinTimeBetweenUpdates = prefs.getLong(Constants.KEY_PREF_MIN_TIME_UPD + "_long", 0);
 	    		
-	        		Log.d(MainActivity.TAG, "start GPX LocationManager MinDist:" + nMinDistChangeForUpdates + " MinTime:" + nMinTimeBetweenUpdates); 
+	        		Log.d(TAG, "start GPX LocationManager MinDist:" + nMinDistChangeForUpdates + " MinTime:" + nMinTimeBetweenUpdates);
     	
-	        		Log.d(MainActivity.TAG, "start GPX LocationManager.GPS_PROVIDER");
+	        		Log.d(TAG, "start GPX LocationManager.GPS_PROVIDER");
 	        		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, nMinTimeBetweenUpdates, nMinDistChangeForUpdates, trackerLocationListener);
 	        		
 	        		Intent resultIntent = new Intent(this, MainActivity.class);
@@ -220,8 +221,8 @@ public class TrackerService extends Service {
 
 	        	}
         	}
-	        boolean bEnergyEconomy = prefs.getBoolean(NGMConstants.KEY_PREF_SW_ENERGY_ECO, true);
-	        long nMinTimeBetweenSend = prefs.getLong(NGMConstants.KEY_PREF_TIME_DATASEND + "_long", DateUtils.MINUTE_IN_MILLIS); 
+	        boolean bEnergyEconomy = prefs.getBoolean(Constants.KEY_PREF_SW_ENERGY_ECO, true);
+	        long nMinTimeBetweenSend = prefs.getLong(Constants.KEY_PREF_TIME_DATASEND + "_long", DateUtils.MINUTE_IN_MILLIS);
         	ScheduleNextUpdate(getApplicationContext(), TrackerService.ACTION_START_GPX, nMinTimeBetweenSend, bEnergyEconomy, isStrarted_GPX);
         }
         return START_STICKY;
@@ -231,7 +232,7 @@ public class TrackerService extends Service {
 	 {
 		if(context == null)
 			return;
-		Log.d(MainActivity.TAG, "Schedule Next Update for tracker " + bStart);
+		Log.d(TAG, "Schedule Next Update for tracker " + bStart);
 		if(bStart == false)
 			return;
 		Intent intent = new Intent(action);
@@ -304,7 +305,7 @@ public class TrackerService extends Service {
 			if(bWritePostion)
 			{
 				String message = String.format("New Location \n Longitude: %1$s \n Latitude: %2$s", location.getLongitude(), location.getLatitude() );
-				Log.d(MainActivity.TAG, message);
+				Log.d(TAG, message);
 				//store coordinates to db
 				ContentValues values = new ContentValues();
 				values.put(PositionDatabase.COLUMN_ACCURACY, location.getAccuracy());
@@ -338,15 +339,15 @@ public class TrackerService extends Service {
 	    }
 	
 	    public void onStatusChanged(String s, int i, Bundle b) {
-	    	Log.d(MainActivity.TAG, "Provider status changed. " + s);
+	    	Log.d(TAG, "Provider status changed. " + s);
 	    }
 	
 	    public void onProviderDisabled(String s) {
-	    	Log.d(MainActivity.TAG, "Provider disabled by the user. " + s);
+	    	Log.d(TAG, "Provider disabled by the user. " + s);
 	    }
 	
 	    public void onProviderEnabled(String s) {
-	    	Log.d(MainActivity.TAG, "Provider enabled by the user. " + s);
+	    	Log.d(TAG, "Provider enabled by the user. " + s);
 	    }
 
 		public boolean isWritePostion() {
@@ -373,7 +374,7 @@ public class TrackerService extends Service {
 		}
 
 		public void StoreTrack(boolean bAutoSave) {
-			Log.d(MainActivity.TAG, "store gpx track");
+			Log.d(TAG, "store gpx track");
 			if(!mRecords.isEmpty()){
 			
 				if(mGPXFileName.length() == 0){
@@ -385,8 +386,8 @@ public class TrackerService extends Service {
 				final Formatter f = new Formatter(sb);
 				sb.append(XML_VERSION);
 				
-	    		SharedPreferences prefs = getSharedPreferences(NGMConstants.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS); 
-				String sId = prefs.getString(NGMConstants.KEY_PREF_USER_ID, PreferencesActivity.GetDeviceId());
+	    		SharedPreferences prefs = getSharedPreferences(Constants.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS);
+				String sId = prefs.getString(Constants.KEY_PREF_USER_ID, PreferencesActivity.GetDeviceId());
 				
 				f.format(GPX_TAG, sId);
 				f.format(GPX_TAG_TIME, RecordedGeoPoint.getTimeStampAsString(System.currentTimeMillis()));
@@ -418,7 +419,7 @@ public class TrackerService extends Service {
 			    // Create the storage directory if it does not exist
 			    if (! gpxStorageDir.exists()){
 			        if (! gpxStorageDir.mkdirs()){
-			            Log.d(MainActivity.TAG, "failed to create directory");
+			            Log.d(TAG, "failed to create directory");
 			            f.close();
 			            return;
 			        }
@@ -438,15 +439,15 @@ public class TrackerService extends Service {
 		                    new String[] { file.toString() }, null,
 		                    new MediaScannerConnection.OnScanCompletedListener() {
 		            		public void onScanCompleted(String path, Uri uri) {
-		            			Log.i(MainActivity.TAG, "Scanned " + path + ":");
-		                    	Log.i(MainActivity.TAG, "-> uri=" + uri);
+		            			Log.i(TAG, "Scanned " + path + ":");
+		                    	Log.i(TAG, "-> uri=" + uri);
 		                	}
 		            	});
 		            	Toast.makeText( getApplicationContext(), getResources().getText(R.string.create_next_gpx) + mGPXFileName, Toast.LENGTH_LONG).show();
 		            }
 		    		
 		        } catch (IOException e) {
-		            Log.w(MainActivity.TAG, "Error writing " + file, e);
+		            Log.w(TAG, "Error writing " + file, e);
 		        }
 				
 				f.close();

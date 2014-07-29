@@ -7,7 +7,7 @@
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
+*    the Free Software Foundation, either version 2 of the License, or
 *    (at your option) any later version.
 *
 *    This program is distributed in the hope that it will be useful,
@@ -40,7 +40,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
@@ -48,18 +47,25 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.nextgis.mobile.forms.CameraFragment;
+import com.nextgis.mobile.forms.DescriptionFragment;
+import com.nextgis.mobile.forms.NoteFragment;
+import com.nextgis.mobile.util.Constants;
+
+import static com.nextgis.mobile.util.Constants.*;
+
 
 public class InputPointActivity extends FragmentActivity {
 	private static final int NUM_ITEMS = 4;
 	
 	private FragmentRollAdapter m_Adapter;
     private ViewPager m_Pager;
-	
-    protected Location m_CurrentLocation;
-    protected String m_sCat, m_sSubCat;
-    protected float m_fAzimuth;
-    protected float m_fDist;
-    protected String m_sNote;
+
+    public Location m_CurrentLocation;
+    public String m_sCat, m_sSubCat;
+    public float m_fAzimuth;
+    public float m_fDist;
+    public String m_sNote;
     
     protected ArrayList <String> image_lst = new ArrayList<String>(255);
     protected ArrayList <Double> image_rotation = new ArrayList<Double>(2000);
@@ -69,7 +75,7 @@ public class InputPointActivity extends FragmentActivity {
     protected static DescriptionFragment descriptfrag;
 	protected static PositionFragment positionfrag;
 	protected static NoteFragment notefrag;
-	protected static CameraFragment camfrag; 
+	protected static CameraFragment camfrag;
 	
 	private final static int MENU_ADD = 0;
 	private final static int MENU_CANCEL = 1;
@@ -84,7 +90,7 @@ public class InputPointActivity extends FragmentActivity {
         //get location from calling class
         Bundle extras = getIntent().getExtras();  
         if(extras != null)
-        	m_CurrentLocation = (Location)extras.get(MainActivity.LOACTION_HINT);
+        	m_CurrentLocation = (Location)extras.get(LOACTION_HINT);
 
         setContentView(R.layout.input_point);
 
@@ -330,7 +336,7 @@ public class InputPointActivity extends FragmentActivity {
             }
             
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            final String CE = prefs.getString(NGMConstants.KEY_PREF_ACCURATE_CE, "None");
+            final String CE = prefs.getString(Constants.KEY_PREF_ACCURATE_CE, "None");
             
             double dfLat = 0,dfLon = 0, dfAcc = 0, dfAlt = 0, dfBearing = 0, dfSpeed = 0;
             String sProv = "";

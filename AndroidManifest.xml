@@ -62,11 +62,7 @@
         <activity 
     		android:name="com.nextgis.mobile.InputPointActivity"
     		android:label="@string/mark">         
-		</activity>		
-		<activity 
-    		android:name="com.nextgis.mobile.MapLayersActivity"
-    		android:label="@string/layers_title">         
-		</activity>		
+		</activity>
 		
         <service           
             android:name="com.nextgis.mobile.services.TrackerService"

@@ -7,7 +7,7 @@
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
+*    the Free Software Foundation, either version 2 of the License, or
 *    (at your option) any later version.
 *
 *    This program is distributed in the hope that it will be useful,
@@ -34,6 +34,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.nextgis.mobile.forms.BubbleSurfaceView;
+import com.nextgis.mobile.forms.CompassFragment;
+import com.nextgis.mobile.forms.CompassImage;
+import com.nextgis.mobile.util.Constants;
 
 public class PositionFragment extends CompassFragment {
 	protected float m_dfOrinetAngle = 0;
@@ -91,7 +96,7 @@ public class PositionFragment extends CompassFragment {
     	if(context == null || location == null)
     		return null;
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-    	int nFormat = prefs.getInt(NGMConstants.KEY_PREF_COORD_FORMAT + "_int", Location.FORMAT_SECONDS);
+    	int nFormat = prefs.getInt(Constants.KEY_PREF_COORD_FORMAT + "_int", Location.FORMAT_SECONDS);
     	return formatLat(location.getLatitude(), nFormat, context.getResources()) + ", " + formatLng(location.getLongitude(), nFormat, context.getResources());
 	}
 

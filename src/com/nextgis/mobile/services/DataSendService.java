@@ -7,7 +7,7 @@
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
+*    the Free Software Foundation, either version 2 of the License, or
 *    (at your option) any later version.
 *
 *    This program is distributed in the hope that it will be useful,
@@ -35,8 +35,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
-import com.nextgis.mobile.MainActivity;
-import com.nextgis.mobile.NGMConstants;
+import com.nextgis.mobile.util.Constants;
 import com.nextgis.mobile.PositionDatabase;
 import com.nextgis.mobile.PreferencesActivity;
 
@@ -56,6 +55,7 @@ import android.telephony.TelephonyManager;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.util.Log;
+import static com.nextgis.mobile.util.Constants.*;
 
 public class DataSendService extends Service {
     
@@ -79,7 +79,7 @@ public class DataSendService extends Service {
 	 */
 	@Override
 	public void onCreate() {
-		Log.d(MainActivity.TAG, "onCreate()");
+		Log.d(TAG, "onCreate()");
 		super.onCreate();
 		
         dbHelper = new PositionDatabase(getApplicationContext());
@@ -94,7 +94,7 @@ public class DataSendService extends Service {
 	 */
 	@Override
 	public void onDestroy() {
-		Log.d(MainActivity.TAG, "onDestroy()");
+		Log.d(TAG, "onDestroy()");
 		dbHelper.close();
 		
 		super.onDestroy();		
@@ -105,7 +105,7 @@ public class DataSendService extends Service {
 	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.d(MainActivity.TAG, "Received start id " + startId + ": " + intent);
+		Log.d(TAG, "Received start id " + startId + ": " + intent);
 		super.onStartCommand(intent, flags, startId);
 		if(intent == null)
 			return START_STICKY;
@@ -117,8 +117,8 @@ public class DataSendService extends Service {
         }
         else if(action.equals(ACTION_START))
         {
-        	SharedPreferences prefs = getSharedPreferences(NGMConstants.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS); 
-        	boolean bStart = prefs.getBoolean(NGMConstants.KEY_PREF_SW_SENDPOS_SRV, false);
+        	SharedPreferences prefs = getSharedPreferences(Constants.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS);
+        	boolean bStart = prefs.getBoolean(Constants.KEY_PREF_SW_SENDPOS_SRV, false);
         	if(bStart)
         		new SendPositionDataTask().execute(getApplicationContext());
         	else
@@ -133,19 +133,19 @@ public class DataSendService extends Service {
 		 @Override
 	     protected Void doInBackground(Context... context) {
         	SharedPreferences prefs = getSharedPreferences("preferences", MODE_PRIVATE | MODE_MULTI_PROCESS); 
-        	String sHost = prefs.getString(NGMConstants.KEY_PREF_STORAGE_SITE, "http://gis-lab.info"); 
-        	long nMinTimeBetweenSend = prefs.getLong(NGMConstants.KEY_PREF_TIME_DATASEND + "_long", DateUtils.MINUTE_IN_MILLIS);
+        	String sHost = prefs.getString(Constants.KEY_PREF_STORAGE_SITE, "http://gis-lab.info");
+        	long nMinTimeBetweenSend = prefs.getLong(Constants.KEY_PREF_TIME_DATASEND + "_long", DateUtils.MINUTE_IN_MILLIS);
         	
-        	boolean bEnergyEconomy = prefs.getBoolean(NGMConstants.KEY_PREF_SW_ENERGY_ECO, true);
+        	boolean bEnergyEconomy = prefs.getBoolean(Constants.KEY_PREF_SW_ENERGY_ECO, true);
         	
-        	String sId = prefs.getString(NGMConstants.KEY_PREF_USER_ID, PreferencesActivity.GetDeviceId());
+        	String sId = prefs.getString(Constants.KEY_PREF_USER_ID, PreferencesActivity.GetDeviceId());
         	
-        	Log.d(MainActivity.TAG, "start SendPositionDataTask MinTime:" + nMinTimeBetweenSend + " user id:" + sId); 
+        	Log.d(TAG, "start SendPositionDataTask MinTime:" + nMinTimeBetweenSend + " user id:" + sId); 
         	
         	//Send data
         	SendPostionData(sHost, sId);
         	//Setup next send
-        	ScheduleNextUpdate(context[0], sHost, nMinTimeBetweenSend, bEnergyEconomy, prefs.getBoolean(NGMConstants.KEY_PREF_SW_ENERGY_ECO, false));
+        	ScheduleNextUpdate(context[0], sHost, nMinTimeBetweenSend, bEnergyEconomy, prefs.getBoolean(Constants.KEY_PREF_SW_ENERGY_ECO, false));
  
 			return null;
 
@@ -156,7 +156,7 @@ public class DataSendService extends Service {
 	 		if(context == null)
 				return;
 	 		
-	 		Log.d(MainActivity.TAG, "Schedule Next Update for sender " + bStart);
+	 		Log.d(TAG, "Schedule Next Update for sender " + bStart);
 			if(bStart == false)
 				return;
 			Intent intent = new Intent(DataSendService.ACTION_START);
@@ -199,14 +199,14 @@ public class DataSendService extends Service {
 		
 		protected void SendPostionData(String sHost, String sId)
 		{
-			Log.d(MainActivity.TAG, "SendPostionData");
+			Log.d(TAG, "SendPostionData");
 			if(IsNetworkAvailible() == false)
 				return;
 			
 			//Queue records to send
 	    	Cursor cursor = PositionDB.query(PositionDatabase.TABLE_POS, null, null, null, null, null, null);
 	    	cursor.moveToFirst();
-	    	Log.d(MainActivity.TAG, "record count: " + cursor.getCount());
+	    	Log.d(TAG, "record count: " + cursor.getCount());
 	    	
 	    	List<Long> delete_ids = new ArrayList<Long>();
 	   	
@@ -254,7 +254,7 @@ public class DataSendService extends Service {
 		
 		protected boolean SendData(String sHost, String sData)
 		{
-			Log.d(MainActivity.TAG, "SendData: host=" + sHost + " data=" + sData);
+			Log.d(TAG, "SendData: host=" + sHost + " data=" + sData);
 	
 			HttpClient httpClient = new DefaultHttpClient();
 			//HttpContext localContext = new BasicHttpContext();

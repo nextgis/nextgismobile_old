@@ -7,7 +7,7 @@
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
+*    the Free Software Foundation, either version 2 of the License, or
 *    (at your option) any later version.
 *
 *    This program is distributed in the hope that it will be useful,
@@ -18,7 +18,7 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-package com.nextgis.mobile.map;
+/*package com.nextgis.mobile.map;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.api.IGeoPoint;
-import org.osmdroid.tileprovider.tilesource.ITileSource;
+import org.osmdroid.api.IZoomController;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -37,11 +37,10 @@ import org.osmdroid.views.overlay.PathOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
+import org.osmdroid.views.overlay.mylocation.MyLocationOverlay;
 
 import com.nextgis.mobile.NGMConstants;
 import com.nextgis.mobile.PositionFragment;
-import com.nextgis.mobile.PreferencesActivity;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.ResourceProxyImpl;
 import com.nextgis.mobile.services.TrackerService.RecordedGeoPoint;
@@ -68,14 +67,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class NGMapView {
+public class NGMapView implements IZoomController{
 	
 	protected Context m_oContext;
 	
 	protected MapView m_oOsmv;
-	protected ResourceProxy m_oResourceProxy;	
+	protected ResourceProxy m_oResourceProxy;
 	//overlays
-	protected MyLocationNewOverlay m_oLocationOverlay;
+	protected MyLocationOverlay m_oLocationOverlay;
 	protected CompassOverlay m_oCompassOverlay;
 	protected DirectedLocationOverlay m_oDirectedLocationOverlay;
 	//TODO: private RotationGestureOverlay mRotationGestureOverlay;
@@ -96,6 +95,9 @@ public class NGMapView {
 	protected final static String CSV_CHAR = ";";
 	protected final static int margings = 10;
 	
+	protected ImageView mivZoomIn;
+	protected ImageView mivZoomOut;
+	protected TextView mivZoomLevel;
 	
 	public NGMapView(Context oContext){
 		m_oContext = oContext;
@@ -134,12 +136,13 @@ public class NGMapView {
 			m_oRelativeLayout.removeAllViews();
 			m_oOsmv = null;
 		}
-		m_oOsmv = new MapView(m_oContext, nTileSize, m_oResourceProxy);
+		m_oOsmv = new MapView(m_oContext, nTileSize);
 		m_oOsmv.setUseSafeCanvas(true);
 		m_oOsmv.setBackgroundColor(m_oContext.getResources().getColor(android.R.color.darker_gray));
+		m_oOsmv.setZoomController(this);
 		
 		//add overlays
-		m_oLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(m_oContext), m_oOsmv, m_oResourceProxy);
+		m_oLocationOverlay = new MyLocationOverlay(new GpsMyLocationProvider(m_oContext), m_oOsmv, m_oResourceProxy);
 		m_oCompassOverlay = new CompassOverlay(m_oContext, new InternalCompassOrientationProvider(m_oContext), m_oOsmv, m_oResourceProxy);
 		
 		//TODO: addUserLayers();
@@ -209,61 +212,48 @@ public class NGMapView {
 	}
 	
 	protected void addMapButtons(RelativeLayout rl){
-		final ImageView ivZoomIn = new ImageView(m_oContext);
-		ivZoomIn.setImageResource(R.drawable.ic_plus);
-		ivZoomIn.setId(R.drawable.ic_plus);
+		mivZoomIn = new ImageView(m_oContext);
+		mivZoomIn.setImageResource(R.drawable.ic_plus);
+		mivZoomIn.setId(R.drawable.ic_plus);
 		
-		final ImageView ivZoomOut = new ImageView(m_oContext);
-		ivZoomOut.setImageResource(R.drawable.ic_minus);	
-		ivZoomOut.setId(R.drawable.ic_minus);			
+		mivZoomOut = new ImageView(m_oContext);
+		mivZoomOut.setImageResource(R.drawable.ic_minus);	
+		mivZoomOut.setId(R.drawable.ic_minus);			
 		
 		final ImageView ivMark = new ImageView(m_oContext);
 		ivMark.setImageResource(R.drawable.ic_mark);	
 		ivMark.setId(R.drawable.ic_mark);	
 		
 		//show zoom level between plus and minus
-		final TextView ivZoomLevel = new TextView(m_oContext);
+		mivZoomLevel = new TextView(m_oContext);
 		//ivZoomLevel.setAlpha(150);
-		ivZoomLevel.setId(R.drawable.ic_zoomlevel);
+		mivZoomLevel.setId(R.drawable.ic_zoomlevel);
 		
 		final float scale = m_oContext.getResources().getDisplayMetrics().density;
 		int pixels = (int) (48 * scale + 0.5f);
 		
-		ivZoomLevel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+		mivZoomLevel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
 		//ivZoomLevel.setTextAppearance(this, android.R.attr.textAppearanceLarge);
 		
-		ivZoomLevel.setWidth(pixels);
-		ivZoomLevel.setHeight(pixels);
-		ivZoomLevel.setTextColor(Color.DKGRAY);
-		ivZoomLevel.setBackgroundColor( Color.argb(50, 128, 128, 128) );//Color.LTGRAY R.drawable.ic_zoomlevel);
-		ivZoomLevel.setGravity(Gravity.CENTER);
-		ivZoomLevel.setLayoutParams(new LayoutParams(
+		mivZoomLevel.setWidth(pixels);
+		mivZoomLevel.setHeight(pixels);
+		mivZoomLevel.setTextColor(Color.DKGRAY);
+		mivZoomLevel.setBackgroundColor( Color.argb(50, 128, 128, 128) );//Color.LTGRAY R.drawable.ic_zoomlevel);
+		mivZoomLevel.setGravity(Gravity.CENTER);
+		mivZoomLevel.setLayoutParams(new LayoutParams(
 	            LayoutParams.MATCH_PARENT,
 	            LayoutParams.WRAP_CONTENT));
-		ivZoomLevel.setText("" + m_oOsmv.getZoomLevel());
+		mivZoomLevel.setText("" + m_oOsmv.getZoomLevel());
 
-		ivZoomIn.setOnClickListener(new OnClickListener() {
+		mivZoomIn.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				m_oOsmv.getController().zoomIn();
-				ivZoomOut.getDrawable().setAlpha(255);	
-				ivZoomLevel.setText("" + m_oOsmv.getZoomLevel());
-				if(!m_oOsmv.canZoomIn())
-				{
-					ivZoomIn.getDrawable().setAlpha(50);
-				}
 			}
 		});				
 		
-		ivZoomOut.setOnClickListener(new OnClickListener() {
+		mivZoomOut.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				m_oOsmv.getController().zoomOut();
-				
-				ivZoomIn.getDrawable().setAlpha(255);
-				ivZoomLevel.setText("" + m_oOsmv.getZoomLevel());
-				if(!m_oOsmv.canZoomOut())
-				{						
-					ivZoomOut.getDrawable().setAlpha(50);
-				}
 			}
 		});
 		
@@ -279,7 +269,7 @@ public class NGMapView {
 		RightParams1.setMargins(margings + 5, margings - 5, margings + 5, margings - 5);
 		RightParams1.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 		RightParams1.addRule(RelativeLayout.CENTER_IN_PARENT);//ALIGN_PARENT_TOP
-		rl.addView(ivZoomLevel, RightParams1);
+		rl.addView(mivZoomLevel, RightParams1);
 		
 		final RelativeLayout.LayoutParams RightParams4 = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -287,7 +277,7 @@ public class NGMapView {
 		RightParams4.setMargins(margings + 5, margings - 5, margings + 5, margings - 5);
 		RightParams4.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 		RightParams4.addRule(RelativeLayout.ABOVE, R.drawable.ic_zoomlevel);//ALIGN_PARENT_TOP
-		rl.addView(ivZoomIn, RightParams4);
+		rl.addView(mivZoomIn, RightParams4);
 		
 		final RelativeLayout.LayoutParams RightParams3 = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -303,7 +293,7 @@ public class NGMapView {
 		RightParams2.setMargins(margings + 5, margings - 5, margings + 5, margings - 5);
 		RightParams2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);			
 		RightParams2.addRule(RelativeLayout.BELOW, R.drawable.ic_zoomlevel);//R.drawable.ic_plus);
-		rl.addView(ivZoomOut, RightParams2);	
+		rl.addView(mivZoomOut, RightParams2);	
 	}
 	
 	public void panToLocation(){
@@ -413,7 +403,7 @@ public class NGMapView {
 		mOsmv.getOverlays().add(mPointsOverlay);
 	}
 	*/
-	
+	/*
 	public void showInfo(boolean bShow){
 		if(bShow){
 			m_oLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, m_oChangeLocationListener);
@@ -496,15 +486,10 @@ public class NGMapView {
 /*	
 	}
 	*/
-	protected String getTileSource(){
-		if(m_oOsmv != null)
-			return m_oOsmv.getTileProvider().getTileSource().name();
-		else
-			return "";
-	}
-	
+
+	/*
 	public void onPause(SharedPreferences.Editor edit){
-		edit.putString(NGMConstants.PREFS_TILE_SOURCE, getTileSource());
+		//TODO: store layers content and state  edit.putString(NGMConstants.PREFS_TILE_SOURCE, getTileSource());
 		edit.putInt(NGMConstants.PREFS_SCROLL_X, m_oOsmv.getScrollX());
 		edit.putInt(NGMConstants.PREFS_SCROLL_Y, m_oOsmv.getScrollY());
 		edit.putInt(NGMConstants.PREFS_ZOOM_LEVEL, m_oOsmv.getZoomLevel());
@@ -524,8 +509,8 @@ public class NGMapView {
 	public void onResume(SharedPreferences prefs){
 		final String tileSourceName = prefs.getString(NGMConstants.PREFS_TILE_SOURCE, TileSourceFactory.DEFAULT_TILE_SOURCE.name());
 		try {
-			final ITileSource tileSource = TileSourceFactory.getTileSource(tileSourceName);
-			m_oOsmv.setTileSource(tileSource);
+			//TODO: load layers content and state final ITileSource tileSource = TileSourceFactory.getTileSource(tileSourceName);
+			//TODO: m_oOsmv.setTileSource(tileSource);
 		} catch (final IllegalArgumentException ignore) {
 		}
 		
@@ -587,6 +572,37 @@ public class NGMapView {
 	public RelativeLayout getRelativeLayout() {
 		return m_oRelativeLayout;
 	}
+
+	@Override
+	public void setVisible(boolean bVisible) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setZoomInEnabled(boolean bEnabled) {
+		if(bEnabled){
+			mivZoomIn.getDrawable().setAlpha(255);	
+		}
+		else{
+			mivZoomIn.getDrawable().setAlpha(50);
+		}		
+	}
+
+	@Override
+	public void setZoomOutEnabled(boolean bEnabled) {
+		if(bEnabled){
+			mivZoomOut.getDrawable().setAlpha(255);	
+		}
+		else{
+			mivZoomOut.getDrawable().setAlpha(50);
+		}		
+	}
+	
+	@Override
+	public void onZoomChanged(){
+		mivZoomLevel.setText("" + m_oOsmv.getZoomLevel());
+	}
 }
 
 /*        case MENU_LAYERS:  
@@ -602,141 +618,5 @@ return true;*/
 /*//////////////////////////////////////////////////////////////////////////////////////////////
 
 
-public void unzip() throws IOException {
-	ProgressDialog oDownloadDialog = new ProgressDialog(this);
-	oDownloadDialog.setMessage("extracting");//moContext.getResources().getString(R.string.sZipExtractionProcess));
-	oDownloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-	oDownloadDialog.setCancelable(true);
-	oDownloadDialog.show();
-	File oInputFile = new File(org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants.OSMDROID_PATH, "sss.zip");
-	File oOutputFileDir = new File(org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants.OSMDROID_PATH, "layers");
-	File oOutputFile = new File(oOutputFileDir, ".test_zip");
-	new UnZipTask(oInputFile, oOutputFile.getAbsolutePath(), oDownloadDialog).execute();
-}
 
-private class UnZipTask extends AsyncTask<String, Void, Boolean> {
-	private File msInputPath;
-	private String msOutputPath;
-	private ProgressDialog moDownloadDialog;
-	private int per = 0;
-	
-    public UnZipTask(File sInputPath, String sOutputPath, ProgressDialog oDownloadDialog) {        
-        super();
-        msInputPath = sInputPath;
-        msOutputPath = sOutputPath;
-        moDownloadDialog = oDownloadDialog;
-    }
-    
-	@Override
-	protected Boolean doInBackground(String... params) {
-		
-		try {
-			//DeleteRecursive(new File(msPath));
-			ZipFile zipfile = new ZipFile(msInputPath);
-			moDownloadDialog.setMax(zipfile.size());
-			for (Enumeration<? extends ZipEntry> e = zipfile.entries(); e.hasMoreElements();) {
-				ZipEntry entry = (ZipEntry) e.nextElement();
-				unzipEntry(zipfile, entry, msOutputPath);
-				per++;
-				moDownloadDialog.setProgress(per);
-			}
-			zipfile.close();
-//			archive.delete();
-		
-			/*JSONObject oJSONRoot = new JSONObject();
-
-        	oJSONRoot.put("name", msName);
-			oJSONRoot.put("name_" + Locale.getDefault().getLanguage(), msLocName);
-			oJSONRoot.put("ver", mnVer);
-			oJSONRoot.put("directed", mbDirected);            
-        
-            String sJSON = oJSONRoot.toString();
-            File file = new File(msPath, MainActivity.META);
-            if(MainActivity.writeToFile(file, sJSON)){
-            	//store data
-            	//create sqlite db
-            	//Creating and saving the graph
-	            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, false);
-            } 
-            else{
-	            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
-                bundle.putString(MainActivity.BUNDLE_MSG_KEY, "write failed");
-            }*//*
-		
-		} 
-		/*catch (JSONException e) {
-			e.printStackTrace();
-            bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
-			bundle.putString(MainActivity.BUNDLE_MSG_KEY, e.getLocalizedMessage());
-		}*//*
-		catch (Exception e) {
-			e.printStackTrace();
-            /*bundle.putBoolean(MainActivity.BUNDLE_ERRORMARK_KEY, true);            	
-            bundle.putString(MainActivity.BUNDLE_MSG_KEY, e.getLocalizedMessage());*//*
-			return false;
-		}    		
-              
-        /*Message msg = new Message();
-        msg.setData(bundle);
-        if(moEventReceiver != null){
-        	moEventReceiver.sendMessage(msg);
-        }   	*/	/*
-		return true;
-	}
-	
-	@Override
-	protected void onPostExecute(Boolean result) {
-		moDownloadDialog.dismiss();
-	}
-	
-	private void unzipEntry(ZipFile zipfile, ZipEntry entry, String outputDir) throws IOException {
-		if (entry.isDirectory()) {
-			createDir(new File(outputDir, entry.getName()));
-			return;
-		}
-		File outputFile = new File(outputDir, entry.getName());
-		if (!outputFile.getParentFile().exists()) {
-			createDir(outputFile.getParentFile());
-		}
-
-		BufferedInputStream inputStream = new BufferedInputStream(zipfile.getInputStream(entry));
-		BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
-		try {
-			byte[] _buffer = new byte[1024];
-			copyStream(inputStream, outputStream, _buffer, 1024);
-		} finally {
-			outputStream.flush();
-			outputStream.close();
-			inputStream.close();
-		}
-	}
-	
-	private void copyStream( InputStream is, OutputStream os, byte[] buffer, int bufferSize ) throws IOException {
-		try {
-			for (;;) {
-				int count = is.read( buffer, 0, bufferSize );
-				if ( count == -1 ) { break; }
-				os.write( buffer, 0, count );
-			}
-		} catch ( IOException e ) {
-			throw e;
-		}
-	}    	
-	
-	private void createDir(File dir) {
-		if (dir.exists()) {
-			return;
-		}
-		if (!dir.mkdirs()) {
-			throw new RuntimeException("Can not create dir " + dir);
-		}
-	}
-	
-	private void DeleteRecursive(File fileOrDirectory) {
-	    if (fileOrDirectory.isDirectory())
-	        for (File child : fileOrDirectory.listFiles())
-	            DeleteRecursive(child);
-
-	    fileOrDirectory.delete();
-	}
 }*/
