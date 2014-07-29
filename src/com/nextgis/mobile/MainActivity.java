@@ -20,33 +20,23 @@
  ****************************************************************************/
 package com.nextgis.mobile;
 
-import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.nextgis.mobile.map.MapView;
@@ -54,7 +44,7 @@ import com.nextgis.mobile.services.TrackerService;
 import com.nextgis.mobile.services.TrackerService.TSBinder;
 import com.nextgis.mobile.util.Constants;
 
-import static com.nextgis.mobile.util.Constants.*;
+import static com.nextgis.mobile.util.Constants.DS_TYPE_ZIP;
 
 public class MainActivity extends ActionBarActivity {
 	
@@ -286,7 +276,6 @@ public class MainActivity extends ActionBarActivity {
 	}
 
     protected void onAdd(int nType){
-
         switch(nType){
             case DS_TYPE_ZIP:
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -294,9 +283,8 @@ public class MainActivity extends ActionBarActivity {
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
 
                 try {
-                    startActivityForResult(
-                            Intent.createChooser(intent, "Select a File to Upload"),  DS_TYPE_ZIP);
-                } catch (android.content.ActivityNotFoundException ex) {
+                    startActivityForResult(Intent.createChooser(intent, "Select a File to Upload"),  DS_TYPE_ZIP);
+                } catch (ActivityNotFoundException e) {
                     // Potentially direct the user to the Market with a Dialog
                     Toast.makeText(this, R.string.error_file_manager, Toast.LENGTH_SHORT).show();
                 }
@@ -307,95 +295,13 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case DS_TYPE_ZIP:
-                if (resultCode == RESULT_OK) {
-                    // Get the Uri of the selected file
-                    final Uri uri = data.getData();
-                    Log.d(TAG, "File Uri: " + uri.toString());
-
-                    final LinearLayout linearLayout = new LinearLayout(this);
-                    final EditText input = new EditText(this);
-                    String sName = getFileNameByUri(uri, "new layer.zip");
-                    input.setText(sName.subSequence(0, sName.length() - 4));
-
-                    final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_item);
-                    final Spinner spinner = new Spinner(this);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    spinner.setAdapter(adapter);
-
-                    adapter.add(getString(R.string.tmstype_qtiles));
-                    adapter.add(getString(R.string.tmstype_osm));
-                    adapter.add(getString(R.string.tmstype_normal));
-                    adapter.add(getString(R.string.tmstype_ngw));
-
-                    linearLayout.setOrientation(LinearLayout.VERTICAL);
-                    linearLayout.addView(input);
-                    linearLayout.addView(spinner);
-
-                    new AlertDialog.Builder(this)
-                            .setTitle(R.string.input_layer_name_and_type)
-//                                    .setMessage(message)
-                            .setView(linearLayout)
-                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int whichButton) {
-                                    int tmsType = 0;
-                                    switch (spinner.getSelectedItemPosition()){
-                                        case 0:
-                                            tmsType = TMSTYPE_OSM;
-                                            break;
-                                        case 1:
-                                            tmsType = TMSTYPE_OSM;
-                                            break;
-                                        case 2:
-                                            tmsType = TMSTYPE_NORMAL;
-                                            break;
-                                        case 3:
-                                            tmsType = TMSTYPE_NORMAL;
-                                            break;
-                                        }
-                                    mMap.CreateLocalTMSLayer(input.getText().toString(), tmsType, uri);
-                                }
-                            }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            // Do nothing.
-                            Toast.makeText(getApplicationContext(), R.string.error_cancel_by_user, Toast.LENGTH_SHORT).show();
-                        }
-                    }).show();
-
-                    return;
-                }
-                break;
+        if(resultCode == RESULT_OK){
+            mMap.createLayer(data.getData(), requestCode);
+            return;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    protected String getFileNameByUri(Uri uri, String defaultName)
-    {
-        String fileName = defaultName;
-        Uri filePathUri = uri;
-        try {
-            if (uri.getScheme().toString().compareTo("content") == 0) {
-                Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-                if (cursor.moveToFirst()) {
-                    int column_index = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
-                    //Instead of "MediaStore.Images.Media.DATA" can be used "_data"
-                    filePathUri = Uri.parse(cursor.getString(column_index));
-                    fileName = filePathUri.getLastPathSegment().toString();
-                }
-            } else if (uri.getScheme().compareTo("file") == 0) {
-                fileName = filePathUri.getLastPathSegment().toString();
-            } else {
-                fileName = fileName + "_" + filePathUri.getLastPathSegment();
-            }
-        }
-        catch (Exception e){
-            //do nothing, only return default file name;
-            Log.d(TAG, e.getLocalizedMessage());
-        }
-        return fileName;
-    }
-	
 	void onMark(){
     /* TODO:   
 		final Location loc = mLocationOverlay.getLastFix();

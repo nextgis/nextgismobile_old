@@ -41,7 +41,9 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static com.nextgis.mobile.util.Constants.*;
@@ -50,10 +52,14 @@ public class MapBase extends View {
     protected String mName;
     protected List<Layer> mLayers;
     protected List<MapEventListener> mListeners;
-    protected GISDisplay mDispaly;
+    protected GISDisplay mDisplay;
     protected File mMapPath;
     protected Handler mHandler;
     protected short mNewId;
+
+    /**
+     * The base map class
+     */
 
     public MapBase(Context context) {
         super(context);
@@ -65,21 +71,36 @@ public class MapBase extends View {
 
         CreateHandler();
 
-        mDispaly = new GISDisplay(context);
+        mDisplay = new GISDisplay(context);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         File defaultPath = context.getExternalFilesDir(PREFS_MAP);
         mMapPath = new File(sharedPreferences.getString(KEY_PREF_MAP_PATH, defaultPath.getPath()));
     }
 
+    /**
+     * Get map name
+     *
+     * @return map name
+     */
     public String getName() {
         return mName;
     }
 
+    /**
+     * Set map name
+     *
+     * @param newName A new map name
+     */
     public void setName(String newName) {
         this.mName = newName;
     }
 
+    /**
+     * Get the map layers
+     *
+     * @return map layers list
+     */
     public List<Layer> getLayers() {
         return mLayers;
     }
@@ -87,11 +108,14 @@ public class MapBase extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         //super.onDraw(canvas);
-        if(mDispaly != null){
-            canvas.drawBitmap(mDispaly.getMainBitmap(), 0, 0, null);
+        if(mDisplay != null){
+            canvas.drawBitmap(mDisplay.getMainBitmap(), 0, 0, null);
         }
     }
 
+    /**
+     * Create handler for messages
+     */
     protected void CreateHandler(){
         mHandler = new Handler() {
             public void handleMessage(Message msg) {
@@ -109,15 +133,30 @@ public class MapBase extends View {
         };
     }
 
+    /**
+     * Standard error report function
+     *
+     * @param errMsg An error message
+     */
     protected void reportError(String errMsg){
         Log.d(TAG, errMsg);
         Toast.makeText(getContext(), errMsg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Process message received by handler
+     *
+     * @param bundle A message payload
+     */
     protected void processMessage(Bundle bundle){
         //nothing to do now
     }
 
+    /**
+     * Create existed lyer from path and add it to the map
+     *
+     * @param path A path to layer directory
+     */
     protected void addLayer(File path){
         File config_file = new File(path, LAYER_CONFIG);
         try {
@@ -146,6 +185,9 @@ public class MapBase extends View {
         }
     }
 
+    /**
+     * Load map properties and layers from map.json file
+     */
     protected synchronized void loadMap(){
         Log.d(TAG, "load map");
         File config_file = new File(mMapPath, MAP_CONFIG);
@@ -176,6 +218,9 @@ public class MapBase extends View {
         }*/
     }
 
+    /**
+     * Save map properties and layers to map.json file
+     */
     public synchronized void saveMap(){
         Log.d(TAG, "save map");
         try {
@@ -199,16 +244,31 @@ public class MapBase extends View {
         }
     }
 
+    /**
+     * The identificator generator
+     *
+     * @return new id
+     */
     protected short getNewId(){
         return mNewId++;
     }
 
+    /**
+     * Add new listener for map events
+     *
+     * @param listener A listener class implements MapEventListener
+     */
     public void addListener(MapEventListener listener){
         if(mListeners != null){
             mListeners.add(listener);
         }
     }
 
+    /**
+     * Send layer added event to all listeners
+     *
+     * @param layer A new layer
+     */
     protected void onLayerAdded(Layer layer){
         if(mListeners == null)
             return;
@@ -216,6 +276,11 @@ public class MapBase extends View {
             listener.onLayerAdded(layer);
     }
 
+    /**
+     * Send layer changed event to all listeners
+     *
+     * @param layer A changed layer
+     */
     protected void onLayerChanged(Layer layer){
         if(mListeners == null)
             return;
@@ -223,6 +288,11 @@ public class MapBase extends View {
             listener.onLayerChanged(layer);
     }
 
+    /**
+     * Send layer delete event to all listeners
+     *
+     * @param id A deleted layer identificator
+     */
     protected void onLayerDeleted(int id){
         if(mListeners == null)
             return;
@@ -230,26 +300,47 @@ public class MapBase extends View {
             listener.onLayerDeleted(id);
     }
 
+    /**
+     *  onPauses should be called from parent activity
+     */
     public void onPause(){
 
     }
 
+    /**
+     *  onResume should be called from parent activity
+     */
     public void onResume(){
     }
 
+    /**
+     *  onStop should be called from parent activity
+     */
     public void onStop(){
         saveMap();
         clearMap();
     }
 
+    /**
+     *  onStart should be called from parent activity
+     */
     public void onStart(){
         loadMap();
     }
 
+    /**
+     * Remove all layers
+     */
     protected void clearMap(){
         mLayers.clear(); //TODO: do we need onClearMap event?
     }
 
+    /**
+     * Delete layer by identifictor
+     *
+     * @param id An identificator
+     * @return true on success or false
+     */
     public boolean deleteLayerById(int id){
         boolean bRes = false;
         for(Layer layer : mLayers) {
@@ -265,11 +356,35 @@ public class MapBase extends View {
         return bRes;
     }
 
+    /**
+     * Get layer by identificator
+     *
+     * @param id Layer identificator
+     * @return Layer or null
+     */
     public Layer getLayerById(int id){
         for(Layer layer : mLayers){
             if(layer.getId() == id)
                 return layer;
         }
         return null;
+    }
+
+    /**
+     *  Create new folder in map directory to store layer data
+     */
+    protected File cretateLayerStorage() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String layerDir = LAYER_PREFIX + sdf.format(new Date());
+        return new File(mMapPath, layerDir);
+    }
+
+    /**
+     * Get internal map events handler
+     *
+     * @return handler
+     */
+    public Handler getMapEventsHandler(){
+        return mHandler;
     }
 }

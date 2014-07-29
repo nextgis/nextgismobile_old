@@ -34,6 +34,9 @@ import com.nextgis.mobile.map.MapBase;
 
 import static com.nextgis.mobile.util.Constants.*;
 
+/**
+ * An adapter to show layers as list
+ */
 public class LayersListAdapter extends BaseAdapter {
 
     protected MapBase mMap;

@@ -43,6 +43,9 @@ import com.nextgis.mobile.map.MapEventListener;
 import com.nextgis.mobile.map.MapView;
 import com.nextgis.mobile.util.Constants;
 
+/**
+ * A layers fragment class
+ */
 public class LayersFragment extends Fragment implements MapEventListener{
 	protected ActionBarDrawerToggle mDrawerToggle;
 

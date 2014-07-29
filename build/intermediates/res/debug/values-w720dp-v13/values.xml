@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <!-- From: file:/home/bishop/work/projects/android/nextgismobile/build/intermediates/exploded-aar/android/appcompat_v7/unspecified/res/values-w720dp-v13/values.xml -->
-    <eat-comment />
-
-    <bool name="abc_action_bar_expanded_action_views_exclusive">false</bool>
-
-</resources>

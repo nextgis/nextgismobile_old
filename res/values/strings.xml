@@ -150,6 +150,8 @@
     <string name="error_occurred">The error occurred</string>
 
     <string name="input_layer_name_and_type">Input layer name and tiles source</string>
+    <string name="change_layer_name_and_type">Change layer name or/and tiles source</string>
+
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>
 
