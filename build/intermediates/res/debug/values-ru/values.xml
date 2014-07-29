@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- From: file:/home/bishop/work/projects/android/nextgismobile/res/values-ru/arrays.xml -->
+    <eat-comment />
+
+    <string-array name="coordinates_format">
+        <item>ГГ-ММ-СС.СС</item>
+        <item>ГГ-ММ.ММ</item>
+        <item>ГГ.ГГГГ</item>
+    </string-array>
+    <string-array name="datapos_send_updates">
+        <item>0 мин</item>
+        <item>1 мин</item>
+        <item>2 мин</item>
+        <item>5 мин</item>
+        <item>10 мин</item>
+        <item>20 мин</item>
+        <item>30 мин</item>
+    </string-array>
+    <string-array name="tracker_min_dist_update">
+        <item>0 м</item>
+        <item>1 м</item>
+        <item>5 м</item>
+        <item>10 м</item>
+        <item>25 м</item>
+        <item>50 м</item>
+        <item>75 м</item>
+        <item>100 м</item>
+        <item>150 м</item>
+        <item>200 м</item>
+        <item>300 м</item>
+    </string-array>
+    <string-array name="tracker_min_time_between_updates">
+        <item>0 сек</item>
+        <item>1 сек</item>
+        <item>2 сек</item>
+        <item>5 сек</item>
+        <item>10 сек</item>
+        <item>20 сек</item>
+        <item>30 сек</item>
+        <item>45 сек</item>
+        <item>1 мин</item>
+        <item>2 мин</item>
+        <item>5 мин</item>
+        <item>10 мин</item>
+        <item>20 мин</item>
+        <item>30 мин</item>
+        <item>45 мин</item>
+    </string-array>
+    <string-array name="views">
+        <item>Карта</item>
+        <item>Компас</item>
+    </string-array>
+    <!-- From: file:/home/bishop/work/projects/android/nextgismobile/res/values-ru/strings.xml -->
+    <eat-comment />
+
+    <string name="GPXRecord">Записать трек GPX</string>
+    <!-- From: file:/home/bishop/work/projects/android/nextgismobile/build/intermediates/exploded-aar/android/appcompat_v7/unspecified/res/values-ru/values.xml -->
+    <eat-comment />
+
+    <string name="abc_action_bar_home_description" msgid="4600421777120114993">"Перейти на главный экран"</string>
+    <string name="abc_action_bar_up_description" msgid="1594238315039666878">"Перейти вверх"</string>
+    <string name="abc_action_menu_overflow_description" msgid="3588849162933574182">"Другие параметры"</string>
+    <string name="abc_action_mode_done" msgid="4076576682505996667">"Готово"</string>
+    <string name="abc_activity_chooser_view_see_all" msgid="7468859129482906941">"Показать все"</string>
+    <string name="abc_activitychooserview_choose_application" msgid="2031811694353399454">"Выбрать приложение"</string>
+    <string name="abc_searchview_description_clear" msgid="3691816814315814921">"Удалить запрос"</string>
+    <string name="abc_searchview_description_query" msgid="2550479030709304392">"Поисковый запрос"</string>
+    <string name="abc_searchview_description_search" msgid="8264924765203268293">"Поиск"</string>
+    <string name="abc_searchview_description_submit" msgid="8928215447528550784">"Отправить запрос"</string>
+    <string name="abc_searchview_description_voice" msgid="893419373245838918">"Голосовой поиск"</string>
+    <string name="abc_shareactionprovider_share_with" msgid="3421042268587513524">"Открыть доступ"</string>
+    <string name="abc_shareactionprovider_share_with_application" msgid="7165123711973476752">"Открыть доступ пользователю %s"</string>
+    <!-- From: file:/home/bishop/work/projects/android/nextgismobile/res/values-ru/strings.xml -->
+    <eat-comment />
+
+    <string name="about">О программе</string>
+    <string name="about_app">Приложение для отслеживания местоположения, отправки данных местоположения на сервер хранения в сети Интернет, показа карты и ввода геоданных. \n\nРазработчики:\n  Дмитрий Барышников\n\n\nДетали см. по ссылке</string>
+    <string name="acc_gather_dlg_title">Снятие координат</string>
+    <string name="action_settings">Настройки</string>
+    <string name="app_name">NextGIS Mobile</string>
+    <string name="cancel">Отмена</string>
+    <string name="compas_E">В</string>
+    <string name="compas_N">С</string>
+    <string name="compas_NE">СВ</string>
+    <string name="compas_NW">СЗ</string>
+    <string name="compas_S">Ю</string>
+    <string name="compas_SE">ЮВ</string>
+    <string name="compas_SW">ЮЗ</string>
+    <string name="compas_W">З</string>
+    <string name="compass_title">Компас</string>
+    <string name="coord_lat">Ш</string>
+    <string name="coord_lon">Д</string>
+    <string name="create_next_gpx">Запись GPX файла: </string>
+    <string name="default_azimuth">0°С</string>
+    <string name="detail_page">http://gis-lab.info/qa/nextgis-mobile.html</string>
+    <string name="error_loc_fix">Ошибка определения координат</string>
+    <string name="gpx_recording">Запись GPX…</string>
+    <string name="home_page">http://nextgis.ru</string>
+    <string name="info">Показать/скрыть инфопанель</string>
+    <string name="info_coordinates">Координаты</string>
+    <string name="info_height">Высота</string>
+    <string name="info_height_val">м</string>
+    <string name="info_lat">Широта</string>
+    <string name="info_lon">Долгота</string>
+    <string name="info_speed">Скорость</string>
+    <string name="info_speed_val">км/ч</string>
+    <string name="input_poi_added">Точка добавлена</string>
+    <string name="input_poi_azimuth">Азимут: </string>
+    <string name="input_poi_cat">Введите категорию: </string>
+    <string name="input_poi_coordiantes">Координаты: </string>
+    <string name="input_poi_dist">Расстояние: </string>
+    <string name="input_poi_finish">Ввести</string>
+    <string name="input_poi_step1">1. Введите описание</string>
+    <string name="input_poi_step2">2. Введите местоположение и ориентировку</string>
+    <string name="input_poi_step3">3. Сделайте фотографии</string>
+    <string name="input_poi_step4">4. Введите примечание</string>
+    <string name="input_poi_subcat">Введите подкатегорию: </string>
+    <string name="input_poi_subcatcustom">Введите пользовательскую подкатегорию: </string>
+    <string name="input_poi_subcatdefault">Нет</string>
+    <string name="input_poi_summary">Сводка: </string>
+    <string name="input_poi_take_photo">Сфотографировать</string>
+    <string name="input_poi_title">Ввести точку</string>
+    <string name="layers_title">Управление слоями</string>
+    <string name="map_title">Карта</string>
+    <string name="mark">Добавить точку</string>
+    <string name="pan">Центрировать</string>
+    <string name="pref_accurate_ce">Радиус погрешности</string>
+    <string name="pref_accurate_ce_summary">Радиус возможной погрешности</string>
+    <string name="pref_accurate_coordinates_pick">Уточненное снятие координат</string>
+    <string name="pref_accurate_coordinates_pick_count">Количество измерений GPS координат</string>
+    <string name="pref_accurate_coordinates_pick_count_summary">Количество измерений GPS координат для более точного позиционирования</string>
+    <string name="pref_accurate_coordinates_pick_summary">Если отмечено, выполняется более точное снятие координат. Выполняется накопление координат в точке и их усреднение</string>
+    <string name="pref_cat_acc">Точность снятие координат</string>
+    <string name="pref_cat_compass">Установки местоположения</string>
+    <string name="pref_cat_datasenser">Установки передачи данных</string>
+    <string name="pref_cat_main">Основные установки</string>
+    <string name="pref_cat_map">Карта</string>
+    <string name="pref_cat_tracker">Установки трекера</string>
+    <string name="pref_compass_show_magnetic">Показывать магнитый полюс</string>
+    <string name="pref_compass_show_magnetic_summary">Показывать магнитый полюс</string>
+    <string name="pref_compass_true_north">Показывать истинный полюс</string>
+    <string name="pref_compass_true_north_summary">Показывать истинный полюс</string>
+    <string name="pref_compass_vibration">Вибрация при касании компаса</string>
+    <string name="pref_compass_vibration_summary">при касании компаса устройство будет вибрировать</string>
+    <string name="pref_compass_wake_lock">Не выключать экран при активном компасе</string>
+    <string name="pref_compass_wake_lock_summary">Не выключать экран если показан компас</string>
+    <string name="pref_coordinates_format_dlg_title">Выберите формат координат</string>
+    <string name="pref_coordinates_format_name">Формат координат</string>
+    <string name="pref_coordinates_format_summary">Установите формат вывода координат</string>
+    <string name="pref_energy_economy_name">Выводить из режима сна для отправки местоположения</string>
+    <string name="pref_energy_economy_off">Выводить из режима сна для отправки местоположения</string>
+    <string name="pref_energy_economy_on">Не выводить из режима сна для отправки местоположения</string>
+    <string name="pref_energy_economy_summary">Выводить из режима сна для отправки местоположения</string>
+    <string name="pref_sendpos_name">Запуск/останов службы передачи местоположения</string>
+    <string name="pref_sendpos_service">Запуск/останов службы передачи местоположения</string>
+    <string name="pref_sendpos_service_off">Служба передачи местоположения остановлена</string>
+    <string name="pref_sendpos_service_on">Служба передачи местоположения запущена</string>
+    <string name="pref_site_dlg_title">Введите адрес сервера в сети Интернет</string>
+    <string name="pref_site_name">Сервер хранения</string>
+    <string name="pref_site_summary">Введите адрес сервера хранения в сети Интернет для хранения геоданных</string>
+    <string name="pref_start_services_onstartup">Запустить службу при старте устройства</string>
+    <string name="pref_start_services_onstartup_summary">Если отмечено, запускаются службы трекера и отправки при старте устройства</string>
+    <string name="pref_tile_size_name">Размер тайлов</string>
+    <string name="pref_tile_size_name_dlg_title">Выберите размер тайлов</string>
+    <string name="pref_tile_size_summary">Установите размер тайлов</string>
+    <string name="pref_time_between_sendpos_dlg_title">Введите минимально время между посылкой местоположения</string>
+    <string name="pref_time_between_sendpos_name">Мин. время между посылками местоположения</string>
+    <string name="pref_time_between_sendpos_summary">Введите минимально время между посылкой местоположения</string>
+    <string name="pref_title">Настройки NextGIS Mobile</string>
+    <string name="pref_tracker_min_dist_update_dlg_title">Введите мин. расстояние для записи координат</string>
+    <string name="pref_tracker_min_dist_update_name">Минимальное изменение расстояния для записи координат</string>
+    <string name="pref_tracker_min_dist_update_summary">Введите минимальное расстояние для записи координат</string>
+    <string name="pref_tracker_min_time_between_updates_dlg_title">Введите мин. время для записи координат</string>
+    <string name="pref_tracker_min_time_between_updates_name">Мин. время между записью координат</string>
+    <string name="pref_tracker_min_time_between_updates_summary">Введите минимальное время для записи координат</string>
+    <string name="pref_tracker_name">Запуск/останов службы трекера</string>
+    <string name="pref_tracker_service">Запуск/останов службы трекера</string>
+    <string name="pref_tracker_service_off">Служба трекера остановлена</string>
+    <string name="pref_tracker_service_on">Служба трекера запущена</string>
+    <string name="pref_uid_dlg_title">Введите индентификатор пользователя</string>
+    <string name="pref_uid_name">Идентификатор пользователя</string>
+    <string name="pref_uid_summary">Введите индентификатор пользователя</string>
+    <string name="sendpos_service_name">NGMSendPosService</string>
+    <string name="set_mode_hide_me">Прекратить ведение</string>
+    <string name="set_mode_offline">Перевести в оффлайн режим</string>
+    <string name="set_mode_online">Перевести в онлайн режим</string>
+    <string name="set_mode_show_me">Начать ведение</string>
+    <string name="settings">Настройки</string>
+    <string name="sum_az">Азимут: </string>
+    <string name="sum_cat">Категория: </string>
+    <string name="sum_coords">Координаты: </string>
+    <string name="sum_dist">Расстояние: </string>
+    <string name="sum_subcat">Подкатегория: </string>
+    <string name="switch_track_service">Запуск службы трекера</string>
+    <string name="tabs_camera_tab">Фото</string>
+    <string name="tabs_description_tab">Описание</string>
+    <string name="tabs_note_tab">Примечания</string>
+    <string name="tabs_position_tab">Координаты</string>
+    <string name="tracker_service_name">NGMTrackerService</string>
+
+</resources>
