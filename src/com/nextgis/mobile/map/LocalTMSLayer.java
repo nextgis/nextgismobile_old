@@ -88,11 +88,10 @@ public class LocalTMSLayer extends TMSLayer{
     }
 
     @Override
-    protected void fillDetails(JSONObject config){
-        super.fillDetails(config);
+    protected void setDetailes(JSONObject config){
+        super.setDetailes(config);
         try {
             mLimits = new HashMap<Integer, TileCacheLevelDescItem>();
-            mTMSType = config.getInt(JSON_TMSTYPE_KEY);
             final JSONArray jsonArray = config.getJSONArray(JSON_LEVELS_KEY);
             for(int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonLevel = jsonArray.getJSONObject(i);
@@ -110,6 +109,37 @@ public class LocalTMSLayer extends TMSLayer{
     }
 
     @Override
+    protected JSONObject getDetailes() throws JSONException {
+        JSONObject rootConfig = super.getDetailes();
+        JSONArray jsonArray = new JSONArray();
+        rootConfig.put(JSON_LEVELS_KEY, jsonArray);
+        int nMaxLevel = 0;
+        int nMinLevel = 512;
+        for (Map.Entry<Integer, TileCacheLevelDescItem> entry : mLimits.entrySet()) {
+            int nLevelZ = entry.getKey();
+            TileCacheLevelDescItem item = entry.getValue();
+            JSONObject oJSONLevel = new JSONObject();
+            oJSONLevel.put(JSON_LEVEL_KEY, nLevelZ);
+            oJSONLevel.put(JSON_MAXX_KEY, item.getMaxX());
+            oJSONLevel.put(JSON_MAXY_KEY, item.getMaxY());
+            oJSONLevel.put(JSON_MINX_KEY, item.getMinX());
+            oJSONLevel.put(JSON_MINY_KEY, item.getMinY());
+
+            jsonArray.put(oJSONLevel);
+
+            if(nMaxLevel < nLevelZ)
+                nMaxLevel = nLevelZ;
+            if(nMinLevel > nLevelZ)
+                nMinLevel = nLevelZ;
+        }
+
+        rootConfig.put(JSON_MAXLEVEL_KEY, nMaxLevel);
+        rootConfig.put(JSON_MINLEVEL_KEY, nMinLevel);
+
+        return rootConfig;
+    }
+
+    @Override
     public Drawable getIcon(){
         return getContext().getResources().getDrawable(R.drawable.ic_local_tms);
     }
@@ -117,51 +147,6 @@ public class LocalTMSLayer extends TMSLayer{
     @Override
     public int getType(){
         return LAYERTYPE_LOCAL_TMS;
-    }
-
-    @Override
-    public void save(){
-        try {
-            JSONObject rootConfig = new JSONObject();
-            rootConfig.put(JSON_NAME_KEY, mName);
-            rootConfig.put(JSON_TYPE_KEY, getType());
-            rootConfig.put(JSON_TMSTYPE_KEY, getTMSType());
-            rootConfig.put(JSON_MAXLEVEL_KEY, mMaxZoom);
-            rootConfig.put(JSON_MINLEVEL_KEY, mMinZoom);
-            rootConfig.put(JSON_VISIBILITY_KEY, getVisible());
-
-            JSONArray jsonArray = new JSONArray();
-            rootConfig.put(JSON_LEVELS_KEY, jsonArray);
-            int nMaxLevel = 0;
-            int nMinLevel = 512;
-            for (Map.Entry<Integer, TileCacheLevelDescItem> entry : mLimits.entrySet()) {
-                int nLevelZ = entry.getKey();
-                TileCacheLevelDescItem item = entry.getValue();
-                JSONObject oJSONLevel = new JSONObject();
-                oJSONLevel.put(JSON_LEVEL_KEY, nLevelZ);
-                oJSONLevel.put(JSON_MAXX_KEY, item.getMaxX());
-                oJSONLevel.put(JSON_MAXY_KEY, item.getMaxY());
-                oJSONLevel.put(JSON_MINX_KEY, item.getMinX());
-                oJSONLevel.put(JSON_MINY_KEY, item.getMinY());
-
-                jsonArray.put(oJSONLevel);
-
-                if(nMaxLevel < nLevelZ)
-                    nMaxLevel = nLevelZ;
-                if(nMinLevel > nLevelZ)
-                    nMinLevel = nLevelZ;
-            }
-
-            rootConfig.put(JSON_MAXLEVEL_KEY, nMaxLevel);
-            rootConfig.put(JSON_MINLEVEL_KEY, nMinLevel);
-
-            File outFile = new File(mPath, LAYER_CONFIG);
-            FileUtil.writeToFile(outFile, rootConfig.toString());
-        } catch (JSONException e){
-            reportError(e.getLocalizedMessage());
-        } catch (IOException e){
-            reportError(e.getLocalizedMessage());
-        }
     }
 
     public static void create(final MapBase map, Uri uri){

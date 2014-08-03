@@ -53,7 +53,7 @@ public abstract class Layer {
         mMap = map;
         mPath = path;
         mId = mMap.getNewId();
-        fillDetails(config);
+        setDetailes(config);
     }
 
     public final String getName() {
@@ -65,7 +65,7 @@ public abstract class Layer {
         mMap.onLayerChanged(this);
     }
 
-    protected void fillDetails(JSONObject config){
+    protected void setDetailes(JSONObject config){
         try {
             mName = config.getString(JSON_NAME_KEY);
             mMaxZoom = config.getInt(JSON_MAXLEVEL_KEY);
@@ -74,6 +74,16 @@ public abstract class Layer {
         } catch (JSONException e){
             reportError(e.getLocalizedMessage());
         }
+    }
+
+    protected JSONObject getDetailes() throws JSONException{
+        JSONObject rootConfig = new JSONObject();
+        rootConfig.put(JSON_NAME_KEY, mName);
+        rootConfig.put(JSON_TYPE_KEY, getType());
+        rootConfig.put(JSON_MAXLEVEL_KEY, mMaxZoom);
+        rootConfig.put(JSON_MINLEVEL_KEY, mMinZoom);
+        rootConfig.put(JSON_VISIBILITY_KEY, getVisible());
+        return rootConfig;
     }
 
     public final File getAbsolutePath(){
@@ -118,12 +128,7 @@ public abstract class Layer {
 
     public void save(){
         try {
-            JSONObject rootConfig = new JSONObject();
-            rootConfig.put(JSON_NAME_KEY, mName);
-            rootConfig.put(JSON_TYPE_KEY, getType());
-            rootConfig.put(JSON_MAXLEVEL_KEY, mMaxZoom);
-            rootConfig.put(JSON_MINLEVEL_KEY, mMinZoom);
-            rootConfig.put(JSON_VISIBILITY_KEY, getVisible());
+            JSONObject rootConfig = getDetailes();
             File outFile = new File(mPath, LAYER_CONFIG);
             FileUtil.writeToFile(outFile, rootConfig.toString());
         } catch (JSONException e){

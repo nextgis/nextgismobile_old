@@ -118,7 +118,9 @@ public class MapBase extends View {
     protected void runDrawThread(){
         mStartDrawTime = System.currentTimeMillis();
         for(Layer layer : mLayers) {
-            layer.draw();
+            if(layer.getVisible()) {
+                layer.draw();
+            }
         }
     }
 

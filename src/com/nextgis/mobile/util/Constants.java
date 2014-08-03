@@ -21,6 +21,9 @@
 package com.nextgis.mobile.util;
 
 public interface Constants {
+    /**
+     * Preference key - not UI
+     */
 	public static final String PREFS_TILE_SOURCE = "map_tile_source";	
 	public static final String PREFS_SCROLL_X = "map_scroll_x";
 	public static final String PREFS_SCROLL_Y = "map_scroll_y";
@@ -29,7 +32,10 @@ public interface Constants {
 	public static final String PREFS_SHOW_COMPASS = "map_show_compass";
 	public static final String PREFS_SHOW_INFO = "map_show_info";
     public static final String PREFS_MAP = "map";
-	
+
+    /**
+     * Preference keys - in UI
+     */
 	public static final String KEY_PREF_STORAGE_SITE = "storage_site";
 	public static final String KEY_PREF_USER_ID = "user_id";
 	public static final String KEY_PREF_MIN_DIST_CHNG_UPD = "min_dist_change_for_update";
@@ -62,6 +68,9 @@ public interface Constants {
 
     public static final int MAX_DRAWLER_WIDTH = 750;
 
+    /**
+     * DataSource type
+     */
     public final static int DS_TYPE_ZIP = 0;
 
     public static final String MAP_CONFIG = "map.json";
@@ -69,11 +78,17 @@ public interface Constants {
     public static final String LAYER_PREFIX = "layer_";
     public static final String TILE_EXT = ".tile";
 
+    /**
+     * Bundle keys
+     */
     public static final String BUNDLE_MSG_KEY = "msg";
     public static final String BUNDLE_HASERROR_KEY = "has_error";
     public static final String BUNDLE_SRC_KEY = "source";
     public static final String BUNDLE_PATH_KEY = "path";
 
+    /**
+     * JSON keys
+     */
     public static final String JSON_NAME_KEY = "name";
     public static final String JSON_VISIBILITY_KEY = "visible";
     public static final String JSON_TMSTYPE_KEY = "tms_type";
@@ -90,16 +105,26 @@ public interface Constants {
     public static final String JSON_LAYER_KEY = "layer";
     public static final String JSON_PATH_KEY = "path";
     public static final String JSON_MAP_KEY = "map";
+    public static final String JSON_URL_KEY = "url";
 
+    /**
+     * Layer type
+     */
     public static final int LAYERTYPE_LOCAL_TMS = 1;
     public static final int LAYERTYPE_LOCAL_RASTER = 2;
     public static final int LAYERTYPE_LOCAL_GEOJSON = 3;
     public static final int LAYERTYPE_TMS = 4;
     public static final int LAYERTYPE_NGW = 5;
 
+    /**
+     * TMS type
+     */
     public static final int TMSTYPE_NORMAL = 1;
     public static final int TMSTYPE_OSM = 2;
 
+    /**
+     * geometry type
+     */
     public static final int GEOMTYPE_Point = 1;
     public static final int GEOMTYPE_LineString = 2;
     public static final int GEOMTYPE_Polygon = 3;
@@ -108,5 +133,16 @@ public interface Constants {
     public static final int GEOMTYPE_MultiPolygon = 6;
     public static final int GEOMTYPE_GeometryCollection = 7;
     public static final int GEOMTYPE_None = 100;
+
+    /**
+     * time constants
+     */
+    public static final long ONE_SECOND = 1000;
+    public static final long ONE_MINUTE = ONE_SECOND * 60;
+    public static final long ONE_HOUR = ONE_MINUTE * 60;
+    public static final long ONE_DAY = ONE_HOUR * 24;
+    public static final long ONE_WEEK = ONE_DAY * 7;
+    public static final long ONE_YEAR = ONE_DAY * 365;
+    public static final long DEFAULT_MAXIMUM_CACHED_FILE_AGE = ONE_WEEK;
 
 }

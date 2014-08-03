@@ -21,74 +21,71 @@
 package com.nextgis.mobile.map;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 
-import com.nextgis.mobile.datasource.GeoEnvelope;
+import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.TileItem;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
-import static com.nextgis.mobile.util.Constants.JSON_TMSTYPE_KEY;
+import static com.nextgis.mobile.util.Constants.*;
 
-public abstract class TMSLayer extends Layer {
-    protected int mTMSType;
+public class RemoteTMSLayer extends TMSLayer {
+    protected String mURL;
 
-    public TMSLayer() {
+    public RemoteTMSLayer() {
         super();
-        mRenderer = new TMSRenderer(this);
     }
 
-    public TMSLayer(MapBase map, File path, JSONObject config) {
+    public RemoteTMSLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
-        mRenderer = new TMSRenderer(this);
-    }
-
-
-    public int getTMSType() {
-        return mTMSType;
-    }
-
-    public void setTMSType(int type) {
-        mTMSType = type;
     }
 
     @Override
-    public void draw() {
-        //1. for each layer run draw thread but not more than CPU count - 1 and less than 1
-        //2. wait until one thread exit and start new one
-        //3. periodically invalidate the whole screen, i.e. every 0.5 sec
-        //4. ?
-
-        if (mRenderer != null) {
-            mRenderer.draw();
+    public Bitmap getBitmap(TileItem tile) {
+        // try to get tile from local cache
+        File tilePath = new File(mPath, tile.toString("{z}/{x}/{y}.tile"));
+        if (tilePath.exists() && System.currentTimeMillis() - tilePath.lastModified() < DEFAULT_MAXIMUM_CACHED_FILE_AGE) {
+            return BitmapFactory.decodeFile(tilePath.getAbsolutePath());
         }
+        // try to get tile from remote
+
+        return null;
     }
 
-    public final List<TileItem> getTielsForBounds(GeoEnvelope bounds, int zoom) {
-        List<TileItem> list = new ArrayList<TileItem>();
-        return list;
+    @Override
+    public Drawable getIcon() {
+        return getContext().getResources().getDrawable(R.drawable.ic_remote_tms);
     }
 
-    public abstract Bitmap getBitmap(TileItem tile);
+    @Override
+    public int getType() {
+        return LAYERTYPE_TMS;
+    }
+
+    @Override
+    public void changeProperties() {
+
+    }
 
     @Override
     protected void setDetailes(JSONObject config) {
         super.setDetailes(config);
         try {
-            mTMSType = config.getInt(JSON_TMSTYPE_KEY);
-        } catch (JSONException e){
+            mURL = config.getString(JSON_URL_KEY);
+        } catch (JSONException e) {
             reportError(e.getLocalizedMessage());
         }
     }
 
     @Override
-    protected JSONObject getDetailes() throws JSONException{
-        JSONObject rootObject = super.getDetailes();
-        rootObject.put(JSON_TMSTYPE_KEY, mTMSType);
-        return rootObject;
+    protected JSONObject getDetailes() throws JSONException {
+        JSONObject rootConfig = super.getDetailes();
+        rootConfig.put(JSON_URL_KEY, mURL);
+        return rootConfig;
     }
 }
