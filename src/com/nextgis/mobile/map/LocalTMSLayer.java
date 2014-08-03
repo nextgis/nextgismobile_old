@@ -26,6 +26,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -42,6 +44,7 @@ import android.widget.Toast;
 
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.TileCacheLevelDescItem;
+import com.nextgis.mobile.datasource.TileItem;
 import com.nextgis.mobile.util.FileUtil;
 
 import org.json.JSONArray;
@@ -60,8 +63,7 @@ import java.util.zip.ZipInputStream;
 
 import static com.nextgis.mobile.util.Constants.*;
 
-public class LocalTMSLayer extends Layer{
-    protected int mTMSType;
+public class LocalTMSLayer extends TMSLayer{
     protected Map<Integer, TileCacheLevelDescItem> mLimits;
 
     public LocalTMSLayer(){
@@ -69,16 +71,20 @@ public class LocalTMSLayer extends Layer{
         mLimits = new HashMap<Integer, TileCacheLevelDescItem>();
     }
 
-    public LocalTMSLayer(MapBase map, short id, File path, JSONObject config){
-        super(map, id, path, config);
+    public LocalTMSLayer(MapBase map, File path, JSONObject config){
+        super(map, path, config);
     }
 
-    public int getTMSType(){
-        return mTMSType;
-    }
-
-    public void setTMSType(int type){
-        mTMSType = type;
+    @Override
+    public Bitmap getBitmap(TileItem tile) {
+        //check if present
+        TileCacheLevelDescItem item = mLimits.get(tile.getZoomLevel());
+        if(item != null && item.isInside(tile.getX(), tile.getY())){
+            File tilePath = new File(mPath, tile.toString("{z}/{x}/{y}.tile"));
+            if (tilePath.exists())
+                return BitmapFactory.decodeFile(tilePath.getAbsolutePath());
+        }
+        return null;
     }
 
     @Override
@@ -465,6 +471,5 @@ public class LocalTMSLayer extends Layer{
             mLayerConfig.put(JSON_MINLEVEL_KEY, nMinLevel);
         }
     }
-
 }
 

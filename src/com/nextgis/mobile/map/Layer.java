@@ -43,19 +43,20 @@ public abstract class Layer {
     protected int mMinZoom;
     protected File mPath;
     protected MapBase mMap;
+    protected Renderer mRenderer;
 
     public Layer(){
 
     }
 
-    public Layer(MapBase map, short id, File path, JSONObject config){
+    public Layer(MapBase map, File path, JSONObject config){
         mMap = map;
         mPath = path;
-        mId = id;
+        mId = mMap.getNewId();
         fillDetails(config);
     }
 
-    public String getName() {
+    public final String getName() {
         return mName;
     }
 
@@ -75,11 +76,11 @@ public abstract class Layer {
         }
     }
 
-    protected File getAbsolutePath(){
+    public final File getAbsolutePath(){
         return mPath;
     }
 
-    public String getRelativePath(){
+    public final String getRelativePath(){
         return mPath.getName();
     }
 
@@ -94,7 +95,7 @@ public abstract class Layer {
         Toast.makeText(getContext(), errMsg, Toast.LENGTH_SHORT).show();
     }
 
-    public short getId(){
+    public final short getId(){
         return mId;
     }
 
@@ -102,7 +103,7 @@ public abstract class Layer {
 
     public abstract void changeProperties();
 
-    public boolean getVisible(){
+    public final boolean getVisible(){
         return mIsVisible;
     }
 
@@ -130,5 +131,11 @@ public abstract class Layer {
         } catch (IOException e){
             reportError(e.getLocalizedMessage());
         }
+    }
+
+    public abstract void draw() throws NullPointerException;
+
+    public final MapBase getMap(){
+        return mMap;
     }
 }

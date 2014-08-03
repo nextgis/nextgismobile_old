@@ -99,4 +99,14 @@ public interface Constants {
 
     public static final int TMSTYPE_NORMAL = 1;
     public static final int TMSTYPE_OSM = 2;
+
+    public static final int GEOMTYPE_Point = 1;
+    public static final int GEOMTYPE_LineString = 2;
+    public static final int GEOMTYPE_Polygon = 3;
+    public static final int GEOMTYPE_MultiIPoint = 4;
+    public static final int GEOMTYPE_MultiLineString = 5;
+    public static final int GEOMTYPE_MultiPolygon = 6;
+    public static final int GEOMTYPE_GeometryCollection = 7;
+    public static final int GEOMTYPE_None = 100;
+
 }

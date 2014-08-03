@@ -56,6 +56,7 @@ public class MapBase extends View {
     protected File mMapPath;
     protected Handler mHandler;
     protected short mNewId;
+    protected long mStartDrawTime;
 
     /**
      * The base map class
@@ -69,8 +70,9 @@ public class MapBase extends View {
         mListeners = new ArrayList<MapEventListener>();
         mLayers = new ArrayList<Layer>();
 
-        CreateHandler();
+        createHandler();
 
+        //initialise display
         mDisplay = new GISDisplay(context);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -113,10 +115,17 @@ public class MapBase extends View {
         }
     }
 
+    protected void runDrawThread(){
+        mStartDrawTime = System.currentTimeMillis();
+        for(Layer layer : mLayers) {
+            layer.draw();
+        }
+    }
+
     /**
      * Create handler for messages
      */
-    protected void CreateHandler(){
+    protected void createHandler(){
         mHandler = new Handler() {
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
@@ -165,7 +174,7 @@ public class MapBase extends View {
             int nType = rootObject.getInt(JSON_TYPE_KEY);
             switch (nType){
                 case LAYERTYPE_LOCAL_TMS:
-                    Layer layer = new LocalTMSLayer(this, getNewId(), path, rootObject);
+                    Layer layer = new LocalTMSLayer(this, path, rootObject);
                     mLayers.add(layer);
                     onLayerAdded(layer);
                     break;
@@ -249,7 +258,7 @@ public class MapBase extends View {
      *
      * @return new id
      */
-    protected short getNewId(){
+    public short getNewId(){
         return mNewId++;
     }
 
@@ -386,5 +395,16 @@ public class MapBase extends View {
      */
     public Handler getMapEventsHandler(){
         return mHandler;
+    }
+
+    protected void onLayerDrawFinished(float percent){
+        if(System.currentTimeMillis() - mStartDrawTime > 500 || percent >= 100){
+            mStartDrawTime = System.currentTimeMillis();
+            invalidate();
+        }
+    }
+
+    public final GISDisplay getGISDisplay(){
+        return mDisplay;
     }
 }
