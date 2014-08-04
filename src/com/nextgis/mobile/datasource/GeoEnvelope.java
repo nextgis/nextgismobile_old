@@ -47,6 +47,22 @@ public class GeoEnvelope {
         mMaxY = env.mMaxY;
     }
 
+    public final double getMinX(){
+        return mMinX;
+    }
+
+    public final double getMinY(){
+        return mMinY;
+    }
+
+    public final double getMaxX(){
+        return mMaxX;
+    }
+
+    public final double getMaxY(){
+        return mMaxY;
+    }
+
     public final boolean isInit(){
         return mMinX != 0 || mMinY != 0 || mMaxX != 0 || mMaxY != 0;
     }

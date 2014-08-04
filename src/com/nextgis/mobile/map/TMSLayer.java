@@ -32,7 +32,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.nextgis.mobile.util.Constants.JSON_TMSTYPE_KEY;
+import static com.nextgis.mobile.util.Constants.*;
 
 public abstract class TMSLayer extends Layer {
     protected int mTMSType;
@@ -70,6 +70,29 @@ public abstract class TMSLayer extends Layer {
 
     public final List<TileItem> getTielsForBounds(GeoEnvelope bounds, int zoom) {
         List<TileItem> list = new ArrayList<TileItem>();
+        int maxY = 1 << zoom;
+        int halfMax = maxY / 2;
+        //1. get tile size in m for current zoom
+        double[] tileSize = mMap.getGISDisplay().getTileSize();
+        //2. get bottom left tile
+        int begX = (int) (bounds.getMinX() / tileSize[0]) + halfMax;
+        int begY = (int) (bounds.getMinY() / tileSize[1]) + halfMax;
+        int endX = (int) (bounds.getMaxX() / tileSize[0] + .5) + halfMax;
+        int endY = (int) (bounds.getMaxY() / tileSize[1] + .5) + halfMax;
+
+
+        for(int x = begX; x < endX; x++){
+            for(int y = begY; y < endY; y++){
+                int realY = y;
+                if(mTMSType == TMSTYPE_OSM){
+                    realY = maxY - y - 1;
+                }
+
+                TileItem item = new TileItem(x, realY, zoom);
+                list.add(item);
+            }
+        }
+
         return list;
     }
 

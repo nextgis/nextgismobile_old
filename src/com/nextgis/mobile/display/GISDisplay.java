@@ -48,6 +48,7 @@ public class GISDisplay {
     protected GeoEnvelope mCurrentBounds;
     protected GeoPoint mCenter;
     protected Matrix mTransformMatrix;
+    protected Matrix mInvertTransformMatrix;
     protected final Matrix mDefaultMatrix;
     protected final int mTileSize = 256;
     protected int mMinZoomLevel;
@@ -78,13 +79,15 @@ public class GISDisplay {
 
         //default transform matrix
         mTransformMatrix = new Matrix();
-
-        //default zoom and center
-        setZoomAndCenter(mMinZoomLevel, new GeoPoint());
+        mInvertTransformMatrix = new Matrix();
 
         mMainBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         mMainCanvas = new Canvas(mMainBitmap);
         mDefaultMatrix = mMainCanvas.getMatrix();
+
+        //default zoom and center
+        setZoomAndCenter(mMinZoomLevel, new GeoPoint());
+
         mMainCanvas.setMatrix(mTransformMatrix);
     }
 
@@ -94,7 +97,7 @@ public class GISDisplay {
         mZoomLevel = zoom;
         mCenter = center;
 
-        double mapTileSize = Math.pow(2, zoom);
+        double mapTileSize = 1 << zoom;
         double mapPixelSize = mapTileSize * mTileSize;
 
         double scaleX = mapPixelSize / mFullBounds.width();
@@ -108,10 +111,13 @@ public class GISDisplay {
         mTransformMatrix.postTranslate((float)center.getX(), (float)center.getY());
         mTransformMatrix.postScale(mScale, -mScale);
         mTransformMatrix.postTranslate(mHalfWidth, mHaldHeight);
+        mTransformMatrix.invert(mInvertTransformMatrix);
 
         RectF rect = new RectF(0, 0, mMainBitmap.getWidth(), mMainBitmap.getHeight());
-        mTransformMatrix.mapRect(rect);
-        mCurrentBounds = new GeoEnvelope(rect.left, rect.right, rect.bottom, rect.top);
+        mInvertTransformMatrix.mapRect(rect);
+//        mCurrentBounds = new GeoEnvelope(rect.left, rect.right, rect.bottom, rect.top);
+
+        mCurrentBounds = new GeoEnvelope(Math.min(rect.left, rect.right), Math.max(rect.left, rect.right), Math.min(rect.bottom, rect.top), Math.max(rect.bottom, rect.top));
     }
 
     public Bitmap getMainBitmap() {
@@ -172,5 +178,13 @@ public class GISDisplay {
 
     public final GeoEnvelope getBounds(){
         return mCurrentBounds;
+    }
+
+    public double[] getTileSize(){
+
+        RectF rect = new RectF(0, 0, mTileSize, mTileSize);
+        mInvertTransformMatrix.mapRect(rect);
+
+        return new double[] {Math.abs(rect.width()), Math.abs(rect.height())};
     }
 }

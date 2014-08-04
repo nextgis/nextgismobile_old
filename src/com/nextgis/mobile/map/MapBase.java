@@ -110,6 +110,7 @@ public class MapBase extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         //super.onDraw(canvas);
+        runDrawThread();
         if(mDisplay != null){
             canvas.drawBitmap(mDisplay.getMainBitmap(), 0, 0, null);
         }
