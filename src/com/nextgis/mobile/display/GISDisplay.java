@@ -122,11 +122,11 @@ public class GISDisplay {
 
     public Bitmap getMainBitmap() {
         //Test
-        clearBackground();
+        //clearBackground();
         return mMainBitmap;
     }
 
-    protected void clearBackground() {
+    public void clearBackground() {
         mMainCanvas.setMatrix(mDefaultMatrix);
         Bitmap bkBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.bk_tile);
         for (int i = 0; i < mMainBitmap.getWidth(); i += bkBitmap.getWidth()) {
@@ -178,6 +178,10 @@ public class GISDisplay {
 
     public final GeoEnvelope getBounds(){
         return mCurrentBounds;
+    }
+
+    public final GeoEnvelope getFullBounds(){
+        return mFullBounds;
     }
 
     public double[] getTileSize(){

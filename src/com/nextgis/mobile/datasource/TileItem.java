@@ -29,10 +29,11 @@ public class TileItem implements Parcelable {
     protected int mY;
     protected GeoPoint mTopLeftCorner;
 
-    public TileItem(int x, int y, int zoom){
+    public TileItem(int x, int y, int zoom, GeoPoint topLeftCorner){
         mZoomLevel = zoom;
         mX = x;
         mY = y;
+        mTopLeftCorner = topLeftCorner;
     }
 
     @Override

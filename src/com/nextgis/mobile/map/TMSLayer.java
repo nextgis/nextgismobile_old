@@ -23,6 +23,7 @@ package com.nextgis.mobile.map;
 import android.graphics.Bitmap;
 
 import com.nextgis.mobile.datasource.GeoEnvelope;
+import com.nextgis.mobile.datasource.GeoPoint;
 import com.nextgis.mobile.datasource.TileItem;
 
 import org.json.JSONException;
@@ -56,18 +57,6 @@ public abstract class TMSLayer extends Layer {
         mTMSType = type;
     }
 
-    @Override
-    public void draw() {
-        //1. for each layer run draw thread but not more than CPU count - 1 and less than 1
-        //2. wait until one thread exit and start new one
-        //3. periodically invalidate the whole screen, i.e. every 0.5 sec
-        //4. ?
-
-        if (mRenderer != null) {
-            mRenderer.draw();
-        }
-    }
-
     public final List<TileItem> getTielsForBounds(GeoEnvelope bounds, int zoom) {
         List<TileItem> list = new ArrayList<TileItem>();
         int maxY = 1 << zoom;
@@ -79,6 +68,8 @@ public abstract class TMSLayer extends Layer {
         int begY = (int) (bounds.getMinY() / tileSize[1]) + halfMax;
         int endX = (int) (bounds.getMaxX() / tileSize[0] + .5) + halfMax;
         int endY = (int) (bounds.getMaxY() / tileSize[1] + .5) + halfMax;
+        //3.
+        GeoEnvelope fullBounds = mMap.getGISDisplay().getFullBounds();
 
 
         for(int x = begX; x < endX; x++){
@@ -88,7 +79,8 @@ public abstract class TMSLayer extends Layer {
                     realY = maxY - y - 1;
                 }
 
-                TileItem item = new TileItem(x, realY, zoom);
+                final GeoPoint pt = new GeoPoint(fullBounds.getMinX() + x * tileSize[0], fullBounds.getMinY() + (y + 1) * tileSize[1]);
+                TileItem item = new TileItem(x, realY, zoom, pt);
                 list.add(item);
             }
         }

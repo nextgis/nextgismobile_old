@@ -28,10 +28,7 @@ import android.util.Log;
 
 import java.io.File;
 
-import static com.nextgis.mobile.util.Constants.BUNDLE_PATH_KEY;
-import static com.nextgis.mobile.util.Constants.BUNDLE_SRC_KEY;
-import static com.nextgis.mobile.util.Constants.DS_TYPE_ZIP;
-import static com.nextgis.mobile.util.Constants.TAG;
+import static com.nextgis.mobile.util.Constants.*;
 
 public class MapView extends MapBase {
 
@@ -50,8 +47,8 @@ public class MapView extends MapBase {
 
     @Override
     protected void processMessage(Bundle bundle){
-        switch (bundle.getInt(BUNDLE_SRC_KEY)){
-            case DS_TYPE_ZIP: //the new layer was create and need to be added on map
+        switch (bundle.getInt(BUNDLE_TYPE_KEY)){
+            case MSGTYPE_DS_TYPE_ZIP: //the new layer was create and need to be added on map
                 File path = (File) bundle.getSerializable(BUNDLE_PATH_KEY);
                 addLayer(path);
                 break;

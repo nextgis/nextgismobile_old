@@ -22,12 +22,17 @@ package com.nextgis.mobile.map;
 
 
 import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 
 import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.TileItem;
 import com.nextgis.mobile.display.GISDisplay;
 
 import java.util.List;
+
+import static com.nextgis.mobile.util.Constants.*;
 
 public class TMSRenderer extends Renderer{
 
@@ -39,6 +44,7 @@ public class TMSRenderer extends Renderer{
     @Override
     public void draw() throws NullPointerException {
         final MapBase map = mLayer.getMap();
+        final Handler handler = map.getMapEventsHandler();
         final GISDisplay display = map.getGISDisplay();
         final int zoom = display.getZoomLevel();
         GeoEnvelope env = display.getBounds();
@@ -46,13 +52,36 @@ public class TMSRenderer extends Renderer{
         TMSLayer tmsLayer = (TMSLayer)mLayer;
         final List<TileItem> tiles = tmsLayer.getTielsForBounds(env, zoom);
         int counter = 0;
-        float size = tiles.size() / 100;
+        float size = (float)tiles.size() / 100;
         for(TileItem tile : tiles){
+            if(tmsLayer.isDrawCanceled())
+                break;
             final Bitmap bmp = tmsLayer.getBitmap(tile);
             if(bmp != null)
                 display.drawBitmap(bmp, tile.getPoint());
-            map.onLayerDrawFinished(counter / size);
+            if(size != 0.0) {
+                if(handler != null){
+                    Bundle bundle = new Bundle();
+                    bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
+                    bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_DRAWING_DONE);
+                    bundle.putFloat(BUNDLE_DONE_KEY, (float) counter / size);
+
+                    Message msg = new Message();
+                    msg.setData(bundle);
+                    handler.sendMessage(msg);
+                }
+                counter++;
+            }
         }
-        map.onLayerDrawFinished(100);
+        if(handler != null){
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
+            bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_DRAWING_DONE);
+            bundle.putFloat(BUNDLE_DONE_KEY, 100.0f);
+
+            Message msg = new Message();
+            msg.setData(bundle);
+            handler.sendMessage(msg);
+        }
     }
 }

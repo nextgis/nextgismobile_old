@@ -35,7 +35,7 @@ import java.io.IOException;
 
 import static com.nextgis.mobile.util.Constants.*;
 
-public abstract class Layer {
+public abstract class Layer implements Runnable{
     protected String mName;
     protected boolean mIsVisible;
     protected short mId;
@@ -44,6 +44,7 @@ public abstract class Layer {
     protected File mPath;
     protected MapBase mMap;
     protected Renderer mRenderer;
+    protected Thread mDrawingThread;
 
     public Layer(){
 
@@ -138,9 +139,31 @@ public abstract class Layer {
         }
     }
 
-    public abstract void draw() throws NullPointerException;
+    public void draw() throws NullPointerException{
+        if (mRenderer != null) {
+            mRenderer.draw();
+        }
+    }
+
+    public void cancelDraw(){
+        if(mDrawingThread != null){
+            mDrawingThread.interrupt();
+        }
+    }
+
+    public boolean isDrawCanceled(){
+        return Thread.interrupted();
+    }
 
     public final MapBase getMap(){
         return mMap;
+    }
+
+    @Override
+    public void run() {
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        mDrawingThread = Thread.currentThread();
+        draw();
+        mDrawingThread = null;
     }
 }

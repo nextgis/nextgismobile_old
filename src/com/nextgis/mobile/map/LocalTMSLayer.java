@@ -361,7 +361,7 @@ public class LocalTMSLayer extends TMSLayer{
                     Bundle bundle = new Bundle();
                     bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
                     bundle.putString(BUNDLE_MSG_KEY, sMsg);
-                    bundle.putInt(BUNDLE_SRC_KEY, DS_TYPE_ZIP);
+                    bundle.putInt(BUNDLE_TYPE_KEY, DS_TYPE_ZIP);
                     bundle.putSerializable(BUNDLE_PATH_KEY, mOutputPath);
 
                     Message msg = new Message();
@@ -387,7 +387,7 @@ public class LocalTMSLayer extends TMSLayer{
                 Bundle bundle = new Bundle();
                 bundle.putBoolean(BUNDLE_HASERROR_KEY, true);
                 bundle.putString(BUNDLE_MSG_KEY, sMsg);
-                bundle.putInt(BUNDLE_SRC_KEY, DS_TYPE_ZIP);
+                bundle.putInt(BUNDLE_TYPE_KEY, DS_TYPE_ZIP);
 
                 Message msg = new Message();
                 msg.setData(bundle);

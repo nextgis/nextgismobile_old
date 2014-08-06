@@ -45,6 +45,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static com.nextgis.mobile.util.Constants.*;
 
@@ -57,6 +61,11 @@ public class MapBase extends View {
     protected Handler mHandler;
     protected short mNewId;
     protected long mStartDrawTime;
+    protected boolean mContinueDrawing;
+    protected final BlockingQueue<Runnable> mDrawWorkQueue;
+    protected ThreadPoolExecutor mDrawThreadPool;
+
+    protected static int mCPUTotalCount;
 
     /**
      * The base map class
@@ -70,6 +79,11 @@ public class MapBase extends View {
         mListeners = new ArrayList<MapEventListener>();
         mLayers = new ArrayList<Layer>();
 
+        mCPUTotalCount = Runtime.getRuntime().availableProcessors() - 1;
+        if(mCPUTotalCount < 1)
+            mCPUTotalCount = 1;
+        mContinueDrawing = false;
+
         createHandler();
 
         //initialise display
@@ -78,6 +92,9 @@ public class MapBase extends View {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         File defaultPath = context.getExternalFilesDir(PREFS_MAP);
         mMapPath = new File(sharedPreferences.getString(KEY_PREF_MAP_PATH, defaultPath.getPath()));
+
+        mDrawWorkQueue = new LinkedBlockingQueue<Runnable>();
+        mDrawThreadPool = new ThreadPoolExecutor(1, mCPUTotalCount, KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mDrawWorkQueue);
     }
 
     /**
@@ -110,19 +127,38 @@ public class MapBase extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         //super.onDraw(canvas);
-        runDrawThread();
         if(mDisplay != null){
             canvas.drawBitmap(mDisplay.getMainBitmap(), 0, 0, null);
         }
     }
 
-    protected void runDrawThread(){
+    protected synchronized void runDrawThread(){
+        cancelDrawThread();
         mStartDrawTime = System.currentTimeMillis();
+        mDisplay.clearBackground();
         for(Layer layer : mLayers) {
             if(layer.getVisible()) {
-                layer.draw();
+                mDrawThreadPool.execute(layer);
             }
         }
+    }
+
+    protected synchronized void cancelDrawThread(){
+        /*
+         * Creates an array of Runnables that's the same size as the
+         * thread pool work queue
+         */
+        Runnable[] runnableArray = new Runnable[mDrawWorkQueue.size()];
+        // Populates the array with the Runnables in the queue
+        mDrawWorkQueue.toArray(runnableArray);
+
+        // Iterates over the array of tasks
+        for (Runnable runnable : runnableArray) {
+            Layer layer = (Layer) runnable;
+            layer.cancelDraw();
+        }
+
+        mDrawWorkQueue.clear();
     }
 
     /**
@@ -161,7 +197,13 @@ public class MapBase extends View {
      * @param bundle A message payload
      */
     protected void processMessage(Bundle bundle){
-        //nothing to do now
+        switch (bundle.getInt(BUNDLE_TYPE_KEY)){
+            case MSGTYPE_DRAWING_DONE:
+                onLayerDrawFinished(bundle.getFloat(BUNDLE_DONE_KEY));
+                break;
+            default:
+                break;
+        }
     }
 
     /**
@@ -215,6 +257,8 @@ public class MapBase extends View {
                 if(inFile.exists())
                     addLayer(inFile);
             }
+            //let's draw the map
+            runDrawThread();
         } catch (IOException e){
             reportError(e.getLocalizedMessage());
         } catch (JSONException e){
@@ -282,6 +326,7 @@ public class MapBase extends View {
      * @param layer A new layer
      */
     protected void onLayerAdded(Layer layer){
+        runDrawThread();
         if(mListeners == null)
             return;
         for (MapEventListener listener : mListeners)
@@ -294,6 +339,7 @@ public class MapBase extends View {
      * @param layer A changed layer
      */
     protected void onLayerChanged(Layer layer){
+        runDrawThread();
         if(mListeners == null)
             return;
         for (MapEventListener listener : mListeners)
@@ -306,6 +352,7 @@ public class MapBase extends View {
      * @param id A deleted layer identificator
      */
     protected void onLayerDeleted(int id){
+        runDrawThread();
         if(mListeners == null)
             return;
         for (MapEventListener listener : mListeners)

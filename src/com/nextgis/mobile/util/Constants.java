@@ -20,6 +20,8 @@
  ****************************************************************************/
 package com.nextgis.mobile.util;
 
+import java.util.concurrent.TimeUnit;
+
 public interface Constants {
     /**
      * Preference key - not UI
@@ -71,7 +73,7 @@ public interface Constants {
     /**
      * DataSource type
      */
-    public final static int DS_TYPE_ZIP = 0;
+    public final static int DS_TYPE_ZIP = 1;
 
     public static final String MAP_CONFIG = "map.json";
     public static final String LAYER_CONFIG = "layer.json";
@@ -79,12 +81,19 @@ public interface Constants {
     public static final String TILE_EXT = ".tile";
 
     /**
+     * message type
+     */
+    public final static int MSGTYPE_DS_TYPE_ZIP = DS_TYPE_ZIP;
+    public final static int MSGTYPE_DRAWING_DONE = 500;
+
+    /**
      * Bundle keys
      */
     public static final String BUNDLE_MSG_KEY = "msg";
     public static final String BUNDLE_HASERROR_KEY = "has_error";
-    public static final String BUNDLE_SRC_KEY = "source";
+    public static final String BUNDLE_TYPE_KEY = "type";
     public static final String BUNDLE_PATH_KEY = "path";
+    public static final String BUNDLE_DONE_KEY = "done";
 
     /**
      * JSON keys
@@ -144,5 +153,8 @@ public interface Constants {
     public static final long ONE_WEEK = ONE_DAY * 7;
     public static final long ONE_YEAR = ONE_DAY * 365;
     public static final long DEFAULT_MAXIMUM_CACHED_FILE_AGE = ONE_WEEK;
+
+    public static final int KEEP_ALIVE_TIME = 1;
+    public static final TimeUnit KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
 
 }
