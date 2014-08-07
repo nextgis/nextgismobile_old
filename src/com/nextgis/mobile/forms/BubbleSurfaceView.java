@@ -139,7 +139,7 @@ public class BubbleSurfaceView extends SurfaceView implements Runnable {
 			canvas.drawBitmap(bubble, x, y, null);
 
 			// drawing bubble cover
-			// canvas.drawBitmap(bubbleCover, 0, 0, null);
+			// canvas.draw Bitmap(bubbleCover, 0, 0, null);
 			
 			try{
 				holder.unlockCanvasAndPost(canvas);

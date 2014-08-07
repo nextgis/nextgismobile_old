@@ -25,15 +25,24 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+
+import com.nextgis.mobile.datasource.GeoPoint;
 
 import java.io.File;
 
 import static com.nextgis.mobile.util.Constants.*;
 
-public class MapView extends MapBase {
+public class MapView extends MapBase implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
+
+    protected final GestureDetector mGestureDetector;
 
     public MapView(Context context) {
         super(context);
+
+        mGestureDetector = new GestureDetector(context, this);
+        mGestureDetector.setOnDoubleTapListener(this);
     }
 
     public void createLayer(Uri uri, int type){
@@ -55,6 +64,59 @@ public class MapView extends MapBase {
             default:
                 super.processMessage(bundle);
         }
+    }
+
+    // delegate the event to the gesture detector
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        return mGestureDetector.onTouchEvent(e);
+    }
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        return true;
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onDoubleTap(final MotionEvent e) {
+        Log.d(TAG, "onDoubleTap: " + e.getX() + ", " + e.getY());
+        final GeoPoint pt = mDisplay.screenToMap(new GeoPoint(e.getX(), e.getY()));
+        mDisplay.setZoomAndCenter(mDisplay.getZoomLevel() + 1, pt);
+        runDrawThread();
+        return true;
+    }
+
+    @Override
+    public boolean onDoubleTapEvent(final MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onSingleTapConfirmed(final MotionEvent e) {
+        return false;
     }
 }
 

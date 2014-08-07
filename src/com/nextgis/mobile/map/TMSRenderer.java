@@ -52,13 +52,13 @@ public class TMSRenderer extends Renderer{
         TMSLayer tmsLayer = (TMSLayer)mLayer;
         final List<TileItem> tiles = tmsLayer.getTielsForBounds(env, zoom);
         int counter = 0;
-        float size = (float)tiles.size() / 100;
+        float size = (float)tiles.size() / 100.0f;
         for(TileItem tile : tiles){
             if(tmsLayer.isDrawCanceled())
                 break;
             final Bitmap bmp = tmsLayer.getBitmap(tile);
             if(bmp != null)
-                display.drawBitmap(bmp, tile.getPoint());
+                display.drawTile(bmp, tile.getPoint());
             if(size != 0.0) {
                 if(handler != null){
                     Bundle bundle = new Bundle();
