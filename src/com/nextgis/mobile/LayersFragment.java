@@ -38,6 +38,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.nextgis.mobile.datasource.GeoPoint;
 import com.nextgis.mobile.map.Layer;
 import com.nextgis.mobile.map.MapEventListener;
 import com.nextgis.mobile.map.MapView;
@@ -233,5 +234,10 @@ public class LayersFragment extends Fragment implements MapEventListener{
         if(mListAdapter != null){
             mListAdapter.notifyDataSetInvalidated();
         }
+    }
+
+    @Override
+    public void onExtentChanged(int zoom, GeoPoint center) {
+
     }
 }

@@ -32,6 +32,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.nextgis.mobile.R;
+import com.nextgis.mobile.datasource.GeoPoint;
 import com.nextgis.mobile.display.GISDisplay;
 import com.nextgis.mobile.util.FileUtil;
 
@@ -240,6 +241,30 @@ public class MapBase extends View {
     }
 
     /**
+     * Set new map extent according zoom level and center
+     * @param zoom A zoom level
+     * @param center A map center coordinates
+     */
+    protected void setZoomAndCenter(final int  zoom, final GeoPoint center){
+        if(mDisplay != null && zoom >= mDisplay.getMinZoomLevel() && zoom <= mDisplay.getMaxZoomLevel()){
+            mDisplay.setZoomAndCenter(zoom, center);
+            onExtentChanged(zoom, center);
+        }
+    }
+
+    public boolean canZoomIn(){
+        if(mDisplay == null)
+            return false;
+        return mDisplay.getZoomLevel() < mDisplay.getMaxZoomLevel();
+    }
+
+    public boolean canZoomOut(){
+        if(mDisplay == null)
+            return false;
+        return mDisplay.getZoomLevel() > mDisplay.getMinZoomLevel();
+    }
+
+    /**
      * Load map properties and layers from map.json file
      */
     protected synchronized void loadMap(){
@@ -360,6 +385,19 @@ public class MapBase extends View {
     }
 
     /**
+     * Send extent change event to all listeners
+     * @param zoom A zoom level
+     * @param center A map center coordinates
+     */
+    protected void onExtentChanged(int zoom, GeoPoint center){
+        runDrawThread();
+        if(mListeners == null)
+            return;
+        for (MapEventListener listener : mListeners)
+            listener.onExtentChanged(zoom, center);
+    }
+
+    /**
      *  onPauses should be called from parent activity
      */
     public void onPause(){
@@ -456,5 +494,11 @@ public class MapBase extends View {
 
     public final GISDisplay getGISDisplay(){
         return mDisplay;
+    }
+
+    public final int getZoomLevel() {
+        if(mDisplay != null)
+            return mDisplay.getZoomLevel();
+        return 0;
     }
 }

@@ -21,8 +21,11 @@
 package com.nextgis.mobile.map;
 
 
+import com.nextgis.mobile.datasource.GeoPoint;
+
 public interface MapEventListener {
     public abstract void onLayerAdded(Layer layer);
     public abstract void onLayerDeleted(int id);
     public abstract void onLayerChanged(Layer layer);
+    public abstract void onExtentChanged(int zoom, GeoPoint center);
 }

@@ -63,8 +63,6 @@ public interface Constants {
 
 	public static final String SERVICE_PREF = "preferences";
 
-	public static final int MAP_RELATIVE_LAYOUT = 777;
-
     public final static String LOACTION_HINT = "com.nextgis.gis.location";
     public final static String TAG = "nextgismobile";
 

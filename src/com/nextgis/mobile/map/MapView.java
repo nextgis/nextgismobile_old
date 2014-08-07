@@ -104,8 +104,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     public boolean onDoubleTap(final MotionEvent e) {
         Log.d(TAG, "onDoubleTap: " + e.getX() + ", " + e.getY());
         final GeoPoint pt = mDisplay.screenToMap(new GeoPoint(e.getX(), e.getY()));
-        mDisplay.setZoomAndCenter(mDisplay.getZoomLevel() + 1, pt);
-        runDrawThread();
+        setZoomAndCenter(mDisplay.getZoomLevel() + 1, pt);
         return true;
     }
 
@@ -117,6 +116,12 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     @Override
     public boolean onSingleTapConfirmed(final MotionEvent e) {
         return false;
+    }
+
+    public void zoomIn() {
+    }
+
+    public void zoomOut() {
     }
 }
 

@@ -218,4 +218,12 @@ public class GISDisplay {
 
         return new GeoPoint(points[0], points[1]);
     }
+
+    public int getMinZoomLevel() {
+        return mMinZoomLevel;
+    }
+
+    public int getMaxZoomLevel() {
+        return mMaxZoomLevel;
+    }
 }
