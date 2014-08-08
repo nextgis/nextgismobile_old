@@ -155,4 +155,10 @@ public interface Constants {
     public static final int KEEP_ALIVE_TIME = 1;
     public static final TimeUnit KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
 
+    public enum enumGISMap{
+        none,
+        drawing,
+        panning
+    };
+
 }

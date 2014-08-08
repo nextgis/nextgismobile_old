@@ -59,14 +59,17 @@ public class GISDisplay {
     protected final double mHalfWidth;
     protected final double mHalfHeight;
 
+    //TODO: create list of caches
+    //mark each cache as done and merge it with previous if it done
+
     public GISDisplay(Context context) {
         this.mContext = context;
         Display disp = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         int width = disp.getWidth();
         int height = disp.getHeight();
 
-        mHalfWidth = width / 2.0;
-        mHalfHeight = height / 2.0;
+        mHalfWidth = width;// / 2.0;
+        mHalfHeight = height;// / 2.0;
 
         //calc min zoom
         mMinZoomLevel = Math.min(width, height) / mTileSize;
@@ -82,7 +85,7 @@ public class GISDisplay {
         mInvertTransformMatrix = new Matrix();
         mMapTileSize = new GeoPoint();
 
-        mMainBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        mMainBitmap = Bitmap.createBitmap(width + width, height + height, Bitmap.Config.ARGB_8888);
         mMainCanvas = new Canvas(mMainBitmap);
         mDefaultMatrix = mMainCanvas.getMatrix();
 
@@ -131,7 +134,7 @@ public class GISDisplay {
 
     public void clearBackground() {
         mMainCanvas.setMatrix(mDefaultMatrix);
-        Bitmap bkBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.bk_tile);
+        final Bitmap bkBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.bk_tile);
         for (int i = 0; i < mMainBitmap.getWidth(); i += bkBitmap.getWidth()) {
             for (int j = 0; j < mMainBitmap.getHeight(); j += bkBitmap.getHeight()) {
                 mMainCanvas.drawBitmap(bkBitmap, i, j, null);
@@ -225,5 +228,9 @@ public class GISDisplay {
 
     public int getMaxZoomLevel() {
         return mMaxZoomLevel;
+    }
+
+    public GeoPoint getCenter() {
+        return mCenter;
     }
 }

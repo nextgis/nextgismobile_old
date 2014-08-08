@@ -163,6 +163,9 @@ public abstract class Layer implements Runnable{
     public void run() {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
         mDrawingThread = Thread.currentThread();
+        //TODO: draw to separate layer and draw it bac to main buffer image
+        //each running thread should create it own layer
+        //the layer can be draw only into the previous layer
         draw();
         mDrawingThread = null;
     }

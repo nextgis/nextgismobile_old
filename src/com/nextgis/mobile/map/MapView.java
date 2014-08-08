@@ -22,6 +22,8 @@ package com.nextgis.mobile.map;
 
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,12 +39,18 @@ import static com.nextgis.mobile.util.Constants.*;
 public class MapView extends MapBase implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
 
     protected final GestureDetector mGestureDetector;
+    protected PointF mStartMouseLocation;
+    protected PointF mCurrentMouseLocation;
+    protected enumGISMap mDrawingState;
 
     public MapView(Context context) {
         super(context);
 
         mGestureDetector = new GestureDetector(context, this);
         mGestureDetector.setOnDoubleTapListener(this);
+
+        mStartMouseLocation = new PointF();
+        mCurrentMouseLocation = new PointF();
     }
 
     public void createLayer(Uri uri, int type){
@@ -51,6 +59,46 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             case DS_TYPE_ZIP:
                 LocalTMSLayer.create(this, uri);
                 return;
+        }
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        //super.onDraw(canvas);
+        if(mDisplay != null){
+            if(mDrawingState == enumGISMap.panning){
+                canvas.drawBitmap(mDisplay.getMainBitmap(), mOriginX - mCurrentMouseLocation.x, mOriginY - mCurrentMouseLocation.y, null);
+            }
+            else{
+                canvas.drawBitmap(mDisplay.getMainBitmap(), mOriginX, mOriginY, null);
+            }
+        }
+    }
+
+    protected void panStart(final MotionEvent e){
+        cancelDrawThread();
+        mStartMouseLocation.set(e.getX(), e.getY());
+        mDrawingState = enumGISMap.panning;
+    }
+
+    protected void panMoveTo(final MotionEvent e){
+        if(mDrawingState == enumGISMap.panning){
+            float x =  mStartMouseLocation.x - e.getX();
+            float y =  mStartMouseLocation.y - e.getY();
+            mCurrentMouseLocation.set(x, y);
+            invalidate();
+        }
+    }
+
+    protected void panStop(final MotionEvent e){
+        if(mDrawingState == enumGISMap.panning ) {
+            float x = mStartMouseLocation.x - e.getX();
+            float y = mStartMouseLocation.y - e.getY();
+
+            GeoPoint pt = mDisplay.screenToMap(new GeoPoint(x, y));
+            mDisplay.setZoomAndCenter(mDisplay.getZoomLevel(), pt);
+            mDrawingState = enumGISMap.drawing;
+            runDrawThread();
         }
     }
 
@@ -74,11 +122,15 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     public boolean onDown(MotionEvent e) {
+        //Log.d(TAG, "onDown: " + e.toString());
+        panStart(e);
         return true;
     }
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        //Log.d(TAG, "onFling: " + e1.toString() + ", " + e2.toString() + ", " + velocityX + ", " + velocityY);
+        panStop(e2);
         return false;
     }
 
@@ -88,6 +140,8 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        Log.d(TAG, "onScroll: " + e1.toString() + ", " + e2.toString() + ", " + distanceX + ", " + distanceY);
+        panMoveTo(e2);
         return false;
     }
 
@@ -97,6 +151,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
+        Log.d(TAG, "onSingleTapUp: " + e.toString());
         return false;
     }
 
@@ -119,9 +174,11 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     }
 
     public void zoomIn() {
+        setZoomAndCenter(getZoomLevel() + 1, getMapCenter());
     }
 
     public void zoomOut() {
+        setZoomAndCenter(getZoomLevel() - 1, getMapCenter());
     }
 }
 

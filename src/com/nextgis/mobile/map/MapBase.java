@@ -68,6 +68,9 @@ public class MapBase extends View {
 
     protected static int mCPUTotalCount;
 
+    protected float mOriginX;
+    protected float mOriginY;
+
     /**
      * The base map class
      */
@@ -89,6 +92,8 @@ public class MapBase extends View {
 
         //initialise display
         mDisplay = new GISDisplay(context);
+        mOriginX = 0;
+        mOriginY = 0;
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         File defaultPath = context.getExternalFilesDir(PREFS_MAP);
@@ -96,6 +101,15 @@ public class MapBase extends View {
 
         mDrawWorkQueue = new LinkedBlockingQueue<Runnable>();
         mDrawThreadPool = new ThreadPoolExecutor(1, mCPUTotalCount, KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mDrawWorkQueue);
+
+        setKeepScreenOn(true);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mOriginX = (getWidth() - mDisplay.getMainBitmap().getWidth()) / 2;
+        mOriginY = (getHeight() - mDisplay.getMainBitmap().getHeight()) / 2;
     }
 
     /**
@@ -129,7 +143,7 @@ public class MapBase extends View {
     protected void onDraw(Canvas canvas) {
         //super.onDraw(canvas);
         if(mDisplay != null){
-            canvas.drawBitmap(mDisplay.getMainBitmap(), 0, 0, null);
+            canvas.drawBitmap(mDisplay.getMainBitmap(), mOriginX, mOriginY, null);
         }
     }
 
@@ -262,6 +276,12 @@ public class MapBase extends View {
         if(mDisplay == null)
             return false;
         return mDisplay.getZoomLevel() > mDisplay.getMinZoomLevel();
+    }
+
+    public final GeoPoint getMapCenter(){
+        if(mDisplay != null)
+            return mDisplay.getCenter();
+        return new GeoPoint();
     }
 
     /**
