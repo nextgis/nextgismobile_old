@@ -30,6 +30,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.WindowManager;
 import android.view.Display;
 
@@ -41,7 +42,9 @@ import static com.nextgis.mobile.util.Constants.*;
 
 public class GISDisplay {
     protected Canvas mMainCanvas;
+    protected Canvas mBackgroundCanvas;
     protected Bitmap mMainBitmap;
+    protected Bitmap mBackgroundBitmap;
     protected Context mContext;
     protected GeoEnvelope mFullBounds;
     protected GeoEnvelope mCurrentBounds;
@@ -49,7 +52,6 @@ public class GISDisplay {
     protected GeoPoint mMapTileSize;
     protected Matrix mTransformMatrix;
     protected Matrix mInvertTransformMatrix;
-    protected final Matrix mDefaultMatrix;
     protected final int mTileSize = 256;
     protected int mMinZoomLevel;
     protected int mMaxZoomLevel;
@@ -58,6 +60,8 @@ public class GISDisplay {
     protected double mInvertScale;
     protected final double mHalfWidth;
     protected final double mHalfHeight;
+    protected GeoEnvelope mLimits;
+    protected final GeoEnvelope mScreenBounds;
 
     //TODO: create list of caches
     //mark each cache as done and merge it with previous if it done
@@ -68,8 +72,8 @@ public class GISDisplay {
         int width = disp.getWidth();
         int height = disp.getHeight();
 
-        mHalfWidth = width;// / 2.0;
-        mHalfHeight = height;// / 2.0;
+        mHalfWidth = width / 2.0;
+        mHalfHeight = height / 2.0;
 
         //calc min zoom
         mMinZoomLevel = Math.min(width, height) / mTileSize;
@@ -79,20 +83,25 @@ public class GISDisplay {
         //default extent
         double val = 20037508.34;
         mFullBounds = new GeoEnvelope(-val, val, -val, val); //set full Mercator bounds
+        mScreenBounds = new GeoEnvelope(0, width, 0, height);
 
         //default transform matrix
         mTransformMatrix = new Matrix();
         mInvertTransformMatrix = new Matrix();
         mMapTileSize = new GeoPoint();
 
-        mMainBitmap = Bitmap.createBitmap(width + width, height + height, Bitmap.Config.ARGB_8888);
+        mBackgroundBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        mBackgroundCanvas = new Canvas(mBackgroundBitmap);
+
+        mMainBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         mMainCanvas = new Canvas(mMainBitmap);
-        mDefaultMatrix = mMainCanvas.getMatrix();
 
         //default zoom and center
         setZoomAndCenter(mMinZoomLevel, new GeoPoint());
+    }
 
-        mMainCanvas.setMatrix(mTransformMatrix);
+    public void clearLayer(int layerId){
+        mMainBitmap.eraseColor(Color.TRANSPARENT);
     }
 
     public void setZoomAndCenter(final int  zoom, final GeoPoint center){
@@ -100,6 +109,7 @@ public class GISDisplay {
             return;
         mZoomLevel = zoom;
         mCenter = center;
+        Log.d(TAG, "Zoom: " + zoom + ", Center: " + center.toString());
 
         double mapTileSize = 1 << zoom;
         double mapPixelSize = mapTileSize * mTileSize;
@@ -117,30 +127,51 @@ public class GISDisplay {
         mTransformMatrix.postTranslate((float)-center.getX(), (float)-center.getY());
         mTransformMatrix.postScale((float)mScale, (float)-mScale);
         mTransformMatrix.postTranslate((float)mHalfWidth, (float)mHalfHeight);
+
+        mInvertTransformMatrix.reset();
         mTransformMatrix.invert(mInvertTransformMatrix);
+
+        mMainCanvas.setMatrix(mTransformMatrix);
 
         RectF rect = new RectF(0, 0, mMainBitmap.getWidth(), mMainBitmap.getHeight());
         mInvertTransformMatrix.mapRect(rect);
-//        mCurrentBounds = new GeoEnvelope(rect.left, rect.right, rect.bottom, rect.top);
 
+//        mCurrentBounds = new GeoEnvelope(rect.left, rect.right, rect.bottom, rect.top);
         mCurrentBounds = new GeoEnvelope(Math.min(rect.left, rect.right), Math.max(rect.left, rect.right), Math.min(rect.bottom, rect.top), Math.max(rect.bottom, rect.top));
+        Log.d(TAG, "full: " + mFullBounds.toString());
+        Log.d(TAG, "current: " + mCurrentBounds.toString());
+
+        mLimits = mapToScreen(mFullBounds);
+        mLimits.fix();
+        mLimits.setMinX(mLimits.getMinX() - mHalfWidth);
+        mLimits.setMaxX(mLimits.getMaxX() + mHalfWidth);
     }
 
-    public Bitmap getMainBitmap() {
-        //Test
-        //clearBackground();
-        return mMainBitmap;
+    public final GeoEnvelope getLimits(){
+        return mLimits;
+    }
+
+    public final GeoEnvelope getScreenBounds(){
+        return mScreenBounds;
+    }
+
+    public Bitmap getDisplay() {
+        return getDisplay(0, 0);
+    }
+
+    public Bitmap getDisplay(float x, float y) {
+        clearBackground();
+        mBackgroundCanvas.drawBitmap(mMainBitmap, x, y, null);
+        return mBackgroundBitmap;
     }
 
     public void clearBackground() {
-        mMainCanvas.setMatrix(mDefaultMatrix);
         final Bitmap bkBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.bk_tile);
-        for (int i = 0; i < mMainBitmap.getWidth(); i += bkBitmap.getWidth()) {
-            for (int j = 0; j < mMainBitmap.getHeight(); j += bkBitmap.getHeight()) {
-                mMainCanvas.drawBitmap(bkBitmap, i, j, null);
+        for (int i = 0; i < mBackgroundBitmap.getWidth(); i += bkBitmap.getWidth()) {
+            for (int j = 0; j < mBackgroundBitmap.getHeight(); j += bkBitmap.getHeight()) {
+                mBackgroundCanvas.drawBitmap(bkBitmap, i, j, null);
             }
         }
-        mMainCanvas.setMatrix(mTransformMatrix);
     }
 
     public void drawTile(final Bitmap bitmap, final GeoPoint pt){
@@ -220,6 +251,30 @@ public class GISDisplay {
         mTransformMatrix.mapPoints(points);
 
         return new GeoPoint(points[0], points[1]);
+    }
+
+    public GeoEnvelope mapToScreen(final GeoEnvelope env){
+        GeoEnvelope outEnv = new GeoEnvelope();
+        RectF rect = new RectF();
+        rect.set((float) env.getMinX(), (float) env.getMaxY(), (float) env.getMaxX(), (float) env.getMinY());
+
+        mTransformMatrix.mapRect(rect);
+        outEnv.setMin(rect.left, rect.bottom);
+        outEnv.setMax(rect.right, rect.top);
+
+        return outEnv;
+    }
+
+    public GeoEnvelope screenToMap(final GeoEnvelope env){
+        GeoEnvelope outEnv = new GeoEnvelope();
+        RectF rect = new RectF();
+        rect.set((float) env.getMinX(), (float) env.getMaxY(), (float) env.getMaxX(), (float) env.getMinY());
+
+        mInvertTransformMatrix.mapRect(rect);
+        outEnv.setMin(rect.left, rect.bottom);
+        outEnv.setMax(rect.right, rect.top);
+
+        return outEnv;
     }
 
     public int getMinZoomLevel() {

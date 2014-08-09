@@ -47,6 +47,24 @@ public class GeoEnvelope {
         mMaxY = env.mMaxY;
     }
 
+    public void setMin(double x, double y){
+        mMinX = x;
+        mMinY = y;
+    }
+
+    public void setMax(double x, double y){
+        mMaxX = x;
+        mMaxY = y;
+    }
+
+    public void setMinX(double x){
+        mMinX = x;
+    }
+
+    public void setMaxX(double x){
+        mMaxX = x;
+    }
+
     public final double getMinX(){
         return mMinX;
     }
@@ -164,5 +182,34 @@ public class GeoEnvelope {
 
     public final boolean contains(final GeoEnvelope other){
         return mMinX <= other.mMinX && mMinY <= other.mMinY && mMaxX >= other.mMaxX && mMaxY >= other.mMaxY;
+    }
+
+    public final boolean contains(final GeoPoint pt){
+        return mMinX <= pt.getX() && mMinY <= pt.getY() && mMaxX >= pt.getX() && mMaxY >= pt.getY();
+    }
+
+    public void offset(double x, double y) {
+        mMinX += x;
+        mMaxX += x;
+        mMinY += y;
+        mMaxY += y;
+    }
+
+    public void fix(){
+        if(mMinX > mMaxX){
+            double tmp = mMinX;
+            mMinX = mMaxX;
+            mMaxX = tmp;
+        }
+
+        if(mMinY > mMaxY){
+            double tmp = mMinY;
+            mMinY = mMaxY;
+            mMaxY = tmp;
+        }
+    }
+
+    public String toString(){
+        return "MinX: " + mMinX + ", MinY: " + mMinY + ", MaxX: " + mMaxX + ", MaxY: " + mMaxY;
     }
 }

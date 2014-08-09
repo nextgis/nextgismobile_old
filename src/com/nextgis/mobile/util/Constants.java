@@ -67,6 +67,8 @@ public interface Constants {
     public final static String TAG = "nextgismobile";
 
     public static final int MAX_DRAWLER_WIDTH = 750;
+    public static final float MIN_SCROLL_STEP = 7.5f;
+    public static final boolean NO_MAP_LIMITS = true;
 
     /**
      * DataSource type

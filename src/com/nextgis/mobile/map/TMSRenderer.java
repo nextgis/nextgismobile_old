@@ -46,6 +46,9 @@ public class TMSRenderer extends Renderer{
         final MapBase map = mLayer.getMap();
         final Handler handler = map.getMapEventsHandler();
         final GISDisplay display = map.getGISDisplay();
+
+        display.clearLayer(0);
+
         final int zoom = display.getZoomLevel();
         GeoEnvelope env = display.getBounds();
         //get tiled for zoom and bounds

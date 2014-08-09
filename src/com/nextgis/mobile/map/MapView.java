@@ -28,8 +28,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.GeoPoint;
 
 import java.io.File;
@@ -67,10 +69,10 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         //super.onDraw(canvas);
         if(mDisplay != null){
             if(mDrawingState == enumGISMap.panning){
-                canvas.drawBitmap(mDisplay.getMainBitmap(), mOriginX - mCurrentMouseLocation.x, mOriginY - mCurrentMouseLocation.y, null);
+                canvas.drawBitmap(mDisplay.getDisplay(-mCurrentMouseLocation.x, -mCurrentMouseLocation.y), 0 , 0, null);
             }
             else{
-                canvas.drawBitmap(mDisplay.getMainBitmap(), mOriginX, mOriginY, null);
+                canvas.drawBitmap(mDisplay.getDisplay(), 0, 0, null);
             }
         }
     }
@@ -85,17 +87,36 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         if(mDrawingState == enumGISMap.panning){
             float x =  mStartMouseLocation.x - e.getX();
             float y =  mStartMouseLocation.y - e.getY();
-            mCurrentMouseLocation.set(x, y);
+
+            if(NO_MAP_LIMITS){
+                mCurrentMouseLocation.set(x, y);
+            }
+            else {
+                GeoEnvelope bounds = getGISDisplay().getScreenBounds();
+                bounds.offset(x, y);
+
+                GeoEnvelope limits = getGISDisplay().getLimits();
+                if (bounds.getMinY() >= limits.getMinY() && bounds.getMaxY() <= limits.getMaxY()) {
+                    mCurrentMouseLocation.set(x, y);
+                } else {
+                    mCurrentMouseLocation.set(x, mCurrentMouseLocation.y);
+                }
+            }
             invalidate();
         }
     }
 
     protected void panStop(final MotionEvent e){
         if(mDrawingState == enumGISMap.panning ) {
-            float x = mStartMouseLocation.x - e.getX();
-            float y = mStartMouseLocation.y - e.getY();
+            float x = mCurrentMouseLocation.x; //mStartMouseLocation.x - e.getX();
+            float y = mCurrentMouseLocation.y; //mStartMouseLocation.y - e.getY();
 
-            GeoPoint pt = mDisplay.screenToMap(new GeoPoint(x, y));
+            GeoEnvelope bounds = getGISDisplay().getScreenBounds();
+            bounds.offset(x, y);
+            GeoEnvelope mapBounds = mDisplay.screenToMap(bounds);
+
+            GeoPoint pt = mapBounds.getCenter(); //mDisplay.screenToMap(bounds.getCenter());
+            Log.d(TAG, "From:" + bounds.getCenter().toString() + ", To:" + pt.toString());
             mDisplay.setZoomAndCenter(mDisplay.getZoomLevel(), pt);
             mDrawingState = enumGISMap.drawing;
             runDrawThread();
@@ -117,20 +138,30 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     // delegate the event to the gesture detector
     @Override
     public boolean onTouchEvent(MotionEvent e) {
+        //Log.d(TAG, "onTouchEvent: " + e.toString());
+        if(e.getAction() == MotionEvent.ACTION_UP){
+            panStop(e);
+        }
+        else if(e.getAction() == MotionEvent.ACTION_DOWN){
+            panStart(e);
+        }
+        else if(e.getAction() == MotionEvent.ACTION_MOVE){
+            //if(Math.abs(distanceX) + Math.abs(distanceY) < MIN_SCROLL_STEP)
+            //    return false;
+            panMoveTo(e);
+            return true;
+        }
         return mGestureDetector.onTouchEvent(e);
     }
 
     @Override
     public boolean onDown(MotionEvent e) {
         //Log.d(TAG, "onDown: " + e.toString());
-        panStart(e);
         return true;
     }
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        //Log.d(TAG, "onFling: " + e1.toString() + ", " + e2.toString() + ", " + velocityX + ", " + velocityY);
-        panStop(e2);
         return false;
     }
 
@@ -140,9 +171,8 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        Log.d(TAG, "onScroll: " + e1.toString() + ", " + e2.toString() + ", " + distanceX + ", " + distanceY);
-        panMoveTo(e2);
-        return false;
+//        Log.d(TAG, "onScroll: " + e1.toString() + ", " + e2.toString() + ", " + distanceX + ", " + distanceY);
+        return true;
     }
 
     @Override

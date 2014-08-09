@@ -59,4 +59,8 @@ public class GeoPoint extends GeoGeometry{
     public final int getType(){
         return GEOMTYPE_Point;
     }
+
+    public String toString(){
+        return "X: " + mX + ", Y: " + mY;
+    }
 }
