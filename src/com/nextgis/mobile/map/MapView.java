@@ -54,6 +54,8 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
         mStartMouseLocation = new PointF();
         mCurrentMouseLocation = new PointF();
+
+        mDrawingState = enumGISMap.drawing;
     }
 
     public void createLayer(Uri uri, int type){
@@ -166,7 +168,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         }
         else if(e.getAction() == MotionEvent.ACTION_MOVE){
             panMoveTo(e);
-            return true;
+            //return true;
         }
         return mGestureDetector.onTouchEvent(e);
     }
