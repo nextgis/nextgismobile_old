@@ -161,7 +161,8 @@ public interface Constants {
         none,
         drawing,
         drawing_noclearbk,
-        panning
+        panning,
+        double_tap
     };
 
 }

@@ -149,7 +149,6 @@ public class MapBase extends View {
     protected synchronized void runDrawThread(){
         cancelDrawThread();
         mStartDrawTime = System.currentTimeMillis();
-        mDisplay.clearBackground();
         for(Layer layer : mLayers) {
             if(layer.getVisible()) {
                 mDrawThreadPool.execute(layer);

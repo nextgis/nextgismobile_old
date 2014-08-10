@@ -77,7 +77,11 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             }
             else{
                 canvas.drawBitmap(mDisplay.getDisplay(true), 0, 0, null);
+
             }
+
+            if(mDrawingState == enumGISMap.double_tap)
+                mDrawingState = enumGISMap.drawing;
         }
         else{
             super.onDraw(canvas);
@@ -85,9 +89,11 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     }
 
     protected void panStart(final MotionEvent e){
-        cancelDrawThread();
-        mStartMouseLocation.set(e.getX(), e.getY());
-        mDrawingState = enumGISMap.panning;
+        if(mDrawingState == enumGISMap.drawing || mDrawingState == enumGISMap.drawing_noclearbk) {
+            cancelDrawThread();
+            mStartMouseLocation.set(e.getX(), e.getY());
+            mDrawingState = enumGISMap.panning;
+        }
     }
 
     protected void panMoveTo(final MotionEvent e){
@@ -159,8 +165,6 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             panStart(e);
         }
         else if(e.getAction() == MotionEvent.ACTION_MOVE){
-            //if(Math.abs(distanceX) + Math.abs(distanceY) < MIN_SCROLL_STEP)
-            //    return false;
             panMoveTo(e);
             return true;
         }
@@ -201,6 +205,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     @Override
     public boolean onDoubleTap(final MotionEvent e) {
         Log.d(TAG, "onDoubleTap: " + e.getX() + ", " + e.getY());
+        mDrawingState = enumGISMap.double_tap;
         final GeoPoint pt = mDisplay.screenToMap(new GeoPoint(e.getX(), e.getY()));
         setZoomAndCenter(mDisplay.getZoomLevel() + 1, pt);
         return true;
@@ -217,10 +222,12 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     }
 
     public void zoomIn() {
+        mDrawingState = enumGISMap.drawing;
         setZoomAndCenter(getZoomLevel() + 1, getMapCenter());
     }
 
     public void zoomOut() {
+        mDrawingState = enumGISMap.drawing;
         setZoomAndCenter(getZoomLevel() - 1, getMapCenter());
     }
 
