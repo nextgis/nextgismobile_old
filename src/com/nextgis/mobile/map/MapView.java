@@ -25,6 +25,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -66,14 +67,20 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     protected void onDraw(Canvas canvas) {
-        //super.onDraw(canvas);
+        //Log.d(TAG, "state: " + mDrawingState + ", current loc: " +  mCurrentMouseLocation.toString());
         if(mDisplay != null){
             if(mDrawingState == enumGISMap.panning){
-                canvas.drawBitmap(mDisplay.getDisplay(-mCurrentMouseLocation.x, -mCurrentMouseLocation.y), 0 , 0, null);
+                canvas.drawBitmap(mDisplay.getDisplay(-mCurrentMouseLocation.x, -mCurrentMouseLocation.y, true), 0 , 0, null);
+            }
+            else if(mDrawingState == enumGISMap.drawing_noclearbk){
+                canvas.drawBitmap(mDisplay.getDisplay(false), 0 , 0, null);
             }
             else{
-                canvas.drawBitmap(mDisplay.getDisplay(), 0, 0, null);
+                canvas.drawBitmap(mDisplay.getDisplay(true), 0, 0, null);
             }
+        }
+        else{
+            super.onDraw(canvas);
         }
     }
 
@@ -84,24 +91,30 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     }
 
     protected void panMoveTo(final MotionEvent e){
+        //Log.d(TAG, "panMoveTo" + e.toString());
         if(mDrawingState == enumGISMap.panning){
             float x =  mStartMouseLocation.x - e.getX();
             float y =  mStartMouseLocation.y - e.getY();
+
+            if(Math.abs(mCurrentMouseLocation.x - x) + Math.abs(mCurrentMouseLocation.y - y) < MIN_SCROLL_STEP) {
+                return;
+            }
 
             if(NO_MAP_LIMITS){
                 mCurrentMouseLocation.set(x, y);
             }
             else {
-                GeoEnvelope bounds = getGISDisplay().getScreenBounds();
+                GeoEnvelope bounds = mDisplay.getScreenBounds();
                 bounds.offset(x, y);
 
-                GeoEnvelope limits = getGISDisplay().getLimits();
+                GeoEnvelope limits = mDisplay.getLimits();
                 if (bounds.getMinY() >= limits.getMinY() && bounds.getMaxY() <= limits.getMaxY()) {
                     mCurrentMouseLocation.set(x, y);
                 } else {
                     mCurrentMouseLocation.set(x, mCurrentMouseLocation.y);
                 }
             }
+
             invalidate();
         }
     }
@@ -111,14 +124,14 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             float x = mCurrentMouseLocation.x; //mStartMouseLocation.x - e.getX();
             float y = mCurrentMouseLocation.y; //mStartMouseLocation.y - e.getY();
 
-            GeoEnvelope bounds = getGISDisplay().getScreenBounds();
+            GeoEnvelope bounds = mDisplay.getScreenBounds();
             bounds.offset(x, y);
             GeoEnvelope mapBounds = mDisplay.screenToMap(bounds);
 
             GeoPoint pt = mapBounds.getCenter(); //mDisplay.screenToMap(bounds.getCenter());
             Log.d(TAG, "From:" + bounds.getCenter().toString() + ", To:" + pt.toString());
             mDisplay.setZoomAndCenter(mDisplay.getZoomLevel(), pt);
-            mDrawingState = enumGISMap.drawing;
+            mDrawingState = enumGISMap.drawing_noclearbk;
             runDrawThread();
         }
     }
@@ -209,6 +222,26 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     public void zoomOut() {
         setZoomAndCenter(getZoomLevel() - 1, getMapCenter());
+    }
+
+    protected void onTest(){
+        GeoEnvelope bounds = mDisplay.getScreenBounds();
+        bounds.offset(250, -250);
+        GeoEnvelope mapBounds = mDisplay.screenToMap(bounds);
+
+        GeoPoint pt = mapBounds.getCenter();
+
+        mDisplay.setZoomAndCenter(2, pt);
+        Log.d(TAG, mDisplay.screenToMap(new GeoPoint(360, 567)).toString());
+
+        bounds = mDisplay.getScreenBounds();
+        bounds.offset(-250, 250);
+        mapBounds = mDisplay.screenToMap(bounds);
+
+        pt = mapBounds.getCenter();
+
+        mDisplay.setZoomAndCenter(2, pt);
+        Log.d(TAG, mDisplay.screenToMap(new GeoPoint(360, 567)).toString());
     }
 }
 

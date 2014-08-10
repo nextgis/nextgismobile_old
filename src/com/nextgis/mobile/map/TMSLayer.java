@@ -64,13 +64,21 @@ public abstract class TMSLayer extends Layer {
         //1. get tile size in m for current zoom
         GeoPoint tileSize = mMap.getGISDisplay().getTileSize();
         //2. get bottom left tile
-        int begX = (int) (bounds.getMinX() / tileSize.getX() - .5) + halfMax;
-        int begY = (int) (bounds.getMinY() / tileSize.getY() - .5) + halfMax;
-        int endX = (int) (bounds.getMaxX() / tileSize.getX() + .5) + halfMax;
-        int endY = (int) (bounds.getMaxY() / tileSize.getY() + .5) + halfMax;
+        int begX = (int) (bounds.getMinX() / tileSize.getX() - .5) + halfMax - 1;
+        int begY = (int) (bounds.getMinY() / tileSize.getY() - .5) + halfMax - 1;
+        int endX = (int) (bounds.getMaxX() / tileSize.getX() + .5) + halfMax + 1;
+        int endY = (int) (bounds.getMaxY() / tileSize.getY() + .5) + halfMax + 1;
         //3.
         GeoEnvelope fullBounds = mMap.getGISDisplay().getFullBounds();
-
+        //4.
+        if(begX < 0)
+            begX = 0;
+        if(begY < 0)
+            begY = 0;
+        if(endX > maxY)
+            endX = maxY;
+        if(endY > maxY)
+            endY = maxY;
 
         for(int x = begX; x < endX; x++){
             for(int y = begY; y < endY; y++){

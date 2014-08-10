@@ -40,7 +40,7 @@ public class GeoEnvelope {
         mMaxY = maxY;
     }
 
-    public GeoEnvelope(GeoEnvelope env){
+    public GeoEnvelope(final GeoEnvelope env){
         mMinX = env.mMinX;
         mMaxX = env.mMaxX;
         mMinY = env.mMinY;

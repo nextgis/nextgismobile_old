@@ -35,6 +35,11 @@ public class GeoPoint extends GeoGeometry{
         mY = y;
     }
 
+    public GeoPoint(final GeoPoint pt){
+        mX = pt.mX;
+        mY = pt.mY;
+    }
+
     public final double getX(){
         return mX;
     }

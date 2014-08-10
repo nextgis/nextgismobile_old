@@ -129,9 +129,20 @@ public class MapBase extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        //super.onDraw(canvas);
         if(mDisplay != null){
-            canvas.drawBitmap(mDisplay.getDisplay(), 0, 0, null);
+            canvas.drawBitmap(mDisplay.getDisplay(true), 0, 0, null);
+        }
+        else{
+            super.onDraw(canvas);
+        }
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        if(mDisplay != null){
+            mDisplay.setSize(w, h);
+            onExtentChanged(mDisplay.getZoomLevel(), mDisplay.getCenter());
         }
     }
 
