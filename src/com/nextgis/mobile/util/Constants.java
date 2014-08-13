@@ -85,6 +85,7 @@ public interface Constants {
      */
     public final static int MSGTYPE_DS_TYPE_ZIP = DS_TYPE_ZIP;
     public final static int MSGTYPE_DRAWING_DONE = 500;
+    public final static int MSGTYPE_PANNING_DONE = 501;
 
     /**
      * Bundle keys

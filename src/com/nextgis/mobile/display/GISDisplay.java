@@ -166,18 +166,38 @@ public class GISDisplay {
         return new GeoEnvelope(mScreenBounds);
     }
 
-    public Bitmap getDisplay(boolean clearBackground) {
+    public synchronized Bitmap getDisplay(boolean clearBackground) {
         return getDisplay(0, 0, clearBackground);
     }
 
-    public Bitmap getDisplay(float x, float y, boolean clearBackground) {
+    public synchronized Bitmap getDisplay(float x, float y, boolean clearBackground) {
         if(clearBackground)
             clearBackground();
-        mBackgroundCanvas.drawBitmap(mMainBitmap, x - mMainBitmapOffsetX, y - mMainBitmapOffsetY, null);
+        synchronized (mMainBitmap) {
+            mBackgroundCanvas.drawBitmap(mMainBitmap, x - mMainBitmapOffsetX, y - mMainBitmapOffsetY, null);
+        }
         return mBackgroundBitmap;
     }
 
-    public void clearBackground() {
+    public synchronized void panStop(float x, float y){
+        try {
+            Bitmap tmpBitmap = Bitmap.createBitmap(mMainBitmap.getWidth(), mMainBitmap.getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas tmpCanvas = new Canvas(tmpBitmap);
+
+            tmpCanvas.drawBitmap(mMainBitmap, -x, -y, null);
+            mMainBitmap.eraseColor(Color.TRANSPARENT);
+
+            mMainCanvas.save(Canvas.ALL_SAVE_FLAG);
+            mMainCanvas.setMatrix(new Matrix());
+            mMainCanvas.drawBitmap(tmpBitmap, 0, 0, null);
+            mMainCanvas.restore();
+        }
+        catch (OutOfMemoryError e){
+            mMainBitmap.eraseColor(Color.TRANSPARENT);
+        }
+    }
+
+    public synchronized void clearBackground() {
         final Bitmap bkBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.bk_tile);
         for (int i = 0; i < mBackgroundBitmap.getWidth(); i += bkBitmap.getWidth()) {
             for (int j = 0; j < mBackgroundBitmap.getHeight(); j += bkBitmap.getHeight()) {
@@ -198,14 +218,18 @@ public class GISDisplay {
             matrix.preConcat(matrix1);
         }
 
-        mMainCanvas.drawBitmap(bitmap, matrix, null);
+        synchronized (mMainBitmap) {
+            mMainCanvas.drawBitmap(bitmap, matrix, null);
+        }
     }
 
     public void drawGeometry(final GeoGeometry geom, final Paint paint){
-        switch (geom.getType()){
-            case GEOMTYPE_Point:
-                drawPoint((GeoPoint) geom, paint);
-                return;
+        synchronized (mMainBitmap) {
+            switch (geom.getType()) {
+                case GEOMTYPE_Point:
+                    drawPoint((GeoPoint) geom, paint);
+                    return;
+            }
         }
     }
 

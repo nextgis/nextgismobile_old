@@ -27,6 +27,7 @@ import android.graphics.PointF;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Message;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -90,6 +91,12 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         }
     }
 
+    @Override
+    protected synchronized void runDrawThread() {
+        mDrawingState = enumGISMap.drawing;
+        super.runDrawThread();
+    }
+
     protected void panStart(final MotionEvent e){
         if(mDrawingState == enumGISMap.drawing || mDrawingState == enumGISMap.drawing_noclearbk) {
             cancelDrawThread();
@@ -136,12 +143,31 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             bounds.offset(x, y);
             GeoEnvelope mapBounds = mDisplay.screenToMap(bounds);
 
-            GeoPoint pt = mapBounds.getCenter(); //mDisplay.screenToMap(bounds.getCenter());
-            Log.d(TAG, "From:" + bounds.getCenter().toString() + ", To:" + pt.toString());
+            GeoPoint pt = mapBounds.getCenter();
+
+            mDisplay.panStop(x, y);
+
             mDisplay.setZoomAndCenter(mDisplay.getZoomLevel(), pt);
             mDrawingState = enumGISMap.drawing_noclearbk;
-            runDrawThread();
+
+            mHandler.removeMessages(MSGTYPE_PANNING_DONE);
+
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
+            bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_PANNING_DONE);
+
+            Message msg = new Message();
+            msg.setData(bundle);
+            msg.what = MSGTYPE_PANNING_DONE;
+            mHandler.sendMessageDelayed(msg, 350);
         }
+    }
+
+    @Override
+    protected void onLayerDrawFinished(float percent){
+        if(mDrawingState == enumGISMap.panning )
+            return;
+        super.onLayerDrawFinished(percent);
     }
 
     @Override
@@ -150,6 +176,10 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             case MSGTYPE_DS_TYPE_ZIP: //the new layer was create and need to be added on map
                 File path = (File) bundle.getSerializable(BUNDLE_PATH_KEY);
                 addLayer(path);
+                break;
+            case MSGTYPE_PANNING_DONE:
+                if(mDrawingState == enumGISMap.drawing_noclearbk)
+                    runDrawThread();
                 break;
             default:
                 super.processMessage(bundle);

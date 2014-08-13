@@ -80,6 +80,8 @@ public abstract class TMSLayer extends Layer {
         if(endY > maxY)
             endY = maxY;
 
+        //TODO: fill tiles on spiral
+
         for(int x = begX; x < endX; x++){
             for(int y = begY; y < endY; y++){
                 int realY = y;
