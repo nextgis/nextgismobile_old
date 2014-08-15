@@ -107,48 +107,48 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     protected void zoomStart(ScaleGestureDetector scaleGestureDetector){
         mDrawingState = enumGISMap.zooming;
         mCurrentSpan = scaleGestureDetector.getCurrentSpan();
+        mCurrentMouseLocation.set(-scaleGestureDetector.getFocusX(), -scaleGestureDetector.getFocusY());
         mScaleFactor = 1.f;
     }
 
     protected void zoom(ScaleGestureDetector scaleGestureDetector){
         if(mDrawingState == enumGISMap.zooming) {
-            mScaleFactor = scaleGestureDetector.getCurrentSpan() / mCurrentSpan;
+            float scaleFactor = scaleGestureDetector.getCurrentSpan() / mCurrentSpan;
+            int zoom = getZoomForScaleFactor(scaleFactor);
+            if(zoom < mDisplay.getMinZoomLevel() || zoom > mDisplay.getMaxZoomLevel())
+                return;
 
-            //GeoPoint centerPt = mDisplay.screenToMap(new GeoPoint(scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY()));
-            mCurrentMouseLocation.set(-scaleGestureDetector.getFocusX(), -scaleGestureDetector.getFocusY());//(0,0);//
+            mScaleFactor = scaleFactor;
+            Log.d(TAG, "scale: " + mScaleFactor + " , zoom " + zoom);
 
             invalidate();
         }
+    }
+
+    protected int getZoomForScaleFactor(float scale){
+        int zoom = mDisplay.getZoomLevel();
+        if(scale > 1){
+            zoom = (int) (mDisplay.getZoomLevel() + scale);
+        }
+        else if(scale < 1){
+            zoom = (int) (mDisplay.getZoomLevel() - 1 / scale);
+        }
+        return zoom;
     }
 
     protected void zoomStop(MotionEvent e){
         if(mDrawingState == enumGISMap.zooming ) {
             mDrawingState = enumGISMap.drawing;
             //mScaleFactor *= scaleGestureDetector.getScaleFactor();
-            int zoom = getZoomFromScale(mScaleFactor);
+            int zoom = (int) (mDisplay.getZoomLevel() + mScaleFactor);
+
             Log.d(TAG, "onScale: " + mScaleFactor + ", add zoom: " + zoom);
 
 
             GeoPoint centerPt = mDisplay.screenToMap(new GeoPoint(mCurrentMouseLocation.x, mCurrentMouseLocation.y));
 
-            setZoomAndCenter(getZoomLevel() + zoom, centerPt);
+            setZoomAndCenter(zoom, centerPt);
         }
-    }
-
-    protected int getZoomFromScale(float scale){
-        // 0 - 1 - 10
-        //0 = -2
-        //1 = 0
-        //8 = 2
-        int addZoom = 0;
-        if(scale < 1){
-            addZoom = (int) (-2 * scale);
-        }
-        else if(scale > 1){
-            addZoom = (int) (scale / 4);
-        }
-
-        return mDisplay.getZoomLevel() + addZoom;
     }
 
     protected void panStart(final MotionEvent e){
@@ -313,14 +313,8 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     }
 
     public void zoomIn() {
-        //mDrawingState = enumGISMap.drawing;
-        //setZoomAndCenter(getZoomLevel() + 1, getMapCenter());
-
-
-        mScaleFactor = 1.3f;
-        mCurrentMouseLocation.set(360, 560);
-        mDrawingState = enumGISMap.zooming;
-        invalidate();
+        mDrawingState = enumGISMap.drawing;
+        setZoomAndCenter(getZoomLevel() + 1, getMapCenter());
     }
 
     public void zoomOut() {
