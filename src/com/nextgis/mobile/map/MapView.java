@@ -45,6 +45,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     protected final ScaleGestureDetector mScaleGestureDetector;
     protected PointF mStartMouseLocation;
     protected PointF mCurrentMouseLocation;
+    protected PointF mCurrentFocusLocation;
     protected enumGISMap mDrawingState;
     protected float mScaleFactor;
     protected float mCurrentSpan;
@@ -59,12 +60,13 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
         mStartMouseLocation = new PointF();
         mCurrentMouseLocation = new PointF();
+        mCurrentFocusLocation = new PointF();
 
         mDrawingState = enumGISMap.drawing;
     }
 
     public void createLayer(Uri uri, int type){
-        Log.d(TAG, "File Uri: " + uri.toString());
+        //Log.d(TAG, "File Uri: " + uri.toString());
         switch (type) {
             case DS_TYPE_ZIP:
                 LocalTMSLayer.create(this, uri);
@@ -80,7 +82,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
                 canvas.drawBitmap(mDisplay.getDisplay(-mCurrentMouseLocation.x, -mCurrentMouseLocation.y, true), 0 , 0, null);
             }
             else if(mDrawingState == enumGISMap.zooming){
-                canvas.drawBitmap(mDisplay.getDisplay(-mCurrentMouseLocation.x, -mCurrentMouseLocation.y, mScaleFactor), 0, 0, null);
+                canvas.drawBitmap(mDisplay.getDisplay(-mCurrentFocusLocation.x, -mCurrentFocusLocation.y, mScaleFactor), 0, 0, null);
             }
             else if(mDrawingState == enumGISMap.drawing_noclearbk){
                 canvas.drawBitmap(mDisplay.getDisplay(false), 0 , 0, null);
@@ -99,15 +101,28 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     protected synchronized void runDrawThread() {
-        if(mDrawingState != enumGISMap.drawing_noclearbk)
+        cancelDrawThread();
+        if(mDrawingState != enumGISMap.drawing_noclearbk) {
             mDrawingState = enumGISMap.drawing;
-        super.runDrawThread();
+            mDisplay.clearBackground();
+            mDisplay.clearLayer(0);
+        }
+
+        mStartDrawTime = System.currentTimeMillis();
+        for(Layer layer : mLayers) {
+            if(layer.getVisible()) {
+                mDrawThreadPool.execute(layer);
+            }
+        }
     }
 
     protected void zoomStart(ScaleGestureDetector scaleGestureDetector){
+        if(mDrawingState == enumGISMap.zooming)
+            return;
+
         mDrawingState = enumGISMap.zooming;
         mCurrentSpan = scaleGestureDetector.getCurrentSpan();
-        mCurrentMouseLocation.set(-scaleGestureDetector.getFocusX(), -scaleGestureDetector.getFocusY());
+        mCurrentFocusLocation.set(-scaleGestureDetector.getFocusX(), -scaleGestureDetector.getFocusY());
         mScaleFactor = 1.f;
     }
 
@@ -119,8 +134,6 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
                 return;
 
             mScaleFactor = scaleFactor;
-            Log.d(TAG, "scale: " + mScaleFactor + " , zoom " + zoom);
-
             invalidate();
         }
     }
@@ -128,30 +141,47 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     protected int getZoomForScaleFactor(float scale){
         int zoom = mDisplay.getZoomLevel();
         if(scale > 1){
-            zoom = (int) (mDisplay.getZoomLevel() + scale);
+            zoom = mDisplay.getZoomLevel() + (int) Math.floor(scale);
         }
         else if(scale < 1){
-            zoom = (int) (mDisplay.getZoomLevel() - 1 / scale);
+            zoom = mDisplay.getZoomLevel() - (int) Math.floor(1 / scale);
         }
         return zoom;
     }
 
     protected void zoomStop(MotionEvent e){
         if(mDrawingState == enumGISMap.zooming ) {
-            mDrawingState = enumGISMap.drawing;
+            mDrawingState = enumGISMap.drawing_noclearbk;
             //mScaleFactor *= scaleGestureDetector.getScaleFactor();
-            int zoom = (int) (mDisplay.getZoomLevel() + mScaleFactor);
+            int zoom = getZoomForScaleFactor(mScaleFactor);
 
-            Log.d(TAG, "onScale: " + mScaleFactor + ", add zoom: " + zoom);
+            //GeoPoint pt = mDisplay.getScaledOffset(-mCurrentFocusLocation.x, -mCurrentFocusLocation.y, mScaleFactor);
+            //GeoEnvelope env = mDisplay.getScreenBounds();
+            //env.offset(-pt.getX(), -pt.getY());
 
+            GeoPoint centerPt = mDisplay.getCenter();//screenToMap(env.getCenter());
 
-            GeoPoint centerPt = mDisplay.screenToMap(new GeoPoint(mCurrentMouseLocation.x, mCurrentMouseLocation.y));
+            mDisplay.setZoomAndCenter(zoom, centerPt);
 
-            setZoomAndCenter(zoom, centerPt);
+            mDrawingState = enumGISMap.drawing;
+
+            mHandler.removeMessages(MSGTYPE_ZOOMING_DONE);
+
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
+            bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_ZOOMING_DONE);
+
+            Message msg = new Message();
+            msg.setData(bundle);
+            msg.what = MSGTYPE_ZOOMING_DONE;
+            mHandler.sendMessageDelayed(msg, DISPLAY_REDRAW_TIMEOUT);
         }
     }
 
     protected void panStart(final MotionEvent e){
+        if(mDrawingState == enumGISMap.zooming || mDrawingState == enumGISMap.panning)
+            return;
+
         if(mDrawingState == enumGISMap.drawing || mDrawingState == enumGISMap.drawing_noclearbk) {
             cancelDrawThread();
             mStartMouseLocation.set(e.getX(), e.getY());
@@ -193,6 +223,11 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             float x = mCurrentMouseLocation.x; //mStartMouseLocation.x - e.getX();
             float y = mCurrentMouseLocation.y; //mStartMouseLocation.y - e.getY();
 
+            if(x < 0.00001 && y < 0.00001 ){
+                return;
+            }
+
+
             GeoEnvelope bounds = mDisplay.getScreenBounds();
             bounds.offset(x, y);
             GeoEnvelope mapBounds = mDisplay.screenToMap(bounds);
@@ -214,7 +249,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             Message msg = new Message();
             msg.setData(bundle);
             msg.what = MSGTYPE_PANNING_DONE;
-            mHandler.sendMessageDelayed(msg, 350);
+            mHandler.sendMessageDelayed(msg, DISPLAY_REDRAW_TIMEOUT);
         }
     }
 
@@ -233,8 +268,9 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
                 addLayer(path);
                 break;
             case MSGTYPE_PANNING_DONE:
-                if(mDrawingState == enumGISMap.drawing_noclearbk)
-                    runDrawThread();
+            case MSGTYPE_ZOOMING_DONE:
+                //if(mDrawingState == enumGISMap.drawing_noclearbk)
+                    onExtentChanged(mDisplay.getZoomLevel(), mDisplay.getCenter());
                 break;
             default:
                 super.processMessage(bundle);
@@ -295,7 +331,6 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     public boolean onDoubleTap(final MotionEvent e) {
-        Log.d(TAG, "onDoubleTap: " + e.getX() + ", " + e.getY());
         mDrawingState = enumGISMap.double_tap;
         final GeoPoint pt = mDisplay.screenToMap(new GeoPoint(e.getX(), e.getY()));
         setZoomAndCenter(mDisplay.getZoomLevel() + 1, pt);

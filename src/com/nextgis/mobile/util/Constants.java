@@ -74,7 +74,7 @@ public interface Constants {
     //As more than more memory needed
     public static final float OFFSCREEN_EXTRASIZE_RATIO = 2.f;
     //display redraw timeout ms
-    public static final int DISPLAY_REDRAW_TIMEOUT = 350;
+    public static final int DISPLAY_REDRAW_TIMEOUT = 550;
 
     /**
      * DataSource type
@@ -92,6 +92,7 @@ public interface Constants {
     public final static int MSGTYPE_DS_TYPE_ZIP = DS_TYPE_ZIP;
     public final static int MSGTYPE_DRAWING_DONE = 500;
     public final static int MSGTYPE_PANNING_DONE = 501;
+    public final static int MSGTYPE_ZOOMING_DONE = 502;
 
     /**
      * Bundle keys
