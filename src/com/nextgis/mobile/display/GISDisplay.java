@@ -93,7 +93,7 @@ public class GISDisplay {
         mBackgroundBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mBackgroundCanvas = new Canvas(mBackgroundBitmap);
 
-        mMainBitmap = Bitmap.createBitmap(w + w + w, h + h + h, Bitmap.Config.ARGB_8888);
+        mMainBitmap = Bitmap.createBitmap((int)(w * OFFSCREEN_EXTRASIZE_RATIO), (int)(h * OFFSCREEN_EXTRASIZE_RATIO), Bitmap.Config.ARGB_8888);
         mMainCanvas = new Canvas(mMainBitmap);
 
         mMainBitmapOffsetX = (mMainBitmap.getWidth() - mBackgroundBitmap.getWidth()) / 2;
@@ -175,6 +175,29 @@ public class GISDisplay {
             clearBackground();
         synchronized (mMainBitmap) {
             mBackgroundCanvas.drawBitmap(mMainBitmap, x - mMainBitmapOffsetX, y - mMainBitmapOffsetY, null);
+        }
+        return mBackgroundBitmap;
+    }
+
+    public synchronized Bitmap getDisplay(float x, float y, float scale) {
+        clearBackground();
+
+        float dx_old = x - mBackgroundBitmap.getWidth() / 2;
+        float dy_old = y - mBackgroundBitmap.getHeight() / 2;
+
+        float scaledWidth = mMainBitmap.getWidth() * scale;
+        float scaledHeight = mMainBitmap.getHeight() * scale;
+
+        float mainBitmapOffsetX = (scaledWidth - mBackgroundBitmap.getWidth()) / 2 - (1 - scale) * dx_old;
+        float mainBitmapOffsetY = (scaledHeight - mBackgroundBitmap.getHeight()) / 2 - (1 - scale) * dy_old;
+
+        Matrix matrix = new Matrix();
+        matrix.postScale(scale, scale);
+        matrix.postTranslate(-mainBitmapOffsetX, -mainBitmapOffsetY);
+        //Log.d(TAG, "matix: " + matrix.toShortString());
+
+        synchronized (mMainBitmap) {
+            mBackgroundCanvas.drawBitmap(mMainBitmap, matrix, null);
         }
         return mBackgroundBitmap;
     }

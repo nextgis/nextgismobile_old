@@ -69,6 +69,12 @@ public interface Constants {
     public static final int MAX_DRAWLER_WIDTH = 750;
     public static final float MIN_SCROLL_STEP = 5.5f;
     public static final boolean NO_MAP_LIMITS = true;
+    //the additional size to off screen drawing
+    //from 1 and higher
+    //As more than more memory needed
+    public static final float OFFSCREEN_EXTRASIZE_RATIO = 2.f;
+    //display redraw timeout ms
+    public static final int DISPLAY_REDRAW_TIMEOUT = 350;
 
     /**
      * DataSource type
@@ -163,6 +169,7 @@ public interface Constants {
         drawing,
         drawing_noclearbk,
         panning,
+        zooming,
         double_tap
     };
 

@@ -506,7 +506,7 @@ public class MapBase extends View {
     }
 
     protected void onLayerDrawFinished(float percent){
-        if(System.currentTimeMillis() - mStartDrawTime > 350 || percent >= 100){
+        if(System.currentTimeMillis() - mStartDrawTime > DISPLAY_REDRAW_TIMEOUT || percent >= 100){
             mStartDrawTime = System.currentTimeMillis();
             invalidate();
         }
