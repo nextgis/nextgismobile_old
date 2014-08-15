@@ -61,6 +61,7 @@ public class GISDisplay {
     protected float mMainBitmapOffsetY;
     protected GeoEnvelope mLimits;
     protected GeoEnvelope mScreenBounds;
+    protected final Paint mRasterPaint;
 
     //TODO: create list of caches
     //mark each cache as done and merge it with previous if it done
@@ -81,6 +82,11 @@ public class GISDisplay {
         mCenter = new GeoPoint();
 
         setSize(100, 100);
+
+        mRasterPaint = new Paint();
+        mRasterPaint.setAntiAlias(true);
+        mRasterPaint.setFilterBitmap(true);
+        mRasterPaint.setDither(true);
     }
 
     public void setSize(int w, int h){
@@ -194,7 +200,7 @@ public class GISDisplay {
         //Log.d(TAG, "matix: " + matrix.toShortString());
 
         synchronized (mMainBitmap) {
-            mBackgroundCanvas.drawBitmap(mMainBitmap, matrix, null);
+            mBackgroundCanvas.drawBitmap(mMainBitmap, matrix, mRasterPaint);
         }
         return mBackgroundBitmap;
     }
@@ -222,7 +228,7 @@ public class GISDisplay {
 
             mMainCanvas.save(Canvas.ALL_SAVE_FLAG);
             mMainCanvas.setMatrix(new Matrix());
-            mMainCanvas.drawBitmap(tmpBitmap, 0, 0, null);
+            mMainCanvas.drawBitmap(tmpBitmap, 0, 0, mRasterPaint);
             mMainCanvas.restore();
         }
         catch (OutOfMemoryError e){
@@ -252,7 +258,7 @@ public class GISDisplay {
         }
 
         synchronized (mMainBitmap) {
-            mMainCanvas.drawBitmap(bitmap, matrix, null);
+            mMainCanvas.drawBitmap(bitmap, matrix, mRasterPaint);
         }
     }
 
