@@ -142,7 +142,7 @@ public class MapBase extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         if(mDisplay != null){
             mDisplay.setSize(w, h);
-            onExtentChanged(mDisplay.getZoomLevel(), mDisplay.getCenter());
+            onExtentChanged((int) mDisplay.getZoomLevel(), mDisplay.getCenter());
         }
     }
 
@@ -259,10 +259,10 @@ public class MapBase extends View {
      * @param zoom A zoom level
      * @param center A map center coordinates
      */
-    protected void setZoomAndCenter(final int  zoom, final GeoPoint center){
+    protected void setZoomAndCenter(final float  zoom, final GeoPoint center){
         if(mDisplay != null && zoom >= mDisplay.getMinZoomLevel() && zoom <= mDisplay.getMaxZoomLevel()){
             mDisplay.setZoomAndCenter(zoom, center);
-            onExtentChanged(zoom, center);
+            onExtentChanged((int) zoom, center);
         }
     }
 
@@ -516,7 +516,7 @@ public class MapBase extends View {
         return mDisplay;
     }
 
-    public final int getZoomLevel() {
+    public final float getZoomLevel() {
         if(mDisplay != null)
             return mDisplay.getZoomLevel();
         return 0;

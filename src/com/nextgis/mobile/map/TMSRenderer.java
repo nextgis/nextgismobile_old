@@ -25,6 +25,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.TileItem;
@@ -49,7 +50,8 @@ public class TMSRenderer extends Renderer{
 
         display.clearLayer(0);
 
-        final int zoom = display.getZoomLevel();
+        final float zoom = display.getZoomLevel();
+
         GeoEnvelope env = display.getBounds();
         //get tiled for zoom and bounds
         TMSLayer tmsLayer = (TMSLayer)mLayer;
@@ -60,8 +62,9 @@ public class TMSRenderer extends Renderer{
             if(tmsLayer.isDrawCanceled())
                 break;
             final Bitmap bmp = tmsLayer.getBitmap(tile);
-            if(bmp != null)
+            if(bmp != null) {
                 display.drawTile(bmp, tile.getPoint());
+            }
             if(size != 0.0) {
                 if(handler != null){
                     Bundle bundle = new Bundle();

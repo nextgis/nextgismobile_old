@@ -57,40 +57,42 @@ public abstract class TMSLayer extends Layer {
         mTMSType = type;
     }
 
-    public final List<TileItem> getTielsForBounds(GeoEnvelope bounds, int zoom) {
-        List<TileItem> list = new ArrayList<TileItem>();
-        int maxY = 1 << zoom;
-        int halfMax = maxY / 2;
-        //1. get tile size in m for current zoom
-        GeoPoint tileSize = mMap.getGISDisplay().getTileSize();
-        //2. get bottom left tile
-        int begX = (int) (bounds.getMinX() / tileSize.getX() - .5) + halfMax;
-        int begY = (int) (bounds.getMinY() / tileSize.getY() - .5) + halfMax;
-        int endX = (int) (bounds.getMaxX() / tileSize.getX() + .5) + halfMax;
-        int endY = (int) (bounds.getMaxY() / tileSize.getY() + .5) + halfMax;
-        //3.
+    public final List<TileItem> getTielsForBounds(GeoEnvelope bounds, float zoom) {
+
+        int nZoom = (int) Math.floor(zoom);
+        int tilesInMap = 1 << nZoom;
+        double halfTilesInMap = tilesInMap / 2;
         GeoEnvelope fullBounds = mMap.getGISDisplay().getFullBounds();
-        //4.
+        GeoPoint mapTileSize = new GeoPoint(fullBounds.width() / tilesInMap, fullBounds.height() / tilesInMap);
+
+        List<TileItem> list = new ArrayList<TileItem>();
+        int begX = (int) (bounds.getMinX() / mapTileSize.getX() - .5 + halfTilesInMap);
+        int begY = (int) (bounds.getMinY() / mapTileSize.getY() - .5 + halfTilesInMap);
+        int endX = (int) (bounds.getMaxX() / mapTileSize.getX() + .5 + halfTilesInMap);
+        int endY = (int) (bounds.getMaxY() / mapTileSize.getY() + .5 + halfTilesInMap);
+
         if(begX < 0)
             begX = 0;
         if(begY < 0)
             begY = 0;
-        if(endX > maxY)
-            endX = maxY;
-        if(endY > maxY)
-            endY = maxY;
+        if(endX > tilesInMap)
+            endX = tilesInMap;
+        if(endY > tilesInMap)
+            endY = tilesInMap;
 
         //TODO: fill tiles on spiral
+        //see http://www.cyberforum.ru/visual-cpp/thread3621.html
+        //массив спираль java
 
         for(int x = begX; x < endX; x++){
             for(int y = begY; y < endY; y++){
                 int realY = y;
                 if(mTMSType == TMSTYPE_OSM){
-                    realY = maxY - y - 1;
+                    realY = tilesInMap - y - 1;
                 }
 
-                final GeoPoint pt = new GeoPoint(fullBounds.getMinX() + x * tileSize.getX(), fullBounds.getMinY() + (y + 1) * tileSize.getY());
-                TileItem item = new TileItem(x, realY, zoom, pt);
+                final GeoPoint pt = new GeoPoint(fullBounds.getMinX() + x * mapTileSize.getX(), fullBounds.getMinY() + (y + 1) * mapTileSize.getY());
+                TileItem item = new TileItem(x, realY, nZoom, pt);
                 list.add(item);
             }
         }

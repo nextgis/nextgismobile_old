@@ -52,9 +52,9 @@ public class GISDisplay {
     protected Matrix mTransformMatrix;
     protected Matrix mInvertTransformMatrix;
     protected final int mTileSize = 256;
-    protected int mMinZoomLevel;
-    protected int mMaxZoomLevel;
-    protected int mZoomLevel;
+    protected float mMinZoomLevel;
+    protected float mMaxZoomLevel;
+    protected float mZoomLevel;
     protected double mScale;
     protected double mInvertScale;
     protected float mMainBitmapOffsetX;
@@ -116,14 +116,17 @@ public class GISDisplay {
         mMainBitmap.eraseColor(Color.TRANSPARENT);
     }
 
-    public void setZoomAndCenter(final int  zoom, final GeoPoint center){
+    public void setZoomAndCenter(final float  zoom, final GeoPoint center){
         if(zoom > mMaxZoomLevel || zoom < mMinZoomLevel)
             return;
         mZoomLevel = zoom;
         mCenter = center;
+
+        int nZoom = (int) Math.floor(zoom);
         Log.d(TAG, "Zoom: " + zoom + ", Center: " + center.toString());
 
-        double mapTileSize = 1 << zoom;
+        double mapTileSize = 1 << nZoom;
+        mapTileSize *= 1 + zoom - nZoom;
         double mapPixelSize = mapTileSize * mTileSize;
 
         mMapTileSize.setCoordinates(mFullBounds.width() / mapTileSize, mFullBounds.height() / mapTileSize);
@@ -156,7 +159,6 @@ public class GISDisplay {
 
 //        mCurrentBounds = new GeoEnvelope(rect.left, rect.right, rect.bottom, rect.top);
         mCurrentBounds = new GeoEnvelope(Math.min(rect.left, rect.right), Math.max(rect.left, rect.right), Math.min(rect.bottom, rect.top), Math.max(rect.bottom, rect.top));
-        Log.d(TAG, "full: " + mFullBounds.toString());
         Log.d(TAG, "current: " + mCurrentBounds.toString());
 
         mLimits = mapToScreen(mFullBounds);
@@ -250,12 +252,16 @@ public class GISDisplay {
 
         matrix.postScale((float)mInvertScale, (float)-mInvertScale);
         matrix.postTranslate((float)pt.getX(), (float)pt.getY());
+
+        float scale = (float) (1 + mZoomLevel - Math.floor(mZoomLevel));
+
         if(bitmap.getWidth() != mTileSize) {
-            Matrix matrix1 = new Matrix();
-            float scale = (float)mTileSize / bitmap.getWidth();
-            matrix1.postScale(scale, scale);
-            matrix.preConcat(matrix1);
+            scale = (float)mTileSize / bitmap.getWidth() * scale;
         }
+        Matrix matrix1 = new Matrix();
+        matrix1.postScale(scale, scale);
+        matrix.preConcat(matrix1);
+
 
         synchronized (mMainBitmap) {
             mMainCanvas.drawBitmap(bitmap, matrix, mRasterPaint);
@@ -290,7 +296,7 @@ public class GISDisplay {
         drawGeometry(new GeoPoint(2000000, 2000000), pt);
     }
 
-    public final int getZoomLevel() {
+    public final float getZoomLevel() {
         return mZoomLevel;
     }
 
@@ -352,11 +358,11 @@ public class GISDisplay {
         return outEnv;
     }
 
-    public int getMinZoomLevel() {
+    public float getMinZoomLevel() {
         return mMinZoomLevel;
     }
 
-    public int getMaxZoomLevel() {
+    public float getMaxZoomLevel() {
         return mMaxZoomLevel;
     }
 

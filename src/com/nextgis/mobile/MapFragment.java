@@ -101,7 +101,7 @@ public class MapFragment extends Fragment  implements MapEventListener {
         mivZoomLevel.setLayoutParams(new LayoutParams(
                 LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT));
-        mivZoomLevel.setText("" + mMap.getZoomLevel());
+        mivZoomLevel.setText("" + (int)Math.floor(mMap.getZoomLevel()));
 
         mivZoomIn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
@@ -174,7 +174,7 @@ public class MapFragment extends Fragment  implements MapEventListener {
 
     @Override
     public void onExtentChanged(int zoom, GeoPoint center) {
-        mivZoomLevel.setText("" + mMap.getZoomLevel());
+        mivZoomLevel.setText("" + (int)Math.floor(mMap.getZoomLevel()));
         setZoomInEnabled(mMap.canZoomIn());
         setZoomOutEnabled(mMap.canZoomOut());
     }

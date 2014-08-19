@@ -400,6 +400,7 @@ public class LocalTMSLayer extends TMSLayer{
         protected void getLocalCacheDetailes() throws JSONException, NumberFormatException {
             int nMaxLevel = 0;
             int nMinLevel = 512;
+
             JSONArray jsonArray = new JSONArray();
             mLayerConfig.put(JSON_LEVELS_KEY, jsonArray);
 
@@ -432,6 +433,7 @@ public class LocalTMSLayer extends TMSLayer{
                     if (bFirstTurn) {
                         for (File inLevelY : levelsY) {
                             String sLevelY = inLevelY.getName();
+
                             //Log.d(TAG, sLevelY);
                             int nY = Integer.parseInt(sLevelY.replace(TILE_EXT, ""));
                             if (nY > nMaxY)
@@ -454,6 +456,7 @@ public class LocalTMSLayer extends TMSLayer{
             }
             mLayerConfig.put(JSON_MAXLEVEL_KEY, nMaxLevel);
             mLayerConfig.put(JSON_MINLEVEL_KEY, nMinLevel);
+
         }
     }
 }
