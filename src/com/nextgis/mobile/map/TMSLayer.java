@@ -59,7 +59,7 @@ public abstract class TMSLayer extends Layer {
 
     public final List<TileItem> getTielsForBounds(GeoEnvelope bounds, float zoom) {
 
-        int nZoom = (int) Math.floor(zoom);
+        int nZoom = (int)zoom;
         int tilesInMap = 1 << nZoom;
         double halfTilesInMap = tilesInMap / 2;
         GeoEnvelope fullBounds = mMap.getGISDisplay().getFullBounds();

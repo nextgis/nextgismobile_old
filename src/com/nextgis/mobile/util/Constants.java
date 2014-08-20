@@ -102,6 +102,7 @@ public interface Constants {
     public static final String BUNDLE_TYPE_KEY = "type";
     public static final String BUNDLE_PATH_KEY = "path";
     public static final String BUNDLE_DONE_KEY = "done";
+    public static final String BUNDLE_DRAWSTATE_KEY = "draw_state";
 
     /**
      * JSON keys
@@ -165,13 +166,10 @@ public interface Constants {
     public static final int KEEP_ALIVE_TIME = 1;
     public static final TimeUnit KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
 
-    public enum enumGISMap{
-        none,
-        drawing,
-        drawing_noclearbk,
-        panning,
-        zooming,
-        double_tap
-    };
-
+    public static final int DRAW_SATE_none = 0;
+    public static final int DRAW_SATE_drawing = 1;
+    public static final int DRAW_SATE_drawing_noclearbk = 2;
+    public static final int DRAW_SATE_panning = 3;
+    public static final int DRAW_SATE_zooming = 4;
+    public static final int DRAW_SATE_double_tap = 5;
 }
