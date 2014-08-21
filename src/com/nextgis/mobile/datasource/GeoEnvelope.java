@@ -195,6 +195,11 @@ public class GeoEnvelope {
         mMaxY += y;
     }
 
+    public void scale(double scale) {
+        mMaxX = mMinX + width() * scale;
+        mMaxY = mMinY + height() * scale;
+    }
+
     public void fix(){
         if(mMinX > mMaxX){
             double tmp = mMinX;

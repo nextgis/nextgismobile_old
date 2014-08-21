@@ -76,7 +76,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     protected void onDraw(Canvas canvas) {
-        //Log.d(TAG, "state: " + mDrawingState + ", current loc: " +  mCurrentMouseLocation.toString());
+        Log.d(TAG, "state: " + mDrawingState + ", current loc: " +  mCurrentMouseLocation.toString() + " current focus: " + mCurrentFocusLocation.toString() + " scale: "  + mScaleFactor);
         if(mDisplay != null){
             if(mDrawingState == DRAW_SATE_panning){
                 canvas.drawBitmap(mDisplay.getDisplay(-mCurrentMouseLocation.x, -mCurrentMouseLocation.y, true), 0 , 0, null);
@@ -86,9 +86,6 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             }
             else if(mDrawingState == DRAW_SATE_drawing_noclearbk){
                 canvas.drawBitmap(mDisplay.getDisplay(false), 0 , 0, null);
-            }
-            else if(mDrawingState == DRAW_SATE_none){
-                super.onDraw(canvas);
             }
             else{
                 canvas.drawBitmap(mDisplay.getDisplay(true), 0, 0, null);
@@ -144,6 +141,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     protected float getZoomForScaleFactor(float scale){
         float zoom = mDisplay.getZoomLevel();
+
         if(scale > 1){
             zoom = mDisplay.getZoomLevel() + scale - 1;
         }
@@ -156,27 +154,22 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     protected void zoomStop(MotionEvent e){
         if(mDrawingState == DRAW_SATE_zooming ) {
             mDrawingState = DRAW_SATE_drawing_noclearbk;
-            //mScaleFactor *= scaleGestureDetector.getScaleFactor();
+            
             float zoom = getZoomForScaleFactor(mScaleFactor);
 
-            //GeoPoint pt = mDisplay.getScaledOffset(-mCurrentFocusLocation.x, -mCurrentFocusLocation.y, mScaleFactor);
             GeoEnvelope env = mDisplay.getScreenBounds();
-            GeoPoint centerPt = env.getCenter();
             GeoPoint focusPt = new GeoPoint(-mCurrentFocusLocation.x, -mCurrentFocusLocation.y);
 
-            double dX = centerPt.getX() - focusPt.getX();
-            double dY = centerPt.getY() - focusPt.getY();
-            double scale = zoom / mDisplay.getZoomLevel();
-            double dXNew = dX * scale;
-            double dYNew = dY * scale;
-            double newCenterPtX = centerPt.getX() - (dXNew - dX);
-            double newCenterPtY = centerPt.getY() - (dYNew - dY);
-            GeoPoint newCenterPt = new GeoPoint(newCenterPtX, newCenterPtY);
-            GeoPoint newCenterPtMap = mDisplay.screenToMap(newCenterPt);
-            Log.d(TAG, "current center: " + centerPt.toString() + " new center: " + newCenterPt.toString());
+            double invertScale = 1 / mScaleFactor;
 
-            //GeoPoint centerPt = mDisplay.getCenter();//screenToMap(env.getCenter());
-            mDrawingState = DRAW_SATE_none;
+            double offX = (1 - invertScale) * focusPt.getX();
+            double offY = (1 - invertScale) * focusPt.getY();
+            env.scale(invertScale);
+            env.offset(offX, offY);
+
+            GeoPoint newCenterPt = env.getCenter();
+            GeoPoint newCenterPtMap = mDisplay.screenToMap(newCenterPt);
+
             mDisplay.setZoomAndCenter(zoom, newCenterPtMap);
 
             Bundle bundle = new Bundle();
@@ -231,8 +224,11 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     protected void panStop(final MotionEvent e){
         if(mDrawingState == DRAW_SATE_panning ) {
-            float x = mCurrentMouseLocation.x; //mStartMouseLocation.x - e.getX();
-            float y = mCurrentMouseLocation.y; //mStartMouseLocation.y - e.getY();
+
+            mDrawingState = DRAW_SATE_drawing_noclearbk;
+
+            float x = mCurrentMouseLocation.x;
+            float y = mCurrentMouseLocation.y;
 
 
             GeoEnvelope bounds = mDisplay.getScreenBounds();
@@ -245,13 +241,12 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             mDisplay.panStop((float) screenPt.getX(), (float) screenPt.getY());
 
 
-            mDrawingState = DRAW_SATE_none;
             mDisplay.setZoomAndCenter(mDisplay.getZoomLevel(), pt);
 
             Bundle bundle = new Bundle();
             bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
             bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_PANNING_DONE);
-            bundle.putInt(BUNDLE_DRAWSTATE_KEY, DRAW_SATE_drawing_noclearbk);
+            bundle.putInt(BUNDLE_DRAWSTATE_KEY, DRAW_SATE_drawing);
 
             Message msg = new Message();
             msg.setData(bundle);

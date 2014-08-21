@@ -260,9 +260,14 @@ public class MapBase extends View {
      * @param center A map center coordinates
      */
     protected void setZoomAndCenter(final float  zoom, final GeoPoint center){
-        if(mDisplay != null && zoom >= mDisplay.getMinZoomLevel() && zoom <= mDisplay.getMaxZoomLevel()){
-            mDisplay.setZoomAndCenter(zoom, center);
-            onExtentChanged((int) zoom, center);
+        if(mDisplay != null){
+            float newZoom = zoom;
+            if( zoom < mDisplay.getMinZoomLevel())
+                newZoom = mDisplay.getMinZoomLevel();
+            else if( zoom > mDisplay.getMaxZoomLevel())
+                newZoom = mDisplay.getMaxZoomLevel();
+            mDisplay.setZoomAndCenter(newZoom, center);
+            onExtentChanged((int) newZoom, center);
         }
     }
 

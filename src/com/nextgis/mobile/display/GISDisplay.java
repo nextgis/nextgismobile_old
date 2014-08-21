@@ -29,7 +29,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
 
@@ -208,15 +207,32 @@ public class GISDisplay {
     }
 
     public GeoPoint getScaledOffset(float x, float y, float scale){
-        float dx_old = x - mBackgroundBitmap.getWidth() / 2;
-        float dy_old = y - mBackgroundBitmap.getHeight() / 2;
+        float dxOld = x - mBackgroundBitmap.getWidth() / 2;
+        float dyOld = y - mBackgroundBitmap.getHeight() / 2;
 
         float scaledWidth = mMainBitmap.getWidth() * scale;
         float scaledHeight = mMainBitmap.getHeight() * scale;
 
         GeoPoint ret = new GeoPoint();
-        ret.setX((scaledWidth - mBackgroundBitmap.getWidth()) / 2 - (1 - scale) * dx_old);
-        ret.setY( (scaledHeight - mBackgroundBitmap.getHeight()) / 2 - (1 - scale) * dy_old);
+        ret.setX((scaledWidth - mBackgroundBitmap.getWidth()) / 2 - (1 - scale) * dxOld);
+        ret.setY( (scaledHeight - mBackgroundBitmap.getHeight()) / 2 - (1 - scale) * dyOld);
+        return ret;
+    }
+
+    public GeoPoint getScaledCenter(float x, float y, float scale){
+        float dxOld = x - mBackgroundBitmap.getWidth() / 2;
+        float dyOld = y - mBackgroundBitmap.getHeight() / 2;
+
+        float scaledWidth = mMainBitmap.getWidth() * scale;
+        float scaledHeight = mMainBitmap.getHeight() * scale;
+
+        double offX = (scaledWidth - mBackgroundBitmap.getWidth()) / 2 - (1 - scale) * dxOld;
+        double offY = (scaledHeight - mBackgroundBitmap.getHeight()) / 2 - (1 - scale) * dyOld;
+
+        GeoPoint ret = new GeoPoint();
+        ret.setX(scaledWidth / 2 - offX);
+        ret.setY(scaledHeight / 2 - offY);
+
         return ret;
     }
 
