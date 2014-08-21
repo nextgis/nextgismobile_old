@@ -51,9 +51,9 @@ public class GISDisplay {
     protected Matrix mTransformMatrix;
     protected Matrix mInvertTransformMatrix;
     protected final int mTileSize = 256;
-    protected float mMinZoomLevel;
-    protected float mMaxZoomLevel;
-    protected float mZoomLevel;
+    protected double mMinZoomLevel;
+    protected double mMaxZoomLevel;
+    protected double mZoomLevel;
     protected double mScale;
     protected double mInvertScale;
     protected float mMainBitmapOffsetX;
@@ -115,7 +115,7 @@ public class GISDisplay {
         mMainBitmap.eraseColor(Color.TRANSPARENT);
     }
 
-    public void setZoomAndCenter(final float  zoom, final GeoPoint center){
+    public void setZoomAndCenter(final double  zoom, final GeoPoint center){
         if(zoom > mMaxZoomLevel || zoom < mMinZoomLevel)
             return;
         mZoomLevel = zoom;
@@ -219,41 +219,6 @@ public class GISDisplay {
         return ret;
     }
 
-    public GeoPoint getScaledCenter(float x, float y, float scale){
-        float dxOld = x - mBackgroundBitmap.getWidth() / 2;
-        float dyOld = y - mBackgroundBitmap.getHeight() / 2;
-
-        float scaledWidth = mMainBitmap.getWidth() * scale;
-        float scaledHeight = mMainBitmap.getHeight() * scale;
-
-        double offX = (scaledWidth - mBackgroundBitmap.getWidth()) / 2 - (1 - scale) * dxOld;
-        double offY = (scaledHeight - mBackgroundBitmap.getHeight()) / 2 - (1 - scale) * dyOld;
-
-        GeoPoint ret = new GeoPoint();
-        ret.setX(scaledWidth / 2 - offX);
-        ret.setY(scaledHeight / 2 - offY);
-
-        return ret;
-    }
-
-    public synchronized void panStop(float x, float y){
-        try {
-            Bitmap tmpBitmap = Bitmap.createBitmap(mMainBitmap.getWidth(), mMainBitmap.getHeight(), Bitmap.Config.ARGB_8888);
-            Canvas tmpCanvas = new Canvas(tmpBitmap);
-
-            tmpCanvas.drawBitmap(mMainBitmap, -x, -y, null);
-            mMainBitmap.eraseColor(Color.TRANSPARENT);
-
-            mMainCanvas.save(Canvas.ALL_SAVE_FLAG);
-            mMainCanvas.setMatrix(new Matrix());
-            mMainCanvas.drawBitmap(tmpBitmap, 0, 0, mRasterPaint);
-            mMainCanvas.restore();
-        }
-        catch (OutOfMemoryError e){
-            mMainBitmap.eraseColor(Color.TRANSPARENT);
-        }
-    }
-
     public synchronized void clearBackground() {
         final Bitmap bkBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.bk_tile);
         for (int i = 0; i < mBackgroundBitmap.getWidth(); i += bkBitmap.getWidth()) {
@@ -312,8 +277,12 @@ public class GISDisplay {
         drawGeometry(new GeoPoint(2000000, 2000000), pt);
     }
 
-    public final float getZoomLevel() {
+    public final double getZoomLevel() {
         return mZoomLevel;
+    }
+
+    public final double getScale() {
+        return mScale;
     }
 
     public final GeoEnvelope getBounds(){
@@ -374,11 +343,11 @@ public class GISDisplay {
         return outEnv;
     }
 
-    public float getMinZoomLevel() {
+    public double getMinZoomLevel() {
         return mMinZoomLevel;
     }
 
-    public float getMaxZoomLevel() {
+    public double getMaxZoomLevel() {
         return mMaxZoomLevel;
     }
 

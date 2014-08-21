@@ -47,8 +47,8 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     protected PointF mCurrentMouseLocation;
     protected PointF mCurrentFocusLocation;
     protected int mDrawingState;
-    protected float mScaleFactor;
-    protected float mCurrentSpan;
+    protected double mScaleFactor;
+    protected double mCurrentSpan;
 
     public MapView(Context context) {
         super(context);
@@ -76,13 +76,13 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.d(TAG, "state: " + mDrawingState + ", current loc: " +  mCurrentMouseLocation.toString() + " current focus: " + mCurrentFocusLocation.toString() + " scale: "  + mScaleFactor);
+        //Log.d(TAG, "state: " + mDrawingState + ", current loc: " +  mCurrentMouseLocation.toString() + " current focus: " + mCurrentFocusLocation.toString() + " scale: "  + mScaleFactor);
         if(mDisplay != null){
             if(mDrawingState == DRAW_SATE_panning){
                 canvas.drawBitmap(mDisplay.getDisplay(-mCurrentMouseLocation.x, -mCurrentMouseLocation.y, true), 0 , 0, null);
             }
             else if(mDrawingState == DRAW_SATE_zooming){
-                canvas.drawBitmap(mDisplay.getDisplay(-mCurrentFocusLocation.x, -mCurrentFocusLocation.y, mScaleFactor), 0, 0, null);
+                canvas.drawBitmap(mDisplay.getDisplay(-mCurrentFocusLocation.x, -mCurrentFocusLocation.y, (float)mScaleFactor), 0, 0, null);
             }
             else if(mDrawingState == DRAW_SATE_drawing_noclearbk){
                 canvas.drawBitmap(mDisplay.getDisplay(false), 0 , 0, null);
@@ -104,7 +104,6 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         cancelDrawThread();
         if(mDrawingState != DRAW_SATE_drawing_noclearbk) {
             mDrawingState = DRAW_SATE_drawing;
-            mDisplay.clearBackground();
             mDisplay.clearLayer(0);
         }
 
@@ -129,8 +128,8 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     protected void zoom(ScaleGestureDetector scaleGestureDetector){
         if(mDrawingState == DRAW_SATE_zooming) {
-            float scaleFactor = scaleGestureDetector.getCurrentSpan() / mCurrentSpan;
-            float zoom = getZoomForScaleFactor(scaleFactor);
+            double scaleFactor = scaleGestureDetector.getCurrentSpan() / mCurrentSpan;
+            double zoom = getZoomForScaleFactor(scaleFactor);
             if(zoom < mDisplay.getMinZoomLevel() || zoom > mDisplay.getMaxZoomLevel())
                 return;
 
@@ -139,14 +138,14 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         }
     }
 
-    protected float getZoomForScaleFactor(float scale){
-        float zoom = mDisplay.getZoomLevel();
+    protected double getZoomForScaleFactor(double scale){
+        double zoom = mDisplay.getZoomLevel();
 
         if(scale > 1){
-            zoom = mDisplay.getZoomLevel() + scale - 1;
+            zoom = mDisplay.getZoomLevel() + lg(scale);
         }
         else if(scale < 1){
-            zoom = mDisplay.getZoomLevel() - (1 - scale);
+            zoom = mDisplay.getZoomLevel() - lg( 1 / scale);
         }
         return zoom;
     }
@@ -154,8 +153,8 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     protected void zoomStop(MotionEvent e){
         if(mDrawingState == DRAW_SATE_zooming ) {
             mDrawingState = DRAW_SATE_drawing_noclearbk;
-            
-            float zoom = getZoomForScaleFactor(mScaleFactor);
+
+            double zoom = getZoomForScaleFactor(mScaleFactor);
 
             GeoEnvelope env = mDisplay.getScreenBounds();
             GeoPoint focusPt = new GeoPoint(-mCurrentFocusLocation.x, -mCurrentFocusLocation.y);
@@ -170,6 +169,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             GeoPoint newCenterPt = env.getCenter();
             GeoPoint newCenterPtMap = mDisplay.screenToMap(newCenterPt);
 
+            mDisplay.clearLayer(0);
             mDisplay.setZoomAndCenter(zoom, newCenterPtMap);
 
             Bundle bundle = new Bundle();
@@ -237,10 +237,10 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
             GeoPoint pt = mapBounds.getCenter();
             GeoPoint screenPt = mDisplay.mapToScreen(new GeoPoint(mapBounds.getMinX(), mapBounds.getMinY()));
-            Log.d(TAG, "panStop. x: " + x + ", y:" + y + ", sx:" + screenPt.getX() + ", sy:" + screenPt.getY());
-            mDisplay.panStop((float) screenPt.getX(), (float) screenPt.getY());
+            //Log.d(TAG, "panStop. x: " + x + ", y:" + y + ", sx:" + screenPt.getX() + ", sy:" + screenPt.getY());
+            //mDisplay.panStop((float) screenPt.getX(), (float) screenPt.getY());
 
-
+            mDisplay.clearLayer(0);
             mDisplay.setZoomAndCenter(mDisplay.getZoomLevel(), pt);
 
             Bundle bundle = new Bundle();
@@ -394,6 +394,10 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     @Override
     public void onScaleEnd(ScaleGestureDetector scaleGestureDetector) {
         //zoomStop(scaleGestureDetector);
+    }
+
+    public static double lg(double x) {
+        return Math.log(x)/Math.log(2.0);
     }
 }
 

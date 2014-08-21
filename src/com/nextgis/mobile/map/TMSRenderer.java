@@ -50,7 +50,7 @@ public class TMSRenderer extends Renderer{
 
         display.clearLayer(0);
 
-        final float zoom = display.getZoomLevel();
+        final double zoom = display.getZoomLevel();
 
         GeoEnvelope env = display.getBounds();
         //get tiled for zoom and bounds

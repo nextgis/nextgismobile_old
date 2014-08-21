@@ -259,9 +259,9 @@ public class MapBase extends View {
      * @param zoom A zoom level
      * @param center A map center coordinates
      */
-    protected void setZoomAndCenter(final float  zoom, final GeoPoint center){
+    protected void setZoomAndCenter(final double zoom, final GeoPoint center){
         if(mDisplay != null){
-            float newZoom = zoom;
+            double newZoom = zoom;
             if( zoom < mDisplay.getMinZoomLevel())
                 newZoom = mDisplay.getMinZoomLevel();
             else if( zoom > mDisplay.getMaxZoomLevel())
@@ -521,7 +521,7 @@ public class MapBase extends View {
         return mDisplay;
     }
 
-    public final float getZoomLevel() {
+    public final double getZoomLevel() {
         if(mDisplay != null)
             return mDisplay.getZoomLevel();
         return 0;

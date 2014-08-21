@@ -57,7 +57,7 @@ public abstract class TMSLayer extends Layer {
         mTMSType = type;
     }
 
-    public final List<TileItem> getTielsForBounds(GeoEnvelope bounds, float zoom) {
+    public final List<TileItem> getTielsForBounds(GeoEnvelope bounds, double zoom) {
 
         int nZoom = (int)zoom;
         int tilesInMap = 1 << nZoom;
