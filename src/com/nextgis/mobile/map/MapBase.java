@@ -23,10 +23,12 @@ package com.nextgis.mobile.map;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -35,6 +37,7 @@ import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.GeoPoint;
 import com.nextgis.mobile.display.GISDisplay;
 import com.nextgis.mobile.util.FileUtil;
+import com.nextgis.mobile.util.NetworkUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,6 +70,7 @@ public class MapBase extends View {
     protected ThreadPoolExecutor mDrawThreadPool;
 
     protected static int mCPUTotalCount;
+    protected NetworkUtil newtworkUtil;
 
     /**
      * The base map class
@@ -84,6 +88,8 @@ public class MapBase extends View {
         if(mCPUTotalCount < 1)
             mCPUTotalCount = 1;
         mContinueDrawing = false;
+
+        newtworkUtil = new NetworkUtil(context);
 
         createHandler();
 
@@ -537,5 +543,9 @@ public class MapBase extends View {
         if(mDisplay != null)
             return mDisplay.getZoomLevel();
         return 0;
+    }
+
+    public boolean isNetworkAvaliable() {
+        return newtworkUtil.isNetworkAvailible();
     }
 }

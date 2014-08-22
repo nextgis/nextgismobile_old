@@ -53,7 +53,7 @@ public class StartupReceiver extends BroadcastReceiver {
 				
 				boolean startDSService = prefs.getBoolean(Constants.KEY_PREF_SW_SENDPOS_SRV, false);
 				if(startDSService) {
-					Intent datasendServiceIntent = new Intent(DataSendService.ACTION_START);
+					Intent datasendServiceIntent = new Intent(DATASEND_ACTION_START);
 					arg0.startService(datasendServiceIntent);
 				}
 			}

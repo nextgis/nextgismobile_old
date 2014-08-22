@@ -104,9 +104,6 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     protected synchronized void runDrawThread() {
-
-        Log.d(TAG, "quere size: " + mDrawWorkQueue.size());
-
         cancelDrawThread();
         if(mDrawingState != DRAW_SATE_drawing_noclearbk) {
             mDrawingState = DRAW_SATE_drawing;
@@ -119,8 +116,6 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
                 mDrawThreadPool.execute(layer);
             }
         }
-
-        Log.d(TAG, "new quere size: " + mDrawWorkQueue.size());
     }
 
     protected void zoomStart(ScaleGestureDetector scaleGestureDetector){

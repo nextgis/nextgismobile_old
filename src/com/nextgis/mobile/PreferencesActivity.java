@@ -178,9 +178,9 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public void onSendPosService(boolean bStart) {
     	Log.d(TAG, "Preferences: onSendPosService " + bStart);
     	if(bStart)
-			startService(new Intent(DataSendService.ACTION_START));
+			startService(new Intent(DATASEND_ACTION_START));
 		else
-			startService(new Intent(DataSendService.ACTION_STOP));
+			startService(new Intent(DATASEND_ACTION_STOP));
     }    
  
 	public static String GetDeviceId(){

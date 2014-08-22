@@ -51,9 +51,6 @@ import org.apache.http.params.HttpParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -93,6 +90,9 @@ public class RemoteTMSLayer extends TMSLayer {
         if (tilePath.exists() && System.currentTimeMillis() - tilePath.lastModified() < DEFAULT_MAXIMUM_CACHED_FILE_AGE) {
             return BitmapFactory.decodeFile(tilePath.getAbsolutePath());
         }
+
+        if(!mMap.isNetworkAvaliable())
+            return null;
         // try to get tile from remote
         try {
 

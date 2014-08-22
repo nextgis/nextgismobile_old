@@ -180,4 +180,10 @@ public interface Constants {
     public static final int DRAW_SATE_panning = 3;
     public static final int DRAW_SATE_zooming = 4;
     public static final int DRAW_SATE_double_tap = 5;
+
+    /**
+     * Service constants
+     */
+    public static final String DATASEND_ACTION_START = "ngm.sendpos.action.START";
+    public static final String DATASEND_ACTION_STOP = "ngm.sendpos.action.STOP";
 }

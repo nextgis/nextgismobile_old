@@ -38,6 +38,7 @@ import org.apache.http.message.BasicNameValuePair;
 import com.nextgis.mobile.util.Constants;
 import com.nextgis.mobile.PositionDatabase;
 import com.nextgis.mobile.PreferencesActivity;
+import com.nextgis.mobile.util.NetworkUtil;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -59,14 +60,10 @@ import static com.nextgis.mobile.util.Constants.*;
 
 public class DataSendService extends Service {
     
-    public static final String ACTION_START = "com.nextgis.mobile.sendpos.action.START";
-    public static final String ACTION_STOP = "com.nextgis.mobile.sendpos.action.STOP";
-
 	private SQLiteDatabase PositionDB;
 	private PositionDatabase dbHelper;
 	
-	private ConnectivityManager cm;
-	private TelephonyManager tm;
+	protected NetworkUtil networkUtil;
 	
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -83,10 +80,9 @@ public class DataSendService extends Service {
 		super.onCreate();
 		
         dbHelper = new PositionDatabase(getApplicationContext());
-        PositionDB = dbHelper.getWritableDatabase(); 
-        
-        cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        PositionDB = dbHelper.getWritableDatabase();
+
+        networkUtil = new NetworkUtil(this);
 	}
 
 	/* (non-Javadoc)
@@ -110,14 +106,14 @@ public class DataSendService extends Service {
 		if(intent == null)
 			return START_STICKY;
 		String action = intent.getAction();
-        if (action.equals(ACTION_STOP))
+        if (action.equals(DATASEND_ACTION_STOP))
         {
         	//Toast.makeText(getApplicationContext(), "Send position service stoped", Toast.LENGTH_SHORT).show();
         	stopSelf(); 
         }
-        else if(action.equals(ACTION_START))
+        else if(action.equals(DATASEND_ACTION_START))
         {
-        	SharedPreferences prefs = getSharedPreferences(Constants.SERVICE_PREF, MODE_PRIVATE | MODE_MULTI_PROCESS);
+        	SharedPreferences prefs = getSharedPreferences(Constants.SERVICE_PREF, MODE_MULTI_PROCESS);
         	boolean bStart = prefs.getBoolean(Constants.KEY_PREF_SW_SENDPOS_SRV, false);
         	if(bStart)
         		new SendPositionDataTask().execute(getApplicationContext());
@@ -132,10 +128,10 @@ public class DataSendService extends Service {
 	private class SendPositionDataTask extends AsyncTask<Context, Void, Void> {
 		 @Override
 	     protected Void doInBackground(Context... context) {
-        	SharedPreferences prefs = getSharedPreferences("preferences", MODE_PRIVATE | MODE_MULTI_PROCESS); 
+        	SharedPreferences prefs = getSharedPreferences("preferences", MODE_MULTI_PROCESS);
         	String sHost = prefs.getString(Constants.KEY_PREF_STORAGE_SITE, "http://gis-lab.info");
         	long nMinTimeBetweenSend = prefs.getLong(Constants.KEY_PREF_TIME_DATASEND + "_long", DateUtils.MINUTE_IN_MILLIS);
-        	
+
         	boolean bEnergyEconomy = prefs.getBoolean(Constants.KEY_PREF_SW_ENERGY_ECO, true);
         	
         	String sId = prefs.getString(Constants.KEY_PREF_USER_ID, PreferencesActivity.GetDeviceId());
@@ -157,9 +153,9 @@ public class DataSendService extends Service {
 				return;
 	 		
 	 		Log.d(TAG, "Schedule Next Update for sender " + bStart);
-			if(bStart == false)
+			if(!bStart)
 				return;
-			Intent intent = new Intent(DataSendService.ACTION_START);
+			Intent intent = new Intent(DATASEND_ACTION_START);
 			PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 	
 	        // The update frequency should often be user configurable.  This is not.
@@ -176,31 +172,10 @@ public class DataSendService extends Service {
 				alarmManager.set(AlarmManager.RTC_WAKEUP, nextUpdateTimeMillis, pendingIntent);
 		}
 		
-		protected boolean IsNetworkAvailible()
-		{
-			NetworkInfo info = cm.getActiveNetworkInfo();
-			if (info == null /*|| !cm.getBackgroundDataSetting()*/) 
-				return false;
-			
-			int netType = info.getType();
-			//int netSubtype = info.getSubtype();
-			if (netType == ConnectivityManager.TYPE_WIFI) {
-				return info.isConnected();
-			} 
-			else if (netType == ConnectivityManager.TYPE_MOBILE
-			&& /*netSubtype == TelephonyManager.NETWORK_TYPE_UMTS
-			&&*/ !tm.isNetworkRoaming()) {
-				return info.isConnected();
-			} 
-			else {
-				return false;
-			}	
-		}
-		
 		protected void SendPostionData(String sHost, String sId)
 		{
 			Log.d(TAG, "SendPostionData");
-			if(IsNetworkAvailible() == false)
+			if(!networkUtil.isNetworkAvailible())
 				return;
 			
 			//Queue records to send
@@ -244,12 +219,11 @@ public class DataSendService extends Service {
 		    	}
 		    	cursor.moveToNext();
 	    	}
-			cursor.close();   
-			
-			for(int i = 0; i < delete_ids.size(); i++)
-			{
-				PositionDB.delete(PositionDatabase.TABLE_POS, PositionDatabase.COLUMN_ID + " = " + delete_ids.get(i), null);
-			}
+			cursor.close();
+
+            for (Long delete_id : delete_ids) {
+                PositionDB.delete(PositionDatabase.TABLE_POS, PositionDatabase.COLUMN_ID + " = " + delete_id, null);
+            }
 		}
 		
 		protected boolean SendData(String sHost, String sData)
