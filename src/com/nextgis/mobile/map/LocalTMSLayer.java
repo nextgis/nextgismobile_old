@@ -40,6 +40,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nextgis.mobile.R;
@@ -209,8 +210,16 @@ public class LocalTMSLayer extends TMSLayer{
             spinner.setSelection(2);
         }
 
+        final TextView stLayerName = new TextView(map.getContext());
+        stLayerName.setText(map.getContext().getString(R.string.layer_name) + ":");
+
+        final TextView stLayerType = new TextView(map.getContext());
+        stLayerType.setText(map.getContext().getString(R.string.layer_type) + ":");
+
         linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.addView(stLayerName);
         linearLayout.addView(input);
+        linearLayout.addView(stLayerType);
         linearLayout.addView(spinner);
 
         new AlertDialog.Builder(map.getContext())
@@ -361,7 +370,7 @@ public class LocalTMSLayer extends TMSLayer{
                     Bundle bundle = new Bundle();
                     bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
                     bundle.putString(BUNDLE_MSG_KEY, sMsg);
-                    bundle.putInt(BUNDLE_TYPE_KEY, DS_TYPE_ZIP);
+                    bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_LAYER_ADDED);
                     bundle.putSerializable(BUNDLE_PATH_KEY, mOutputPath);
 
                     Message msg = new Message();
@@ -387,7 +396,7 @@ public class LocalTMSLayer extends TMSLayer{
                 Bundle bundle = new Bundle();
                 bundle.putBoolean(BUNDLE_HASERROR_KEY, true);
                 bundle.putString(BUNDLE_MSG_KEY, sMsg);
-                bundle.putInt(BUNDLE_TYPE_KEY, DS_TYPE_ZIP);
+                bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_LAYER_ADDED);
 
                 Message msg = new Message();
                 msg.setData(bundle);

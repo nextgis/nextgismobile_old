@@ -159,11 +159,17 @@ public class MapBase extends View {
     }
 
     protected synchronized void cancelDrawThread(){
+        for(Layer layer : mLayers) {
+            if(layer.getVisible()) {
+                layer.cancelDraw();
+            }
+        }
+
         /*
          * Creates an array of Runnables that's the same size as the
          * thread pool work queue
          */
-        Runnable[] runnableArray = new Runnable[mDrawWorkQueue.size()];
+        /*Runnable[] runnableArray = new Runnable[mDrawWorkQueue.size()];
         // Populates the array with the Runnables in the queue
         mDrawWorkQueue.toArray(runnableArray);
 
@@ -173,7 +179,8 @@ public class MapBase extends View {
             layer.cancelDraw();
         }
 
-        mDrawWorkQueue.clear();
+        //mDrawWorkQueue.clear();
+        */
     }
 
     /**
@@ -232,20 +239,25 @@ public class MapBase extends View {
             String sData = FileUtil.readFromFile(config_file);
             JSONObject rootObject = new JSONObject(sData);
             int nType = rootObject.getInt(JSON_TYPE_KEY);
+            Layer layer = null;
             switch (nType){
                 case LAYERTYPE_LOCAL_TMS:
-                    Layer layer = new LocalTMSLayer(this, path, rootObject);
-                    mLayers.add(layer);
-                    onLayerAdded(layer);
+                    layer = new LocalTMSLayer(this, path, rootObject);
                     break;
                 case LAYERTYPE_LOCAL_GEOJSON:
                     break;
                 case LAYERTYPE_LOCAL_RASTER:
                     break;
                 case LAYERTYPE_TMS:
+                    layer = new RemoteTMSLayer(this, path, rootObject);
                     break;
                 case LAYERTYPE_NGW:
                     break;
+            }
+
+            if(layer != null) {
+                mLayers.add(layer);
+                onLayerAdded(layer);
             }
         } catch (IOException e){
             reportError(e.getLocalizedMessage());

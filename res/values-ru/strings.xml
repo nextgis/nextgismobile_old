@@ -137,5 +137,8 @@
 	<string name="pref_accurate_coordinates_pick_count_summary">Количество измерений GPS координат для более точного позиционирования</string>
 	
 	<string name="pref_accurate_ce">Радиус погрешности</string>
-	<string name="pref_accurate_ce_summary">Радиус возможной погрешности</string>    
+	<string name="pref_accurate_ce_summary">Радиус возможной погрешности</string>
+    <string name="layer_name">Name</string>
+    <string name="layer_url">URL</string>
+    <string name="layer_type">Type</string>
 </resources>

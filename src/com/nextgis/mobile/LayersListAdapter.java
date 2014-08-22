@@ -52,7 +52,8 @@ public class LayersListAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int i) {
-        return mMap.getLayers().get(i);
+        int nIndex = getCount() - 1 - i;
+        return mMap.getLayers().get(nIndex);
     }
 
     @Override
@@ -66,9 +67,10 @@ public class LayersListAdapter extends BaseAdapter {
         final Layer layer = (Layer) getItem(i);
         switch (layer.getType()){
             case LAYERTYPE_LOCAL_TMS:
+            case LAYERTYPE_TMS:
+            default:
                 return getStandardLayerView(layer, view);
         }
-        return null;
     }
 
     protected View getStandardLayerView(final Layer layer, View view){
@@ -84,16 +86,16 @@ public class LayersListAdapter extends BaseAdapter {
         TextView tvPaneName = (TextView)v.findViewById(R.id.tvLayerName);
         tvPaneName.setText(layer.getName());
 
-        final int id = layer.getId();
+        //final int id = layer.getId();
 
         ImageButton btShow = (ImageButton)v.findViewById(R.id.btShow);
-        Log.d(TAG, "Layer #" + id + " is visible " + layer.getVisible());
+        //Log.d(TAG, "Layer #" + id + " is visible " + layer.getVisible());
         btShow.setBackgroundResource(layer.getVisible() ? R.drawable.ic_brightness_high : R.drawable.ic_bightness_low);
         //btShow.refreshDrawableState();
         btShow.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
                 MapBase map = getMap();
-                Layer layer = map.getLayerById(id);
+                //Layer layer = map.getLayerById(id);
                 layer.setVisible(!layer.getVisible());
             }
         });
@@ -102,7 +104,7 @@ public class LayersListAdapter extends BaseAdapter {
         btSettings.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
                 MapBase map = getMap();
-                Layer layer = map.getLayerById(id);
+                //Layer layer = map.getLayerById(id);
                 layer.changeProperties();
             }
         });
@@ -111,7 +113,7 @@ public class LayersListAdapter extends BaseAdapter {
         btDelete.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
                 MapBase map = getMap();
-                map.deleteLayerById(id);
+                map.deleteLayerById(layer.getId());//.deleteLayerById(id);
             }
         });
 

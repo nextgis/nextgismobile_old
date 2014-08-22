@@ -48,7 +48,8 @@ public class TMSRenderer extends Renderer{
         final Handler handler = map.getMapEventsHandler();
         final GISDisplay display = map.getGISDisplay();
 
-        display.clearLayer(0);
+        //TODO: clear display cache
+        //display.clearLayer(0);
 
         final double zoom = display.getZoomLevel();
 

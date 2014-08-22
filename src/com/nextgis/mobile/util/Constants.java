@@ -24,6 +24,13 @@ import java.util.concurrent.TimeUnit;
 
 public interface Constants {
     /**
+     * HTTP parameters
+     */
+    public static final String APP_USER_AGENT = "NextGIS Mobile";
+    public static final int TIMEOUT_CONNECTION = 1500;
+    public static final int TIMEOUT_SOKET = 3000;
+    public static final int IO_BUFFER_SIZE = 1024;
+    /**
      * Preference key - not UI
      */
 	public static final String PREFS_TILE_SOURCE = "map_tile_source";	
@@ -80,6 +87,7 @@ public interface Constants {
      * DataSource type
      */
     public final static int DS_TYPE_ZIP = 1;
+    public final static int DS_TYPE_TMS = 2;
 
     public static final String MAP_CONFIG = "map.json";
     public static final String LAYER_CONFIG = "layer.json";
@@ -89,7 +97,7 @@ public interface Constants {
     /**
      * message type
      */
-    public final static int MSGTYPE_DS_TYPE_ZIP = DS_TYPE_ZIP;
+    public final static int MSGTYPE_LAYER_ADDED  = 300;
     public final static int MSGTYPE_DRAWING_DONE = 500;
     public final static int MSGTYPE_PANNING_DONE = 501;
     public final static int MSGTYPE_ZOOMING_DONE = 502;

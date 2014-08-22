@@ -164,4 +164,7 @@
     <string name="tmstype_ngw">NGW</string>
 
     <string name="default_map_name">New map</string>
+    <string name="layer_name">Name</string>
+    <string name="layer_url">URL</string>
+    <string name="layer_type">Type</string>
 </resources>

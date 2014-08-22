@@ -44,6 +44,7 @@ import com.nextgis.mobile.services.TrackerService;
 import com.nextgis.mobile.services.TrackerService.TSBinder;
 import com.nextgis.mobile.util.Constants;
 
+import static com.nextgis.mobile.util.Constants.DS_TYPE_TMS;
 import static com.nextgis.mobile.util.Constants.DS_TYPE_ZIP;
 
 public class MainActivity extends ActionBarActivity {
@@ -189,6 +190,9 @@ public class MainActivity extends ActionBarActivity {
         case R.id.menu_add_zip:
             onAdd(DS_TYPE_ZIP);
             return true;
+        case R.id.menu_add_tms:
+            onAdd(DS_TYPE_TMS);
+            return true;
         }
 		return super.onOptionsItemSelected(item);
 	}
@@ -289,6 +293,9 @@ public class MainActivity extends ActionBarActivity {
                     Toast.makeText(this, R.string.error_file_manager, Toast.LENGTH_SHORT).show();
                 }
 
+                break;
+            case DS_TYPE_TMS:
+                mMap.createLayer(null, nType);
                 break;
         }
     }

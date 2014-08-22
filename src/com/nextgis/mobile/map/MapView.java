@@ -71,6 +71,9 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             case DS_TYPE_ZIP:
                 LocalTMSLayer.create(this, uri);
                 return;
+            case DS_TYPE_TMS:
+                RemoteTMSLayer.create(this);
+                return;
         }
     }
 
@@ -101,6 +104,9 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     protected synchronized void runDrawThread() {
+
+        Log.d(TAG, "quere size: " + mDrawWorkQueue.size());
+
         cancelDrawThread();
         if(mDrawingState != DRAW_SATE_drawing_noclearbk) {
             mDrawingState = DRAW_SATE_drawing;
@@ -113,6 +119,8 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
                 mDrawThreadPool.execute(layer);
             }
         }
+
+        Log.d(TAG, "new quere size: " + mDrawWorkQueue.size());
     }
 
     protected void zoomStart(ScaleGestureDetector scaleGestureDetector){
@@ -265,7 +273,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     @Override
     protected void processMessage(Bundle bundle){
         switch (bundle.getInt(BUNDLE_TYPE_KEY)){
-            case MSGTYPE_DS_TYPE_ZIP: //the new layer was create and need to be added on map
+            case MSGTYPE_LAYER_ADDED: //the new layer was create and need to be added on map
                 File path = (File) bundle.getSerializable(BUNDLE_PATH_KEY);
                 addLayer(path);
                 break;
