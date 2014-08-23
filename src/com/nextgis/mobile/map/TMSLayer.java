@@ -84,9 +84,52 @@ public abstract class TMSLayer extends Layer {
         //see http://www.cyberforum.ru/visual-cpp/thread3621.html
         //массив спираль java
 
+        int centerX = begX + (endX - begX) / 2;
+        int centerY = begY + (endY - begY) / 2;
+        int center = Math.max(centerX, centerY);
+
+        //add center point
+        addItemToList(fullBounds, mapTileSize, centerX, centerY, nZoom, tilesInMap, list);
+
+        boolean onBreakX;
+        boolean onBreakY;
+        for(int k = 1; k < center; k++){
+            //1. top and bottom
+            if(k + centerX < endX) {
+                for (int i = centerX - k; i < centerX + k + 1; i++) {
+                    int tileYBottom = centerY - k;
+                    int tileYTop = centerY + k;
+                    addItemToList(fullBounds, mapTileSize, i, tileYTop, nZoom, tilesInMap, list);
+                    addItemToList(fullBounds, mapTileSize, i, tileYBottom, nZoom, tilesInMap, list);
+                }
+                onBreakX = false;
+            }
+            else {
+                onBreakX = true;
+            }
+
+            //2. left and right
+            if(k + centerY < endY) {
+                for (int j = centerY - k - 1; j < centerY + k; j++) {
+                    int tileLeft = centerX - k;
+                    int tileRight = centerX + k;
+                    addItemToList(fullBounds, mapTileSize, tileLeft, j, nZoom, tilesInMap, list);
+                    addItemToList(fullBounds, mapTileSize, tileRight, j, nZoom, tilesInMap, list);
+                }
+                onBreakY = true;
+            }
+            else {
+                onBreakY = false;
+            }
+
+            if(onBreakX && onBreakY)
+                break;
+        }
+
+        /*
         for(int x = begX; x < endX; x++){
             for(int y = begY; y < endY; y++){
-                int realY = y;
+                realY = y;
                 if(mTMSType == TMSTYPE_OSM){
                     realY = tilesInMap - y - 1;
                 }
@@ -95,9 +138,19 @@ public abstract class TMSLayer extends Layer {
                 TileItem item = new TileItem(x, realY, nZoom, pt);
                 list.add(item);
             }
-        }
+        }*/
 
         return list;
+    }
+
+    protected void addItemToList(final GeoEnvelope fullBounds, final GeoPoint mapTileSize, int x, int y, int zoom, int tilesInMap, List<TileItem> list) {
+        final GeoPoint pt = new GeoPoint(fullBounds.getMinX() + x * mapTileSize.getX(), fullBounds.getMinY() + (y + 1) * mapTileSize.getY());
+        int realY = y;
+        if(mTMSType == TMSTYPE_OSM){
+            realY = tilesInMap - y - 1;
+        }
+        TileItem item = new TileItem(x, realY, zoom, pt);
+        list.add(item);
     }
 
     public abstract Bitmap getBitmap(TileItem tile);

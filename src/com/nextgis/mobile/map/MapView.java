@@ -336,10 +336,15 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     public boolean onDoubleTap(final MotionEvent e) {
+        GeoPoint newCenter = new GeoPoint(e.getX(), e.getY());
         mDrawingState = DRAW_SATE_double_tap;
-        final GeoPoint pt = mDisplay.screenToMap(new GeoPoint(e.getX(), e.getY()));
-        setZoomAndCenter(mDisplay.getZoomLevel() + 1, pt);
-        return true;
+        final GeoPoint pt = mDisplay.screenToMap(newCenter);
+        if(mDisplay.getBounds().contains(pt)){
+            Log.d(TAG, "onDoubleTap " + newCenter + " geo: " + pt);
+            setZoomAndCenter((float)Math.ceil(getZoomLevel() + 0.5), pt);
+            return true;
+        }
+        return false;
     }
 
     @Override

@@ -70,18 +70,18 @@ public interface Constants {
 
 	public static final String SERVICE_PREF = "preferences";
 
-    public final static String LOACTION_HINT = "com.nextgis.gis.location";
+    public final static String LOACTION_HINT = "ngm.location";
     public final static String TAG = "nextgismobile";
 
     public static final int MAX_DRAWLER_WIDTH = 750;
     public static final float MIN_SCROLL_STEP = 5.5f;
-    public static final boolean NO_MAP_LIMITS = true;
+    public static final boolean NO_MAP_LIMITS = false;
     //the additional size to off screen drawing
     //from 1 and higher
     //As more than more memory needed
     public static final float OFFSCREEN_EXTRASIZE_RATIO = 2.f;
     //display redraw timeout ms
-    public static final int DISPLAY_REDRAW_TIMEOUT = 550;
+    public static final int DISPLAY_REDRAW_TIMEOUT = 750;
 
     /**
      * DataSource type
