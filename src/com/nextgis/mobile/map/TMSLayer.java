@@ -80,7 +80,7 @@ public abstract class TMSLayer extends Layer {
         if(endY > tilesInMap)
             endY = tilesInMap;
 
-        //TODO: fill tiles on spiral
+        //fill tiles on spiral
         //see http://www.cyberforum.ru/visual-cpp/thread3621.html
         //массив спираль java
 
@@ -96,9 +96,9 @@ public abstract class TMSLayer extends Layer {
         for(int k = 1; k < center; k++){
             //1. top and bottom
             if(k + centerX < endX) {
+                int tileYBottom = centerY - k;
+                int tileYTop = centerY + k;
                 for (int i = centerX - k; i < centerX + k + 1; i++) {
-                    int tileYBottom = centerY - k;
-                    int tileYTop = centerY + k;
                     addItemToList(fullBounds, mapTileSize, i, tileYTop, nZoom, tilesInMap, list);
                     addItemToList(fullBounds, mapTileSize, i, tileYBottom, nZoom, tilesInMap, list);
                 }
@@ -110,9 +110,9 @@ public abstract class TMSLayer extends Layer {
 
             //2. left and right
             if(k + centerY < endY) {
-                for (int j = centerY - k - 1; j < centerY + k; j++) {
-                    int tileLeft = centerX - k;
-                    int tileRight = centerX + k;
+                int tileLeft = centerX - k;
+                int tileRight = centerX + k;
+                for (int j = centerY - k + 1; j < centerY + k; j++) {
                     addItemToList(fullBounds, mapTileSize, tileLeft, j, nZoom, tilesInMap, list);
                     addItemToList(fullBounds, mapTileSize, tileRight, j, nZoom, tilesInMap, list);
                 }
@@ -126,7 +126,7 @@ public abstract class TMSLayer extends Layer {
                 break;
         }
 
-        /*
+        /* normal fill from left bottom corner
         for(int x = begX; x < endX; x++){
             for(int y = begY; y < endY; y++){
                 realY = y;
