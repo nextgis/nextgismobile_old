@@ -249,7 +249,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             Bundle bundle = new Bundle();
             bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
             bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_PANNING_DONE);
-            bundle.putInt(BUNDLE_DRAWSTATE_KEY, DRAW_SATE_drawing);
+            bundle.putInt(BUNDLE_DRAWSTATE_KEY, DRAW_SATE_drawing_noclearbk);
 
             Message msg = new Message();
             msg.setData(bundle);
@@ -406,6 +406,39 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     public static double lg(double x) {
         return Math.log(x)/Math.log(2.0);
+    }
+
+    /**
+     * Send layer added event to all listeners
+     *
+     * @param layer A new layer
+     */
+    @Override
+    protected void onLayerAdded(Layer layer) {
+        mDrawingState = DRAW_SATE_drawing;
+        super.onLayerAdded(layer);
+    }
+
+    /**
+     * Send layer changed event to all listeners
+     *
+     * @param layer A changed layer
+     */
+    @Override
+    protected void onLayerChanged(Layer layer) {
+        mDrawingState = DRAW_SATE_drawing;
+        super.onLayerChanged(layer);
+    }
+
+    /**
+     * Send layer delete event to all listeners
+     *
+     * @param id A deleted layer identificator
+     */
+    @Override
+    protected void onLayerDeleted(int id) {
+        mDrawingState = DRAW_SATE_drawing;
+        super.onLayerDeleted(id);
     }
 }
 
