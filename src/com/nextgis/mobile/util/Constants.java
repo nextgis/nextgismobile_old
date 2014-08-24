@@ -81,7 +81,8 @@ public interface Constants {
     //As more than more memory needed
     public static final float OFFSCREEN_EXTRASIZE_RATIO = 2.f;
     //display redraw timeout ms
-    public static final int DISPLAY_REDRAW_TIMEOUT = 750;
+    public static final int DISPLAY_REDRAW_TIMEOUT = 550;
+    public static final double MERCATOR_MAX = 20037508.34;
 
     /**
      * DataSource type

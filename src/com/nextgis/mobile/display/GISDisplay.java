@@ -71,8 +71,7 @@ public class GISDisplay {
         mMaxZoomLevel = 25;
 
         //default extent
-        double val = 20037508.34;
-        mFullBounds = new GeoEnvelope(-val, val, -val, val); //set full Mercator bounds
+        mFullBounds = new GeoEnvelope(-MERCATOR_MAX, MERCATOR_MAX, -MERCATOR_MAX, MERCATOR_MAX); //set full Mercator bounds
 
         //default transform matrix
         mTransformMatrix = new Matrix();
@@ -119,7 +118,10 @@ public class GISDisplay {
         if(zoom > mMaxZoomLevel || zoom < mMinZoomLevel)
             return;
         mZoomLevel = zoom;
+
         mCenter = center;
+        if(mCenter.getX() > MERCATOR_MAX * 2)
+            mCenter.setX(mCenter.getX() - MERCATOR_MAX * 2);
 
         int nZoom = (int) Math.floor(zoom);
         Log.d(TAG, "Zoom: " + zoom + ", Center: " + center.toString());

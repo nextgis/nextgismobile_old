@@ -70,19 +70,20 @@ public abstract class TMSLayer extends Layer {
         int begY = (int) (bounds.getMinY() / mapTileSize.getY() - .5 + halfTilesInMap);
         int endX = (int) (bounds.getMaxX() / mapTileSize.getX() + .5 + halfTilesInMap);
         int endY = (int) (bounds.getMaxY() / mapTileSize.getY() + .5 + halfTilesInMap);
+        int addX = 0;
 
         if(begX < 0)
             begX = 0;
         if(begY < 0)
             begY = 0;
-        if(endX > tilesInMap)
+        if(endX > tilesInMap){
+            addX = endX - tilesInMap;
             endX = tilesInMap;
+        }
         if(endY > tilesInMap)
             endY = tilesInMap;
 
-        //fill tiles on spiral
-        //see http://www.cyberforum.ru/visual-cpp/thread3621.html
-        //массив спираль java
+        //fill tiles from center
 
         int centerX = begX + (endX - begX) / 2;
         int centerY = begY + (endY - begY) / 2;
@@ -91,39 +92,45 @@ public abstract class TMSLayer extends Layer {
         //add center point
         addItemToList(fullBounds, mapTileSize, centerX, centerY, nZoom, tilesInMap, list);
 
-        boolean onBreakX;
-        boolean onBreakY;
-        for(int k = 1; k < center; k++){
+        for(int k = 1; k < center + 2; k++){
             //1. top and bottom
-            if(k + centerX < endX) {
+            if(k + centerX < endX + 1) {
                 int tileYBottom = centerY - k;
                 int tileYTop = centerY + k;
                 for (int i = centerX - k; i < centerX + k + 1; i++) {
                     addItemToList(fullBounds, mapTileSize, i, tileYTop, nZoom, tilesInMap, list);
                     addItemToList(fullBounds, mapTileSize, i, tileYBottom, nZoom, tilesInMap, list);
                 }
-                onBreakX = false;
-            }
-            else {
-                onBreakX = true;
             }
 
             //2. left and right
-            if(k + centerY < endY) {
+            if(k + centerY < endY + 1) {
                 int tileLeft = centerX - k;
                 int tileRight = centerX + k;
                 for (int j = centerY - k + 1; j < centerY + k; j++) {
                     addItemToList(fullBounds, mapTileSize, tileLeft, j, nZoom, tilesInMap, list);
                     addItemToList(fullBounds, mapTileSize, tileRight, j, nZoom, tilesInMap, list);
                 }
-                onBreakY = true;
             }
-            else {
-                onBreakY = false;
-            }
+        }
 
-            if(onBreakX && onBreakY)
-                break;
+        if(addX > 0){
+            for(int k = 1; k < center + 2; k++){
+                if(k + centerY < endY + 1) {
+                    for(int x = 0; x < addX; x++) {
+                        for (int j = centerY - k + 1; j < centerY + k; j++) {
+                            final GeoPoint pt = new GeoPoint(fullBounds.getMinX() + (x + tilesInMap) * mapTileSize.getX(), fullBounds.getMinY() + (j + 1) * mapTileSize.getY());
+                            int realY = j;
+                            if(mTMSType == TMSTYPE_OSM){
+                                realY = tilesInMap - j - 1;
+                            }
+
+                            TileItem item = new TileItem(x, realY, nZoom, pt);
+                            list.add(item);
+                        }
+                    }
+                }
+            }
         }
 
         /* normal fill from left bottom corner
@@ -144,11 +151,17 @@ public abstract class TMSLayer extends Layer {
     }
 
     protected void addItemToList(final GeoEnvelope fullBounds, final GeoPoint mapTileSize, int x, int y, int zoom, int tilesInMap, List<TileItem> list) {
+        if(x < 0 || x >= tilesInMap)
+            return;
         final GeoPoint pt = new GeoPoint(fullBounds.getMinX() + x * mapTileSize.getX(), fullBounds.getMinY() + (y + 1) * mapTileSize.getY());
         int realY = y;
         if(mTMSType == TMSTYPE_OSM){
             realY = tilesInMap - y - 1;
         }
+
+        if(realY < 0 || realY >= tilesInMap)
+            return;
+
         TileItem item = new TileItem(x, realY, zoom, pt);
         list.add(item);
     }
