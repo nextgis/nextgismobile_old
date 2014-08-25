@@ -70,16 +70,9 @@ public abstract class TMSLayer extends Layer {
         int begY = (int) (bounds.getMinY() / mapTileSize.getY() - .5 + halfTilesInMap);
         int endX = (int) (bounds.getMaxX() / mapTileSize.getX() + .5 + halfTilesInMap);
         int endY = (int) (bounds.getMaxY() / mapTileSize.getY() + .5 + halfTilesInMap);
-        int addX = 0;
 
-        if(begX < 0)
-            begX = 0;
         if(begY < 0)
             begY = 0;
-        if(endX > tilesInMap){
-            addX = endX - tilesInMap;
-            endX = tilesInMap;
-        }
         if(endY > tilesInMap)
             endY = tilesInMap;
 
@@ -114,25 +107,6 @@ public abstract class TMSLayer extends Layer {
             }
         }
 
-        if(addX > 0){
-            for(int k = 1; k < center + 2; k++){
-                if(k + centerY < endY + 1) {
-                    for(int x = 0; x < addX; x++) {
-                        for (int j = centerY - k + 1; j < centerY + k; j++) {
-                            final GeoPoint pt = new GeoPoint(fullBounds.getMinX() + (x + tilesInMap) * mapTileSize.getX(), fullBounds.getMinY() + (j + 1) * mapTileSize.getY());
-                            int realY = j;
-                            if(mTMSType == TMSTYPE_OSM){
-                                realY = tilesInMap - j - 1;
-                            }
-
-                            TileItem item = new TileItem(x, realY, nZoom, pt);
-                            list.add(item);
-                        }
-                    }
-                }
-            }
-        }
-
         /* normal fill from left bottom corner
         for(int x = begX; x < endX; x++){
             for(int y = begY; y < endY; y++){
@@ -151,8 +125,12 @@ public abstract class TMSLayer extends Layer {
     }
 
     protected void addItemToList(final GeoEnvelope fullBounds, final GeoPoint mapTileSize, int x, int y, int zoom, int tilesInMap, List<TileItem> list) {
-        if(x < 0 || x >= tilesInMap)
-            return;
+        int realX = x;
+        if(realX < 0)
+            realX += tilesInMap;
+        else if(realX >= tilesInMap)
+            realX -= tilesInMap;
+
         final GeoPoint pt = new GeoPoint(fullBounds.getMinX() + x * mapTileSize.getX(), fullBounds.getMinY() + (y + 1) * mapTileSize.getY());
         int realY = y;
         if(mTMSType == TMSTYPE_OSM){
@@ -162,7 +140,7 @@ public abstract class TMSLayer extends Layer {
         if(realY < 0 || realY >= tilesInMap)
             return;
 
-        TileItem item = new TileItem(x, realY, zoom, pt);
+        TileItem item = new TileItem(realX, realY, zoom, pt);
         list.add(item);
     }
 
