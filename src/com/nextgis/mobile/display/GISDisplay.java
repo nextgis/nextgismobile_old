@@ -93,7 +93,7 @@ public class GISDisplay {
         mScreenBounds = new GeoEnvelope(0, w, 0, h);
 
         //calc min zoom
-        mMinZoomLevel = Math.min(w, h) / mTileSize;
+        mMinZoomLevel = Math.ceil((float)Math.min(w, h) / mTileSize);
 
         mBackgroundBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mBackgroundCanvas = new Canvas(mBackgroundBitmap);
