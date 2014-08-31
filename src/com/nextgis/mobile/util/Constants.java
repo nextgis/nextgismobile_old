@@ -84,11 +84,6 @@ public interface Constants {
     public static final int DISPLAY_REDRAW_TIMEOUT = 550;
     public static final double MERCATOR_MAX = 20037508.34;
 
-    /**
-     * DataSource type
-     */
-    public final static int DS_TYPE_ZIP = 1;
-    public final static int DS_TYPE_TMS = 2;
 
     public static final String MAP_CONFIG = "map.json";
     public static final String LAYER_CONFIG = "layer.json";
@@ -143,23 +138,6 @@ public interface Constants {
     public static final int LAYERTYPE_TMS = 4;
     public static final int LAYERTYPE_NGW = 5;
 
-    /**
-     * TMS type
-     */
-    public static final int TMSTYPE_NORMAL = 1;
-    public static final int TMSTYPE_OSM = 2;
-
-    /**
-     * geometry type
-     */
-    public static final int GEOMTYPE_Point = 1;
-    public static final int GEOMTYPE_LineString = 2;
-    public static final int GEOMTYPE_Polygon = 3;
-    public static final int GEOMTYPE_MultiIPoint = 4;
-    public static final int GEOMTYPE_MultiLineString = 5;
-    public static final int GEOMTYPE_MultiPolygon = 6;
-    public static final int GEOMTYPE_GeometryCollection = 7;
-    public static final int GEOMTYPE_None = 100;
 
     /**
      * time constants

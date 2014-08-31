@@ -77,8 +77,7 @@
 	<string name="tabs_position_tab">Position</string>
 	<string name="tabs_description_tab">Description</string>
 	<string name="tabs_camera_tab">Camera</string>
-	<string name="tabs_note_tab">Notes</string>	
-	<string name="error_loc_fix">Error location fix</string>
+	<string name="tabs_note_tab">Notes</string>
 	<string name="input_poi_title">Input point</string>
 	<string name="input_poi_step1">1. Add POI description</string>
 	<string name="input_poi_step2">2. Add position and orientation</string>
@@ -145,19 +144,26 @@
 	<string name="layers_drawer_open">Open layers list</string>
     <string name="layers_drawer_close">Close layers list</string>
 
-    <string name="error_file_manager">Please install a File Manager</string>
-    <string name="error_cancel_by_user">Cancel by user</string>
-    <string name="error_occurred">The error occurred</string>
-
     <string name="input_layer_name_and_type">Input layer name and tiles source</string>
     <string name="change_layer_name_and_type">Change layer name or/and tiles source</string>
 
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>
 
+    <!-- messages -->
     <string name="message_zip_extract_progress">Extracting...</string>
+    <string name="message_loading_progress">Loading...</string>
     <string name="message_layer_added">The layer added successfully</string>
 
+    <!-- errors -->
+    <string name="error_loc_fix">Error location fix</string>
+    <string name="error_file_manager">Please install a File Manager</string>
+    <string name="error_cancel_by_user">Cancel by user</string>
+    <string name="error_occurred">The error occurred</string>
+    <string name="error_geojson_unsupported">The GeoJSON is corrupted or unsupported format</string>
+    <string name="error_geojson_crs_unsupported">The GeoJSON CRS is unsupported</string>
+
+    <!-- geo specific -->
     <string name="tmstype_qtiles">QTiles</string>
     <string name="tmstype_osm">OSM</string>
     <string name="tmstype_normal">Normal</string>
