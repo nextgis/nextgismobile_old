@@ -122,6 +122,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                 JSONArray geoJSONFeatures = geoJSONObject.getJSONArray(GEOJSON_TYPE_FEATURES);
                 for(int i = 0; i < geoJSONFeatures.length(); i++){
                     JSONObject feature = geoJSONFeatures.getJSONObject(i);
+
                     //convert JSONObject to GeoFeature
                     //reproject if needed
                     if(isWGS84){
@@ -133,14 +134,14 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                     //normalize attributes
 
 
-                    You can get the object from the JSON using the get() method and then use the instanceof operator to check for the type of Object. Something like this:-
+                    /*You can get the object from the JSON using the get() method and then use the instanceof operator to check for the type of Object. Something like this:-
 
                             String jString = "{\"a\": 1, \"b\": \"str\"}";
                     JSONObject jObj = new JSONObject(jString);
                     Object aObj = jObj.get("a");
                     if(aObj instanceof Integer){
                         System.out.println(aObj);
-                    }
+                    }*/
 
 
                 }

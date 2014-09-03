@@ -59,6 +59,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import static com.nextgis.mobile.util.Constants.*;
+import static com.nextgis.mobile.util.GeoConstants.*;
 
 public class RemoteTMSLayer extends TMSLayer {
     protected String mURL;

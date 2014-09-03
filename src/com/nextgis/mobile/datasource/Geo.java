@@ -29,14 +29,14 @@ public class Geo {
     protected final static double mEccent = Math.sqrt(mES);
     protected final static double mCom = 0.5 * mEccent;
 
-    public GeoPoint toSphericalMercator(final GeoPoint pt){
+    public GeoPoint wgs84ToSphericalMercator(final GeoPoint pt){
         GeoPoint retPt = new GeoPoint();
         retPt.setX(Math.toDegrees(pt.getX() / mEarthMajorRadius));
         retPt.setY(Math.toDegrees(2 * Math.atan(Math.exp(pt.getY() / mEarthMajorRadius)) - Math.PI / 2));
         return retPt;
     }
 
-    public GeoPoint toEllipticalMercator(final GeoPoint pt){
+    public GeoPoint wgs84TotoEllipticalMercator(final GeoPoint pt){
         GeoPoint retPt = new GeoPoint();
         retPt.setX(Math.toDegrees(pt.getX() / mEarthMajorRadius));
 
@@ -49,7 +49,7 @@ public class Geo {
         return retPt;
     }
 
-    public GeoPoint toSphericalWGS(final GeoPoint pt){
+    public GeoPoint mercatorToSphericalWGS(final GeoPoint pt){
         GeoPoint retPt = new GeoPoint();
         retPt.setX(mEarthMajorRadius * Math.toRadians(pt.getX()));
         retPt.setY(mEarthMajorRadius * Math.log(Math.tan(Math.PI / 4 + Math.toRadians(pt.getY()) / 2)));

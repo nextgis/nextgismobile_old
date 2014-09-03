@@ -18,15 +18,14 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-package com.nextgis.mobile.map;
-
-import com.nextgis.mobile.datasource.Feature;
-import com.nextgis.mobile.datasource.Field;
+package com.nextgis.mobile.datasource;
 
 import java.util.List;
 
-public abstract class GeoJsonLayer extends Layer{
-    protected List<Feature> mFeatures;
+public class Feature {
+    protected GeoGeometry mGeometry;
+    protected List<Object> mFiledData;
     protected List<Field> mFields;
+
 
 }

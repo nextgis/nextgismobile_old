@@ -38,6 +38,7 @@ import com.nextgis.mobile.datasource.GeoPoint;
 import java.io.File;
 
 import static com.nextgis.mobile.util.Constants.*;
+import static com.nextgis.mobile.util.GeoConstants.*;
 
 public class MapView extends MapBase implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener,  ScaleGestureDetector.OnScaleGestureListener  {
 

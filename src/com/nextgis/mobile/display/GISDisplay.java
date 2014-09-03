@@ -36,7 +36,9 @@ import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.GeoGeometry;
 import com.nextgis.mobile.datasource.GeoPoint;
+import static com.nextgis.mobile.util.GeoConstants.*;
 import static com.nextgis.mobile.util.Constants.*;
+
 
 public class GISDisplay {
     protected Canvas mMainCanvas;
@@ -254,7 +256,7 @@ public class GISDisplay {
     public void drawGeometry(final GeoGeometry geom, final Paint paint){
         synchronized (mMainBitmap) {
             switch (geom.getType()) {
-                case GEOMTYPE_Point:
+                case GTPoint:
                     drawPoint((GeoPoint) geom, paint);
                     return;
             }

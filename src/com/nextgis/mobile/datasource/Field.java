@@ -18,15 +18,43 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-package com.nextgis.mobile.map;
+package com.nextgis.mobile.datasource;
 
-import com.nextgis.mobile.datasource.Feature;
-import com.nextgis.mobile.datasource.Field;
+public class Field {
+    protected String mFieldName;
+    protected String mFieldAlias;
+    protected int mType;
 
-import java.util.List;
+    public Field(String fieldName, String fieldAlias, int type) {
+        mFieldName = fieldName;
+        if(fieldAlias.length() == 0)
+            mFieldAlias = mFieldName;
+        else
+            mFieldAlias = fieldAlias;
+        mType = type;
+    }
 
-public abstract class GeoJsonLayer extends Layer{
-    protected List<Feature> mFeatures;
-    protected List<Field> mFields;
+    public String getFieldName() {
+        return mFieldName;
+    }
 
+    public void setFieldName(String fieldName) {
+        mFieldName = fieldName;
+    }
+
+    public String getFieldAlias() {
+        return mFieldAlias;
+    }
+
+    public void setFieldAlias(String fieldAlias) {
+        mFieldAlias = fieldAlias;
+    }
+
+    public int getType() {
+        return mType;
+    }
+
+    public void setType(int type) {
+        mType = type;
+    }
 }

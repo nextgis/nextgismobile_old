@@ -23,9 +23,7 @@ package com.nextgis.mobile.map;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -34,7 +32,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -62,7 +59,29 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static com.nextgis.mobile.util.Constants.*;
+import static com.nextgis.mobile.util.Constants.BUNDLE_HASERROR_KEY;
+import static com.nextgis.mobile.util.Constants.BUNDLE_MSG_KEY;
+import static com.nextgis.mobile.util.Constants.BUNDLE_PATH_KEY;
+import static com.nextgis.mobile.util.Constants.BUNDLE_TYPE_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_LEVELS_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_LEVEL_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_MAXLEVEL_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_MAXX_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_MAXY_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_MINLEVEL_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_MINX_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_MINY_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_NAME_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_TMSTYPE_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_TYPE_KEY;
+import static com.nextgis.mobile.util.Constants.JSON_VISIBILITY_KEY;
+import static com.nextgis.mobile.util.Constants.LAYERTYPE_LOCAL_TMS;
+import static com.nextgis.mobile.util.Constants.LAYER_CONFIG;
+import static com.nextgis.mobile.util.Constants.MSGTYPE_LAYER_ADDED;
+import static com.nextgis.mobile.util.Constants.TAG;
+import static com.nextgis.mobile.util.Constants.TILE_EXT;
+import static com.nextgis.mobile.util.GeoConstants.TMSTYPE_NORMAL;
+import static com.nextgis.mobile.util.GeoConstants.TMSTYPE_OSM;
 
 public class LocalTMSLayer extends TMSLayer{
     protected Map<Integer, TileCacheLevelDescItem> mLimits;

@@ -44,8 +44,7 @@ import com.nextgis.mobile.services.TrackerService;
 import com.nextgis.mobile.services.TrackerService.TSBinder;
 import com.nextgis.mobile.util.Constants;
 
-import static com.nextgis.mobile.util.Constants.DS_TYPE_TMS;
-import static com.nextgis.mobile.util.Constants.DS_TYPE_ZIP;
+import static com.nextgis.mobile.util.GeoConstants.*;
 
 public class MainActivity extends ActionBarActivity {
 	

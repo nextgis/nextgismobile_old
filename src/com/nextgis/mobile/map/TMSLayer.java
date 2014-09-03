@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.nextgis.mobile.util.Constants.*;
+import static com.nextgis.mobile.util.GeoConstants.*;
 
 public abstract class TMSLayer extends Layer {
     protected int mTMSType;

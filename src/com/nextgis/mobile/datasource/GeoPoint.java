@@ -20,7 +20,7 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
-import static com.nextgis.mobile.util.Constants.*;
+import static com.nextgis.mobile.util.GeoConstants.*;
 
 public class GeoPoint extends GeoGeometry{
     protected double mX;
@@ -62,7 +62,7 @@ public class GeoPoint extends GeoGeometry{
     }
 
     public final int getType(){
-        return GEOMTYPE_Point;
+        return GTPoint;
     }
 
     public String toString(){

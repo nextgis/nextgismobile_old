@@ -21,6 +21,12 @@
 package com.nextgis.mobile.util;
 
 public interface GeoConstants {
+
+    /**
+     * Mercator projection constants
+     */
+    public static final double MERCATOR_MAX = 20037508.34;
+
     /**
      * DataSource type
      */
@@ -36,14 +42,14 @@ public interface GeoConstants {
     /**
      * geometry type
      */
-    public static final int GEOMTYPE_Point = 1;
-    public static final int GEOMTYPE_LineString = 2;
-    public static final int GEOMTYPE_Polygon = 3;
-    public static final int GEOMTYPE_MultiIPoint = 4;
-    public static final int GEOMTYPE_MultiLineString = 5;
-    public static final int GEOMTYPE_MultiPolygon = 6;
-    public static final int GEOMTYPE_GeometryCollection = 7;
-    public static final int GEOMTYPE_None = 100;
+    public static final int GTPoint = 1;
+    public static final int GTLineString = 2;
+    public static final int GTPolygon = 3;
+    public static final int GTMultiIPoint = 4;
+    public static final int GTMultiLineString = 5;
+    public static final int GTMultiPolygon = 6;
+    public static final int GTGeometryCollection = 7;
+    public static final int GTNone = 100;
 
     /**
      * geojson
@@ -67,6 +73,16 @@ public interface GeoConstants {
     public static final String GEOJSON_TYPE_Feature = "Feature";
     public static final String GEOJSON_TYPE_FeatureCollection = "FeatureCollection";
 
-
+    /**
+     * field type
+     */
+    public static final int FTInteger = 0;
+    public static final int FTIntegerList = 1;
+    public static final int FTReal = 2;
+    public static final int FTRealList = 3;
+    public static final int FTString = 4;
+    public static final int FTStringList = 5;
+    public static final int FTBinary = 8;
+    public static final int FTDateTime = 11;
 
 }
