@@ -20,7 +20,12 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
-public class Field {
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import static com.nextgis.mobile.util.Constants.*;
+
+public class Field implements JSONStore{
     protected String mFieldName;
     protected String mFieldAlias;
     protected int mType;
@@ -56,5 +61,21 @@ public class Field {
 
     public void setType(int type) {
         mType = type;
+    }
+
+    @Override
+    public JSONObject toJSON() throws JSONException {
+        JSONObject oJSONBBox = new JSONObject();
+        oJSONBBox.put(JSON_FIELD_NAME_KEY, getFieldName());
+        oJSONBBox.put(JSON_FIELD_ALIAS_KEY, getFieldAlias());
+        oJSONBBox.put(JSON_FIELD_TYPE_KEY, getType());
+        return oJSONBBox;
+    }
+
+    @Override
+    public void fromJSON(JSONObject jsonObject) throws JSONException{
+        setFieldName(jsonObject.getString(JSON_FIELD_NAME_KEY));
+        setFieldAlias(jsonObject.getString(JSON_FIELD_ALIAS_KEY));
+        setType(jsonObject.getInt(JSON_FIELD_TYPE_KEY));
     }
 }

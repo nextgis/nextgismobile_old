@@ -48,7 +48,7 @@ public abstract class Layer implements Runnable{
     protected MapBase mMap;
     protected Renderer mRenderer;
     protected Thread mDrawingThread;
-    protected boolean mInterrapted;
+    protected boolean mInterrupted;
 
     public Layer(){
 
@@ -58,7 +58,7 @@ public abstract class Layer implements Runnable{
         mMap = map;
         mPath = path;
         mId = mMap.getNewId();
-        mInterrapted = false;
+        mInterrupted = false;
         setDetailes(config);
     }
 
@@ -145,21 +145,21 @@ public abstract class Layer implements Runnable{
     }
 
     public void draw() throws NullPointerException{
-        mInterrapted = false;
+        mInterrupted = false;
         if (mRenderer != null) {
             mRenderer.draw();
         }
     }
 
     public void cancelDraw(){
-        mInterrapted = true;
+        mInterrupted = true;
         if(mDrawingThread != null){
             mDrawingThread.interrupt();
         }
     }
 
     public boolean isDrawCanceled(){
-        return mInterrapted || Thread.interrupted();
+        return mInterrupted || Thread.interrupted();
     }
 
     public final MapBase getMap(){

@@ -88,6 +88,7 @@ public interface Constants {
     public static final String LAYER_CONFIG = "layer.json";
     public static final String LAYER_PREFIX = "layer_";
     public static final String TILE_EXT = ".tile";
+    public static final String DATA_GEOJSON = "data.geojson";
 
     /**
      * message type
@@ -127,6 +128,15 @@ public interface Constants {
     public static final String JSON_PATH_KEY = "path";
     public static final String JSON_MAP_KEY = "map";
     public static final String JSON_URL_KEY = "url";
+    public static final String JSON_BBOX_KEY = "bbox";
+    public static final String JSON_BBOX_MINX_KEY = "bbox_minx";
+    public static final String JSON_BBOX_MINY_KEY = "bbox_miny";
+    public static final String JSON_BBOX_MAXX_KEY = "bbox_maxx";
+    public static final String JSON_BBOX_MAXY_KEY = "bbox_maxy";
+    public static final String JSON_FIELDS_KEY = "fields";
+    public static final String JSON_FIELD_NAME_KEY = "field_name";
+    public static final String JSON_FIELD_ALIAS_KEY = "field_alias";
+    public static final String JSON_FIELD_TYPE_KEY = "field_type";
 
     /**
      * Layer type

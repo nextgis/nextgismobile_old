@@ -20,12 +20,69 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class Feature {
+import static com.nextgis.mobile.util.GeoConstants.*;
+
+public class Feature implements JSONStore {
     protected GeoGeometry mGeometry;
-    protected List<Object> mFiledData;
+    protected List<Object> mFieldData;
     protected List<Field> mFields;
 
+    public Feature(List<Field> fields) {
+        mFields = fields;
+        mFieldData = new ArrayList<Object>(mFields.size());
+    }
 
+    public void setGeometry(GeoGeometry geometry){
+        mGeometry = geometry;
+    }
+
+    public boolean setField(int index, Object value){
+        if(index < 0 || index >= mFields.size())
+            return false;
+        if(mFieldData.size() <= index){
+            for(int i = 0; i <= index; i++){
+                mFieldData.add(null);
+            }
+        }
+
+        mFieldData.set(index, value);
+        return true;
+    }
+
+    @Override
+    public JSONObject toJSON() throws JSONException {
+        JSONObject oJSONOut = new JSONObject();
+        oJSONOut.put(GEOJSON_TYPE, GEOJSON_TYPE_Feature);
+        oJSONOut.put(GEOJSON_GEOMETRY, mGeometry.toJSON());
+        for(int i = 0; i < mFieldData.size(); i++){
+            String key = mFields.get(i).getFieldName();
+            JSONObject  jsonValue = new JSONObject();
+            jsonValue.put(key, mFieldData.get(i));
+            oJSONOut.put(GEOJSON_PROPERTIES, jsonValue);
+        }
+        return oJSONOut;
+    }
+
+    @Override
+    public void fromJSON(JSONObject jsonObject) throws JSONException {
+        if(!jsonObject.getString(GEOJSON_TYPE).equals(GEOJSON_TYPE_Feature))
+            throw new JSONException("not valid geojson feature");
+        JSONObject oJSONGeom = jsonObject.getJSONObject(GEOJSON_GEOMETRY);
+        mGeometry = GeoGeometry.fromJson(oJSONGeom);
+        JSONObject jsonAttributes = jsonObject.getJSONObject(GEOJSON_PROPERTIES);
+        Iterator<String> iter = jsonAttributes.keys();
+        while (iter.hasNext()) {
+            String key = iter.next();
+            Object value = jsonAttributes.get(key);
+
+            mFieldData.add(value);
+        }
+    }
 }

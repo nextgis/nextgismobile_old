@@ -29,11 +29,16 @@ public class Geo {
     protected final static double mEccent = Math.sqrt(mES);
     protected final static double mCom = 0.5 * mEccent;
 
-    public GeoPoint wgs84ToSphericalMercator(final GeoPoint pt){
+    public static GeoPoint wgs84ToSphericalMercatorRet(final GeoPoint pt){
         GeoPoint retPt = new GeoPoint();
         retPt.setX(Math.toDegrees(pt.getX() / mEarthMajorRadius));
         retPt.setY(Math.toDegrees(2 * Math.atan(Math.exp(pt.getY() / mEarthMajorRadius)) - Math.PI / 2));
         return retPt;
+    }
+
+    public static void wgs84ToSphericalMercator(GeoPoint pt){
+        pt.setX(Math.toDegrees(pt.getX() / mEarthMajorRadius));
+        pt.setY(Math.toDegrees(2 * Math.atan(Math.exp(pt.getY() / mEarthMajorRadius)) - Math.PI / 2));
     }
 
     public GeoPoint wgs84TotoEllipticalMercator(final GeoPoint pt){
@@ -49,10 +54,25 @@ public class Geo {
         return retPt;
     }
 
-    public GeoPoint mercatorToSphericalWGS(final GeoPoint pt){
+    public GeoPoint mercatorToSphericalWGSRet(final GeoPoint pt){
         GeoPoint retPt = new GeoPoint();
         retPt.setX(mEarthMajorRadius * Math.toRadians(pt.getX()));
         retPt.setY(mEarthMajorRadius * Math.log(Math.tan(Math.PI / 4 + Math.toRadians(pt.getY()) / 2)));
         return retPt;
+    }
+
+    public static void mercatorToSphericalWGS(GeoPoint pt){
+        pt.setX(mEarthMajorRadius * Math.toRadians(pt.getX()));
+        pt.setY(mEarthMajorRadius * Math.log(Math.tan(Math.PI / 4 + Math.toRadians(pt.getY()) / 2)));
+    }
+
+    public static boolean isGeometryTypeSame(final int type1, final int type2){
+        if(type1 == type2)
+            return true;
+
+        if(Math.abs(type1 - type2) == 3)
+            return true;
+
+        return false;
     }
 }

@@ -20,7 +20,12 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
-public class GeoEnvelope {
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import static com.nextgis.mobile.util.Constants.*;
+
+public class GeoEnvelope implements JSONStore{
     protected double mMinX;
     protected double mMaxX;
     protected double mMinY;
@@ -63,6 +68,14 @@ public class GeoEnvelope {
 
     public void setMaxX(double x){
         mMaxX = x;
+    }
+
+    public void setMinY(double y){
+        mMinY = y;
+    }
+
+    public void setMaxY(double y){
+        mMaxY = y;
     }
 
     public final double getMinX(){
@@ -216,5 +229,23 @@ public class GeoEnvelope {
 
     public String toString(){
         return "MinX: " + mMinX + ", MinY: " + mMinY + ", MaxX: " + mMaxX + ", MaxY: " + mMaxY;
+    }
+
+    @Override
+    public JSONObject toJSON() throws JSONException{
+        JSONObject oJSONBBox = new JSONObject();
+        oJSONBBox.put(JSON_BBOX_MINX_KEY, getMinX());
+        oJSONBBox.put(JSON_BBOX_MINY_KEY, getMinY());
+        oJSONBBox.put(JSON_BBOX_MAXX_KEY, getMaxX());
+        oJSONBBox.put(JSON_BBOX_MAXY_KEY, getMaxY());
+        return oJSONBBox;
+    }
+
+    @Override
+    public void fromJSON(JSONObject jsonObject) throws JSONException{
+        setMinX(jsonObject.getDouble(JSON_BBOX_MINX_KEY));
+        setMinY(jsonObject.getDouble(JSON_BBOX_MINY_KEY));
+        setMaxX(jsonObject.getDouble(JSON_BBOX_MAXX_KEY));
+        setMaxY(jsonObject.getDouble(JSON_BBOX_MAXY_KEY));
     }
 }

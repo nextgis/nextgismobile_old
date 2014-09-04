@@ -162,6 +162,7 @@
     <string name="error_occurred">The error occurred</string>
     <string name="error_geojson_unsupported">The GeoJSON is corrupted or unsupported format</string>
     <string name="error_geojson_crs_unsupported">The GeoJSON CRS is unsupported</string>
+    <string name="error_savefile_failed">Save file filed</string>
 
     <!-- geo specific -->
     <string name="tmstype_qtiles">QTiles</string>

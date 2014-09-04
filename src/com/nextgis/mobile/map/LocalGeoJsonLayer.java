@@ -24,12 +24,20 @@ package com.nextgis.mobile.map;
 import android.app.ProgressDialog;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
 import static com.nextgis.mobile.util.Constants.*;
 import static com.nextgis.mobile.util.GeoConstants.*;
 import com.nextgis.mobile.R;
+import com.nextgis.mobile.datasource.Feature;
+import com.nextgis.mobile.datasource.Field;
+import com.nextgis.mobile.datasource.Geo;
+import com.nextgis.mobile.datasource.GeoEnvelope;
+import com.nextgis.mobile.datasource.GeoGeometry;
+import com.nextgis.mobile.util.FileUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,6 +50,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 public class LocalGeoJsonLayer extends GeoJsonLayer {
     @Override
@@ -118,32 +130,79 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                     }
                 }
 
+                GeoEnvelope extents = new GeoEnvelope();
+                List<Feature> features = new ArrayList<Feature>();
+                List<Field> fields = new ArrayList<Field>();
+                int geometryType = GTNone;
                 //load contents to memory and reproject if needed
                 JSONArray geoJSONFeatures = geoJSONObject.getJSONArray(GEOJSON_TYPE_FEATURES);
                 for(int i = 0; i < geoJSONFeatures.length(); i++){
-                    JSONObject feature = geoJSONFeatures.getJSONObject(i);
+                    JSONObject jsonFeature = geoJSONFeatures.getJSONObject(i);
 
-                    //convert JSONObject to GeoFeature
-                    //reproject if needed
-                    if(isWGS84){
+                    //get geometry
+                    JSONObject jsonGeometry = jsonFeature.getJSONObject(GEOJSON_GEOMETRY);
+                    GeoGeometry geometry = GeoGeometry.fromJson(jsonGeometry);
 
+                    if(geometryType == GTNone){
+                        geometryType = geometry.getType();
+                    }
+                    else if(!Geo.isGeometryTypeSame(geometryType, geometry.getType())) { //skip different geometry type
+                        continue;
                     }
 
+                    //reproject if needed
+                    if(isWGS84){
+                        geometry.setCRS(CRS_WGS84);
+                        geometry.project(CRS_WEB_MERCATOR);
+                    }
+                    else{
+                        geometry.setCRS(CRS_WEB_MERCATOR);
+                    }
+
+                    Feature feature = new Feature(fields);
+                    feature.setGeometry(geometry);
+                    //TODO: add to RTree for fast spatial queries
+
                     //update bbox
+                    extents.merge(geometry.getEnvelope());
 
                     //normalize attributes
+                    JSONObject jsonAttributes = jsonFeature.getJSONObject(GEOJSON_PROPERTIES);
+                    Iterator<String> iter = jsonAttributes.keys();
+                    while (iter.hasNext()) {
+                        String key = iter.next();
+                        Object value = jsonAttributes.get(key);
 
+                        int nType = -1;
+                        //check type
+                        if (value instanceof Integer || value instanceof Long)
+                            nType = FTInteger;
+                        else if(value instanceof Double || value instanceof Float)
+                            nType = FTReal;
+                        else if(value instanceof Date)
+                            nType = FTDateTime;
+                        else if(value instanceof String)
+                            nType = FTString;
+                        else if(value instanceof JSONObject)
+                            nType = -1; //the some list - need to check it type FTIntegerList, FTRealList, FTStringList
 
-                    /*You can get the object from the JSON using the get() method and then use the instanceof operator to check for the type of Object. Something like this:-
+                        int nField = -1;
+                        for(int j = 0; j < fields.size(); j++){
+                            if(fields.get(j).getFieldName().equals(key)){
+                                nField = j;
+                            }
+                        }
 
-                            String jString = "{\"a\": 1, \"b\": \"str\"}";
-                    JSONObject jObj = new JSONObject(jString);
-                    Object aObj = jObj.get("a");
-                    if(aObj instanceof Integer){
-                        System.out.println(aObj);
-                    }*/
+                        if(nField == -1) { //add new field
+                            Field field = new Field(key, key, nType);
+                            nField = fields.size();
+                            fields.add(field);
+                        }
 
+                        feature.setField(nField, value);
+                    }
 
+                    features.add(feature);
                 }
 
 
@@ -153,9 +212,38 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                 oJSONRoot.put(JSON_NAME_KEY, layerName);
                 oJSONRoot.put(JSON_VISIBILITY_KEY, true);
                 oJSONRoot.put(JSON_TYPE_KEY, LAYERTYPE_LOCAL_GEOJSON);
+                //add bbox
+                JSONObject oJSONBBox = extents.toJSON();
+                oJSONRoot.put(JSON_BBOX_KEY, oJSONBBox);
+                //add fields description
+                JSONArray oJSONFields = new JSONArray();
+                for(Field field : fields){
+                    oJSONFields.put(field.toJSON());
+                }
+                oJSONRoot.put(JSON_FIELDS_KEY, oJSONFields);
 
+                File file = new File(outputPath, LAYER_CONFIG);
+                FileUtil.createDir(outputPath);
+                FileUtil.writeToFile(file, oJSONRoot.toString());
 
-                return;
+                //store GeoJson to file
+                File geoJsonFile = new File(outputPath, DATA_GEOJSON);
+                if(save(features, geoJsonFile)) {
+                    if(map.getMapEventsHandler() != null){
+                        Bundle bundle = new Bundle();
+                        bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
+                        bundle.putString(BUNDLE_MSG_KEY, map.getContext().getString(R.string.message_layer_added));
+                        bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_LAYER_ADDED);
+                        bundle.putSerializable(BUNDLE_PATH_KEY, outputPath);
+
+                        Message msg = new Message();
+                        msg.setData(bundle);
+                        map.getMapEventsHandler().sendMessage(msg);
+                    }
+                    return;
+                }
+
+                sErr += ": " + map.getContext().getString(R.string.error_savefile_failed) + " - " + geoJsonFile.toString();
             }
         } catch (UnsupportedEncodingException e) {
             Log.d(TAG, "Exception: " + e.getLocalizedMessage());
@@ -173,4 +261,5 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         //if we here something wrong occurred
         Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
     }
+
 }

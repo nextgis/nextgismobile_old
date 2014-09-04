@@ -20,6 +20,52 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import static com.nextgis.mobile.util.GeoConstants.*;
+
 public abstract class GeoGeometry{
+
+    protected int mCRS;
+
     public abstract int getType();
+    public abstract boolean project(int crs);
+    public abstract GeoEnvelope getEnvelope();
+    public void setCRS(int crs){
+        mCRS = crs;
+    }
+
+    public static GeoGeometry fromJson(JSONObject jsonObject) throws JSONException{
+        GeoGeometry output = null;
+        String sType = jsonObject.getString(GEOJSON_TYPE);
+        if(sType.equals(GEOJSON_TYPE_Point)){
+            JSONArray coordinates = jsonObject.getJSONArray(GEOJSON_COORDINATES);
+            double x = coordinates.getDouble(0);
+            double y = coordinates.getDouble(1);
+            output = new GeoPoint(x, y);
+        }
+        else if(sType.equals(GEOJSON_TYPE_MultiPoint)){
+
+        }
+        else if(sType.equals(GEOJSON_TYPE_LineString)){
+
+        }
+        else if(sType.equals(GEOJSON_TYPE_MultiLineString)){
+
+        }
+        else if(sType.equals(GEOJSON_TYPE_Polygon)){
+
+        }
+        else if(sType.equals(GEOJSON_TYPE_MultiPolygon)){
+
+        }
+        else if(sType.equals(GEOJSON_TYPE_GeometryCollection)){
+
+        }
+        return output;
+    }
+
+    public abstract JSONObject toJSON() throws JSONException;
 }

@@ -85,4 +85,10 @@ public interface GeoConstants {
     public static final int FTBinary = 8;
     public static final int FTDateTime = 11;
 
+    /**
+     * CRS
+     */
+    public static final int CRS_WGS84 = 4326;
+    public static final int CRS_WEB_MERCATOR = 3857;
+
 }

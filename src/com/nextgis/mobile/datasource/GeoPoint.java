@@ -20,6 +20,10 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import static com.nextgis.mobile.util.GeoConstants.*;
 
 public class GeoPoint extends GeoGeometry{
@@ -61,8 +65,38 @@ public class GeoPoint extends GeoGeometry{
         mY = y;
     }
 
+    @Override
     public final int getType(){
         return GTPoint;
+    }
+
+    @Override
+    public boolean project(int crs) {
+        if(mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR){
+            Geo.wgs84ToSphericalMercator(this);
+            return true;
+        }
+        else if(mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84){
+            Geo.mercatorToSphericalWGS(this);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public GeoEnvelope getEnvelope() {
+        return new GeoEnvelope(mX - .5, mX + .5, mY - .5, mY + .5);
+    }
+
+    @Override
+    public JSONObject toJSON() throws JSONException {
+        JSONObject oJSONOut = new JSONObject();
+        oJSONOut.put(GEOJSON_TYPE, GEOJSON_TYPE_Point);
+        JSONArray coordinates = new JSONArray();
+        oJSONOut.put(GEOJSON_COORDINATES, coordinates);
+        coordinates.put(mX);
+        coordinates.put(mY);
+        return oJSONOut;
     }
 
     public String toString(){
