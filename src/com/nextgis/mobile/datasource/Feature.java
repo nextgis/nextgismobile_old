@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.nextgis.mobile.util.GeoConstants.*;
+import static com.nextgis.mobile.util.Constants.*;
 
 public class Feature implements JSONStore {
     protected GeoGeometry mGeometry;
@@ -43,6 +44,10 @@ public class Feature implements JSONStore {
         mGeometry = geometry;
     }
 
+    public GeoGeometry getGeometry(){
+        return mGeometry;
+    }
+
     public boolean setField(int index, Object value){
         if(index < 0 || index >= mFields.size())
             return false;
@@ -54,6 +59,19 @@ public class Feature implements JSONStore {
 
         mFieldData.set(index, value);
         return true;
+    }
+
+    public boolean setField(String fieldName, Object value){
+        int index = getFieldIndex(fieldName);
+        return setField(index, value);
+    }
+
+    public int getFieldIndex(String fieldName){
+        for(int i = 0; i < mFields.size(); i++){
+            if(mFields.get(i).getFieldName().equals(fieldName))
+                return i;
+        }
+        return NOT_FOUND;
     }
 
     @Override

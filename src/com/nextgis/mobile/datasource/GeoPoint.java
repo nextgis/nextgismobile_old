@@ -73,11 +73,11 @@ public class GeoPoint extends GeoGeometry{
     @Override
     public boolean project(int crs) {
         if(mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR){
-            Geo.wgs84ToSphericalMercator(this);
+            Geo.wgs84ToMercatorSphere(this);
             return true;
         }
         else if(mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84){
-            Geo.mercatorToSphericalWGS(this);
+            Geo.mercatorToWgs84Sphere(this);
             return true;
         }
         return false;

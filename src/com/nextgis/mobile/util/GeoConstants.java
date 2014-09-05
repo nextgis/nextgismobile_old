@@ -32,6 +32,7 @@ public interface GeoConstants {
      */
     public final static int DS_TYPE_ZIP = 1;
     public final static int DS_TYPE_TMS = 2;
+    public final static int DS_TYPE_LOCAL_GEOJSON = 3;
 
     /**
      * TMS type

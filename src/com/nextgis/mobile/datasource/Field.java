@@ -30,6 +30,10 @@ public class Field implements JSONStore{
     protected String mFieldAlias;
     protected int mType;
 
+    public Field(){
+
+    }
+
     public Field(String fieldName, String fieldAlias, int type) {
         mFieldName = fieldName;
         if(fieldAlias.length() == 0)

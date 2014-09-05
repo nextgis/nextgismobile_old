@@ -75,6 +75,8 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             case DS_TYPE_TMS:
                 RemoteTMSLayer.create(this);
                 return;
+            case DS_TYPE_LOCAL_GEOJSON:
+                LocalGeoJsonLayer.create(this, uri);
         }
     }
 

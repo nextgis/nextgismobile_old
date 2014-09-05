@@ -21,12 +21,19 @@
 package com.nextgis.mobile.map;
 
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import static com.nextgis.mobile.util.Constants.*;
@@ -56,6 +63,11 @@ import java.util.Iterator;
 import java.util.List;
 
 public class LocalGeoJsonLayer extends GeoJsonLayer {
+
+    public LocalGeoJsonLayer(MapBase map, File path, JSONObject config){
+        super(map, path, config);
+    }
+
     @Override
     public Drawable getIcon() {
         return getContext().getResources().getDrawable(R.drawable.ic_local_json);
@@ -66,18 +78,61 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         return LAYERTYPE_LOCAL_GEOJSON;
     }
 
-    @Override
-    public void changeProperties() {
+    public static void create(final MapBase map, Uri uri){
+        String sName = getFileNameByUri(map.getContext(), uri, "new layer.geojson");
+        sName = (String) sName.subSequence(0, sName.length() - 8);
+        showPropertiesDialog(map, true, sName, uri, null);
+    }
 
+    @Override
+    public void changeProperties(){
+        showPropertiesDialog(mMap, false, mName, null, this);
+    }
+
+    protected static void showPropertiesDialog(final MapBase map, final boolean bCreate, String layerName, final Uri uri, final LocalGeoJsonLayer layer){
+        final LinearLayout linearLayout = new LinearLayout(map.getContext());
+        final EditText input = new EditText(map.getContext());
+        input.setText(layerName);
+
+        final TextView stLayerName = new TextView(map.getContext());
+        stLayerName.setText(map.getContext().getString(R.string.layer_name) + ":");
+
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.addView(stLayerName);
+        linearLayout.addView(input);
+
+        if(!bCreate) {
+            //TODO: style for drawing
+        }
+
+        new AlertDialog.Builder(map.getContext())
+                .setTitle(bCreate ? R.string.input_layer_properties : R.string.change_layer_properties)
+//                                    .setMessage(message)
+                .setView(linearLayout)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        if (bCreate) {
+                            create(map, input.getText().toString(), uri);
+                        } else {
+                            layer.setName(input.getText().toString());
+                            map.onLayerChanged(layer);
+                        }
+                    }
+                }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Do nothing.
+                Toast.makeText(map.getContext(), R.string.error_cancel_by_user, Toast.LENGTH_SHORT).show();
+            }
+        }).show();
     }
 
     protected static void create(final MapBase map, String layerName, Uri uri) {
         String sErr = map.getContext().getString(R.string.error_occurred);
+        ProgressDialog progressDialog = new ProgressDialog(map.getContext());
         try {
             InputStream inputStream = map.getContext().getContentResolver().openInputStream(uri);
             if (inputStream != null) {
 
-                ProgressDialog progressDialog = new ProgressDialog(map.getContext());
                 progressDialog.setMessage(map.getContext().getString(R.string.message_loading_progress));
                 progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                 progressDialog.setCancelable(true);
@@ -99,11 +154,14 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                     responseStrBuilder.append(inputStr);
                 }
 
+                progressDialog.setMessage(map.getContext().getString(R.string.message_opening_progress));
+
                 JSONObject geoJSONObject = new JSONObject(responseStrBuilder.toString());
 
                 if(!geoJSONObject.has(GEOJSON_TYPE)){
                     sErr += ": " + map.getContext().getString(R.string.error_geojson_unsupported);
                     Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
+                    progressDialog.hide();
                     return;
                 }
 
@@ -114,6 +172,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                     if(!crsJSONObject.getString(GEOJSON_TYPE).equals(GEOJSON_NAME)){ //the link is unsupported yet.
                         sErr += ": " + map.getContext().getString(R.string.error_geojson_crs_unsupported);
                         Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
+                        progressDialog.hide();
                         return;
                     }
 
@@ -126,6 +185,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                     else{
                         sErr += ": " + map.getContext().getString(R.string.error_geojson_crs_unsupported);
                         Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
+                        progressDialog.hide();
                         return;
                     }
                 }
@@ -136,7 +196,10 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                 int geometryType = GTNone;
                 //load contents to memory and reproject if needed
                 JSONArray geoJSONFeatures = geoJSONObject.getJSONArray(GEOJSON_TYPE_FEATURES);
+                progressDialog.setMessage(map.getContext().getString(R.string.message_loading_progress));
+                progressDialog.setMax(geoJSONFeatures.length());
                 for(int i = 0; i < geoJSONFeatures.length(); i++){
+                    progressDialog.setProgress(i);
                     JSONObject jsonFeature = geoJSONFeatures.getJSONObject(i);
 
                     //get geometry
@@ -212,6 +275,10 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                 oJSONRoot.put(JSON_NAME_KEY, layerName);
                 oJSONRoot.put(JSON_VISIBILITY_KEY, true);
                 oJSONRoot.put(JSON_TYPE_KEY, LAYERTYPE_LOCAL_GEOJSON);
+                oJSONRoot.put(JSON_MAXLEVEL_KEY, 50);
+                oJSONRoot.put(JSON_MINLEVEL_KEY, 0);
+                //add geometry type
+                oJSONRoot.put(JSON_GEOMETRY_TYPE_KEY, geometryType);
                 //add bbox
                 JSONObject oJSONBBox = extents.toJSON();
                 oJSONRoot.put(JSON_BBOX_KEY, oJSONBBox);
@@ -227,8 +294,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                 FileUtil.writeToFile(file, oJSONRoot.toString());
 
                 //store GeoJson to file
-                File geoJsonFile = new File(outputPath, DATA_GEOJSON);
-                if(save(features, geoJsonFile)) {
+                if(store(features, outputPath)) {
                     if(map.getMapEventsHandler() != null){
                         Bundle bundle = new Bundle();
                         bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
@@ -240,10 +306,11 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                         msg.setData(bundle);
                         map.getMapEventsHandler().sendMessage(msg);
                     }
+                    progressDialog.hide();
                     return;
                 }
 
-                sErr += ": " + map.getContext().getString(R.string.error_savefile_failed) + " - " + geoJsonFile.toString();
+                sErr += ": " + map.getContext().getString(R.string.error_savefile_failed);
             }
         } catch (UnsupportedEncodingException e) {
             Log.d(TAG, "Exception: " + e.getLocalizedMessage());
@@ -258,6 +325,8 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
             Log.d(TAG, "Exception: " + e.getLocalizedMessage());
             sErr += ": " + e.getLocalizedMessage();
         }
+
+        progressDialog.hide();
         //if we here something wrong occurred
         Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
     }

@@ -137,6 +137,7 @@ public interface Constants {
     public static final String JSON_FIELD_NAME_KEY = "field_name";
     public static final String JSON_FIELD_ALIAS_KEY = "field_alias";
     public static final String JSON_FIELD_TYPE_KEY = "field_type";
+    public static final String JSON_GEOMETRY_TYPE_KEY = "geometry_type";
 
     /**
      * Layer type
@@ -174,4 +175,9 @@ public interface Constants {
      */
     public static final String DATASEND_ACTION_START = "ngm.sendpos.action.START";
     public static final String DATASEND_ACTION_STOP = "ngm.sendpos.action.STOP";
+
+    /**
+     *
+     */
+    public static final int NOT_FOUND = -1;
 }

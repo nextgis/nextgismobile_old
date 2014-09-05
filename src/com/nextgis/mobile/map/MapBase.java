@@ -251,6 +251,7 @@ public class MapBase extends View {
                     layer = new LocalTMSLayer(this, path, rootObject);
                     break;
                 case LAYERTYPE_LOCAL_GEOJSON:
+                    layer = new LocalGeoJsonLayer(this, path, rootObject);
                     break;
                 case LAYERTYPE_LOCAL_RASTER:
                     break;

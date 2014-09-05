@@ -84,7 +84,7 @@ public abstract class Layer implements Runnable{
 
     protected JSONObject getDetailes() throws JSONException{
         JSONObject rootConfig = new JSONObject();
-        rootConfig.put(JSON_NAME_KEY, mName);
+        rootConfig.put(JSON_NAME_KEY, getName());
         rootConfig.put(JSON_TYPE_KEY, getType());
         rootConfig.put(JSON_MAXLEVEL_KEY, mMaxZoom);
         rootConfig.put(JSON_MINLEVEL_KEY, mMinZoom);

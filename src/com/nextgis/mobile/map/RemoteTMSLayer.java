@@ -194,7 +194,7 @@ public class RemoteTMSLayer extends TMSLayer {
         linearLayout.addView(spinner);
 
         new AlertDialog.Builder(map.getContext())
-                .setTitle(bCreate ? R.string.input_layer_name_and_type : R.string.change_layer_name_and_type)
+                .setTitle(bCreate ? R.string.input_layer_properties : R.string.change_layer_properties)
 //                                    .setMessage(message)
                 .setView(linearLayout)
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {

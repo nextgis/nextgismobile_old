@@ -192,7 +192,11 @@ public class MainActivity extends ActionBarActivity {
         case R.id.menu_add_tms:
             onAdd(DS_TYPE_TMS);
             return true;
+        case R.id.menu_add_json:
+            onAdd(DS_TYPE_LOCAL_GEOJSON);
+            return true;
         }
+
 		return super.onOptionsItemSelected(item);
 	}
 
@@ -281,12 +285,12 @@ public class MainActivity extends ActionBarActivity {
     protected void onAdd(int nType){
         switch(nType){
             case DS_TYPE_ZIP:
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("application/zip");
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                Intent intent_zip = new Intent(Intent.ACTION_GET_CONTENT);
+                intent_zip.setType("application/zip");
+                intent_zip.addCategory(Intent.CATEGORY_OPENABLE);
 
                 try {
-                    startActivityForResult(Intent.createChooser(intent, "Select a File to Upload"),  DS_TYPE_ZIP);
+                    startActivityForResult(Intent.createChooser(intent_zip, getString(R.string.message_select_file)),  DS_TYPE_ZIP);
                 } catch (ActivityNotFoundException e) {
                     // Potentially direct the user to the Market with a Dialog
                     Toast.makeText(this, R.string.error_file_manager, Toast.LENGTH_SHORT).show();
@@ -295,6 +299,18 @@ public class MainActivity extends ActionBarActivity {
                 break;
             case DS_TYPE_TMS:
                 mMap.createLayer(null, nType);
+                break;
+            case DS_TYPE_LOCAL_GEOJSON:
+                Intent intent_geojson = new Intent(Intent.ACTION_GET_CONTENT);
+                intent_geojson.setType("application/json");
+                intent_geojson.addCategory(Intent.CATEGORY_OPENABLE);
+
+                try {
+                    startActivityForResult(Intent.createChooser(intent_geojson, getString(R.string.message_select_file)),  DS_TYPE_LOCAL_GEOJSON);
+                } catch (ActivityNotFoundException e) {
+                    // Potentially direct the user to the Market with a Dialog
+                    Toast.makeText(this, R.string.error_file_manager, Toast.LENGTH_SHORT).show();
+                }
                 break;
         }
     }
