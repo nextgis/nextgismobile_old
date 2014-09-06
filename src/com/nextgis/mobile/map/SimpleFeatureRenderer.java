@@ -18,64 +18,63 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
+
 package com.nextgis.mobile.map;
 
 
-import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 
+import com.nextgis.mobile.datasource.Feature;
 import com.nextgis.mobile.datasource.GeoEnvelope;
-import com.nextgis.mobile.datasource.TileItem;
+import com.nextgis.mobile.datasource.GeoGeometry;
 import com.nextgis.mobile.display.GISDisplay;
+import com.nextgis.mobile.display.Style;
 
 import java.util.List;
 
 import static com.nextgis.mobile.util.Constants.*;
+import static com.nextgis.mobile.util.GeoConstants.*;
 
-public class TMSRenderer extends Renderer{
+public class SimpleFeatureRenderer  extends Renderer{
 
+    protected Style mStyle;
+    protected GeoJsonLayer mGeoJsonLayer;
 
-    public TMSRenderer(Layer layer) {
+    public SimpleFeatureRenderer(Layer layer, Style style) {
         super(layer);
+        mGeoJsonLayer = (GeoJsonLayer)layer;
+        mStyle = style;
     }
 
     @Override
-    public void draw() throws NullPointerException {
+    public void draw() {
         final MapBase map = mLayer.getMap();
         final Handler handler = map.getMapEventsHandler();
         final GISDisplay display = map.getGISDisplay();
-
-        //TODO: clear display cache
-        //display.clearLayer(0);
-
-        final double zoom = display.getZoomLevel();
-
         GeoEnvelope env = display.getBounds();
-        //get tiled for zoom and bounds
-        TMSLayer tmsLayer = (TMSLayer)mLayer;
-        final List<TileItem> tiles = tmsLayer.getTielsForBounds(env, zoom);
-        for(int i = 0; i < tiles.size(); ++i){
-            if(tmsLayer.isDrawCanceled())
-                break;
-            TileItem tile = tiles.get(i);
-            final Bitmap bmp = tmsLayer.getBitmap(tile);
-            if(bmp != null) {
-                display.drawTile(bmp, tile.getPoint());
-            }
+
+        final List<Feature> features = mGeoJsonLayer.getFeatures(env);
+        for(int i = 0; i < features.size(); i++){
+            Feature feature = features.get(i);
+            GeoGeometry geometry = feature.getGeometry();
+
+            mStyle.onDraw(geometry, display);
+
             if(handler != null){
                 Bundle bundle = new Bundle();
                 bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
                 bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_DRAWING_DONE);
-                bundle.putFloat(BUNDLE_DONE_KEY, (float) i / tiles.size());
+                bundle.putFloat(BUNDLE_DONE_KEY, (float) i / features.size());
 
                 Message msg = new Message();
                 msg.setData(bundle);
                 handler.sendMessage(msg);
             }
         }
+
         if(handler != null){
             Bundle bundle = new Bundle();
             bundle.putBoolean(BUNDLE_HASERROR_KEY, false);

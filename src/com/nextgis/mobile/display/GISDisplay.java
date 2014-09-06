@@ -64,9 +64,6 @@ public class GISDisplay {
     protected GeoEnvelope mScreenBounds;
     protected final Paint mRasterPaint;
 
-    //TODO: create list of caches
-    //mark each cache as done and merge it with previous if it done
-
     public GISDisplay(Context context) {
         mContext = context;
         //set max zoom
@@ -115,7 +112,7 @@ public class GISDisplay {
         setZoomAndCenter(mZoomLevel, mCenter);
     }
 
-    public void clearLayer(int layerId){
+    public void clearLayer(){
         mMainBitmap.eraseColor(Color.TRANSPARENT);
     }
 
@@ -256,32 +253,12 @@ public class GISDisplay {
         }
     }
 
-    public void drawGeometry(final GeoGeometry geom, final Paint paint){
-        synchronized (mMainBitmap) {
-            switch (geom.getType()) {
-                case GTPoint:
-                    drawPoint((GeoPoint) geom, paint);
-                    return;
-            }
-        }
+    public void drawPoint(float x, float y, Paint paint){
+        mMainCanvas.drawPoint(x, y, paint);
     }
 
-    protected void drawPoint(final GeoPoint pt, final Paint paint){
-        mMainCanvas.drawPoint((float)pt.getX(), (float)pt.getY(), paint);
-    }
-
-    protected void drawTest(){
-        Bitmap testBitmap = Bitmap.createBitmap(mTileSize, mTileSize, Bitmap.Config.ARGB_8888);
-        testBitmap.eraseColor(Color.RED);
-        //mMainCanvas.drawTile(testBitmap, 100, 100, null);
-
-        drawTile(testBitmap, new GeoPoint(2000000, -2000000));
-
-        Paint pt = new Paint();
-        pt.setColor(Color.RED);
-        pt.setStrokeWidth((float)(25 / mScale));
-        pt.setStrokeCap(Paint.Cap.ROUND);
-        drawGeometry(new GeoPoint(2000000, 2000000), pt);
+    public void drawCircle(float x, float y, float radius, Paint paint){
+        mMainCanvas.drawCircle(x, y, (float) (radius / mScale), paint);
     }
 
     public final double getZoomLevel() {

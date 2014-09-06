@@ -110,7 +110,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         cancelDrawThread();
         if(mDrawingState != DRAW_SATE_drawing_noclearbk) {
             mDrawingState = DRAW_SATE_drawing;
-            mDisplay.clearLayer(0);
+            mDisplay.clearLayer();
         }
 
         mStartDrawTime = System.currentTimeMillis();
@@ -175,7 +175,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             GeoPoint newCenterPt = env.getCenter();
             GeoPoint newCenterPtMap = mDisplay.screenToMap(newCenterPt);
 
-            mDisplay.clearLayer(0);
+            mDisplay.clearLayer();
             mDisplay.setZoomAndCenter(zoom, newCenterPtMap);
 
             Bundle bundle = new Bundle();
@@ -246,7 +246,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             //Log.d(TAG, "panStop. x: " + x + ", y:" + y + ", sx:" + screenPt.getX() + ", sy:" + screenPt.getY());
             //mDisplay.panStop((float) screenPt.getX(), (float) screenPt.getY());
 
-            mDisplay.clearLayer(0);
+            mDisplay.clearLayer();
             mDisplay.setZoomAndCenter(mDisplay.getZoomLevel(), pt);
 
             Bundle bundle = new Bundle();

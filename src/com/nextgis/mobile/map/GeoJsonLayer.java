@@ -20,11 +20,15 @@
  ****************************************************************************/
 package com.nextgis.mobile.map;
 
+import android.graphics.Color;
+import android.graphics.Paint;
+
 import com.nextgis.mobile.datasource.Feature;
 import com.nextgis.mobile.datasource.Field;
-import com.nextgis.mobile.datasource.Geo;
 import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.GeoGeometry;
+import com.nextgis.mobile.display.SimpleMarkerStyle;
+import com.nextgis.mobile.display.Style;
 import com.nextgis.mobile.util.FileUtil;
 
 import org.json.JSONArray;
@@ -39,6 +43,7 @@ import java.util.List;
 
 import static com.nextgis.mobile.util.Constants.*;
 import static com.nextgis.mobile.util.GeoConstants.*;
+import static com.nextgis.mobile.util.DisplayConstants.*;
 
 public abstract class GeoJsonLayer extends Layer{
     protected List<Feature> mFeatures;
@@ -48,7 +53,15 @@ public abstract class GeoJsonLayer extends Layer{
 
     public GeoJsonLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
-        //mRenderer = new VectorRenderer(this);
+        if(mGeometryType == GTPoint) {
+            SimpleMarkerStyle style = new SimpleMarkerStyle(Color.RED, Color.BLACK, 6, MarkerStyleCircle);
+            style.setWidth(2);
+            mRenderer = new SimpleFeatureRenderer(this, style);
+        }
+    }
+
+    public final int getGeometryType(){
+        return mGeometryType;
     }
 
     protected static boolean store(List<Feature> features, File path) throws IOException, JSONException {
