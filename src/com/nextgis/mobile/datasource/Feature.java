@@ -20,6 +20,8 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
+import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -79,12 +81,13 @@ public class Feature implements JSONStore {
         JSONObject oJSONOut = new JSONObject();
         oJSONOut.put(GEOJSON_TYPE, GEOJSON_TYPE_Feature);
         oJSONOut.put(GEOJSON_GEOMETRY, mGeometry.toJSON());
+        JSONObject oJSONProp = new JSONObject();
+
         for(int i = 0; i < mFieldData.size(); i++){
             String key = mFields.get(i).getFieldName();
-            JSONObject  jsonValue = new JSONObject();
-            jsonValue.put(key, mFieldData.get(i));
-            oJSONOut.put(GEOJSON_PROPERTIES, jsonValue);
+            oJSONProp.put(key, mFieldData.get(i));
         }
+        oJSONOut.put(GEOJSON_PROPERTIES, oJSONProp);
         return oJSONOut;
     }
 
