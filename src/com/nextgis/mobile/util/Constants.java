@@ -79,7 +79,7 @@ public interface Constants {
     //the additional size to off screen drawing
     //from 1 and higher
     //As more than more memory needed
-    public static final float OFFSCREEN_EXTRASIZE_RATIO = 2.f;
+    public static final float OFFSCREEN_EXTRASIZE_RATIO = 1.5f;
     //display redraw timeout ms
     public static final int DISPLAY_REDRAW_TIMEOUT = 550;
 

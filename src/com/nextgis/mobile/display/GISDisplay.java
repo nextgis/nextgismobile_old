@@ -72,6 +72,9 @@ public class GISDisplay {
         //set max zoom
         mMaxZoomLevel = 25;
 
+        mMainBitmap = null;
+        mBackgroundBitmap = null;
+
         //default extent
         mFullBounds = new GeoEnvelope(-MERCATOR_MAX, MERCATOR_MAX, -MERCATOR_MAX, MERCATOR_MAX); //set full Mercator bounds
 
@@ -100,7 +103,7 @@ public class GISDisplay {
         mBackgroundBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mBackgroundCanvas = new Canvas(mBackgroundBitmap);
 
-        mMainBitmap = Bitmap.createBitmap((int)(w * OFFSCREEN_EXTRASIZE_RATIO), (int)(h * OFFSCREEN_EXTRASIZE_RATIO), Bitmap.Config.ARGB_8888);
+        mMainBitmap = Bitmap.createBitmap((int) (w * OFFSCREEN_EXTRASIZE_RATIO), (int) (h * OFFSCREEN_EXTRASIZE_RATIO), Bitmap.Config.ARGB_8888);
         mMainCanvas = new Canvas(mMainBitmap);
 
         mMainBitmapOffsetX = (mMainBitmap.getWidth() - mBackgroundBitmap.getWidth()) / 2;
