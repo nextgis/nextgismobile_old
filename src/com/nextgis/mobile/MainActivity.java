@@ -51,6 +51,7 @@ public class MainActivity extends ActionBarActivity {
 	protected TrackerService mTrackerService;
 	protected Handler mTrackAddPointHandler;
     protected MapView mMap;
+    protected MapFragment mMapFragment;
 	protected boolean mbGpxRecord;
 	protected LayersFragment mLayersFragment;
 	
@@ -60,7 +61,7 @@ public class MainActivity extends ActionBarActivity {
 
         mMap = new MapView(this);
         //mMap.initMap(nTileSize, nZoom, nScrollX, nScrollY);
-        //mMap.showInfo(bInfoOn);
+        //mMap.showInfoPane(bInfoOn);
         //mMap.showCompass(bCompassOn);
 		
 		setContentView(R.layout.activity_main);
@@ -69,7 +70,7 @@ public class MainActivity extends ActionBarActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( this );
-		boolean bInfoOn = prefs.getBoolean(Constants.PREFS_SHOW_INFO, false);
+//		boolean bInfoOn = prefs.getBoolean(Constants.PREFS_SHOW_INFO, false);
 		mbGpxRecord = prefs.getBoolean(Constants.KEY_PREF_SW_TRACKGPX_SRV, false);
 		boolean bCompassOn = prefs.getBoolean(Constants.PREFS_SHOW_COMPASS, false);
 		int nTileSize = 256;//prefs.getInt(NGMConstants.KEY_PREF_TILE_SIZE + "_int", 256);
@@ -84,10 +85,10 @@ public class MainActivity extends ActionBarActivity {
 		mLayersFragment = (LayersFragment) getSupportFragmentManager().findFragmentById(R.id.layers);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        MapFragment oMapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("MAP");
-        if(oMapFragment == null){
-        	oMapFragment = new MapFragment();
-        	fragmentTransaction.add(R.id.map, oMapFragment, "MAP").commit();  
+        mMapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("MAP");
+        if(mMapFragment == null){
+        	mMapFragment = new MapFragment();
+        	fragmentTransaction.add(R.id.map, mMapFragment, "MAP").commit();
         }
       
         getSupportFragmentManager().executePendingTransactions();
@@ -178,7 +179,7 @@ public class MainActivity extends ActionBarActivity {
 //        	mMap.panToLocation();
         	return true;
         case R.id.menu_info:
-//        	mMap.switchInfo();
+            mMapFragment.switchInfoPane();
         	return true;
         case R.id.menu_record_gpx:
         	onRecordGpx();
