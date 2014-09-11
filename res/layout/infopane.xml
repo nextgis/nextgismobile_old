@@ -3,7 +3,7 @@
 	Project:  NextGIS Mobile
  	Purpose:  mobile GIS for Android
     Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
-    Copyright (C) 2012-2013 NextGIS
+    Copyright (C) 2012-2014 NextGIS
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -111,5 +111,31 @@
                     android:textAppearance="?android:attr/textAppearanceLarge" />
 
             </TableRow>
-        </TableLayout>
+
+    <TableRow
+        android:id="@+id/tableRow3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/accuracy_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="-"
+            android:textColor="#ff000000"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/count_sat_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="-"
+            android:textColor="#ff000000"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    </TableRow>
+
+</TableLayout>
 

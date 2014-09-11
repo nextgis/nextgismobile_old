@@ -24,9 +24,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
+import android.location.*;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -49,6 +47,7 @@ import com.nextgis.mobile.map.MapView;
 import com.nextgis.mobile.util.Constants;
 
 import java.text.DecimalFormat;
+import java.util.Iterator;
 
 
 public class MapFragment extends Fragment implements MapEventListener {
@@ -67,6 +66,7 @@ public class MapFragment extends Fragment implements MapEventListener {
 
     protected LocationManager mLocationManager;
     protected ChangeLocationListener mChangeLocationListener;
+    protected GpsStatusListener mGpsStatusListener;
 
     protected boolean mIsInfoPaneShow;
 
@@ -99,6 +99,11 @@ public class MapFragment extends Fragment implements MapEventListener {
             lonText.setText(PositionFragment.formatLng(
                     location.getLongitude(), nFormat, mContext.getResources()) +
                     mContext.getResources().getText(R.string.coord_lon));
+
+            TextView accuracyText = (TextView) mInfoPane.findViewById(R.id.accuracy_text);
+            float accuracy = location.getAccuracy();
+            accuracyText.setText("" + df.format(accuracy) + " " +
+                    mContext.getString(R.string.info_accuracy_val));
         }
 
         public void onProviderDisabled(String arg0) {
@@ -114,6 +119,26 @@ public class MapFragment extends Fragment implements MapEventListener {
         public void onStatusChanged(String provider, int status, Bundle extras) {
             // TODO Auto-generated method stub
 
+        }
+    }
+
+    private final class GpsStatusListener implements GpsStatus.Listener {
+
+        @Override
+        public void onGpsStatusChanged(int event) {
+            if (GpsStatus.GPS_EVENT_SATELLITE_STATUS == event) {
+                Iterator<GpsSatellite> iterator =
+                        mLocationManager.getGpsStatus(null).getSatellites().iterator();
+
+                int countSat = 0;
+                while (iterator.hasNext()) {
+                    iterator.next();
+                    ++countSat;
+                }
+
+                TextView countSatText = (TextView) mInfoPane.findViewById(R.id.count_sat_text);
+                countSatText.setText(countSat > 0 ? "" + countSat : "-");
+            }
         }
     }
 
@@ -146,6 +171,7 @@ public class MapFragment extends Fragment implements MapEventListener {
 
         mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
         mChangeLocationListener = new ChangeLocationListener();
+        mGpsStatusListener = new GpsStatusListener();
 
         return view;
     }
@@ -283,6 +309,7 @@ public class MapFragment extends Fragment implements MapEventListener {
                     LocationManager.GPS_PROVIDER, 0, 0, mChangeLocationListener);
             mLocationManager.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER, 0, 0, mChangeLocationListener);
+            mLocationManager.addGpsStatusListener(mGpsStatusListener);
 
             final RelativeLayout.LayoutParams RightParams = new RelativeLayout.LayoutParams(
                     RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -311,6 +338,7 @@ public class MapFragment extends Fragment implements MapEventListener {
 
         } else {
             mLocationManager.removeUpdates(mChangeLocationListener);
+            mLocationManager.removeGpsStatusListener(mGpsStatusListener);
             mMapRelativeLayout.removeView(mInfoPane);
         }
 
