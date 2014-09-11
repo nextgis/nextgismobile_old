@@ -121,8 +121,11 @@
 	<string name="info_lat">Широта</string>
 	<string name="info_lon">Долгота</string>
 	<string name="info_height">Высота</string>
-	<string name="info_height_val">м</string>
+	<string name="info_height_val">м н.у. моря</string>
+    <string name="info_accuracy">Точ.</string>
     <string name="info_accuracy_val">м</string>
+    <string name="info_sat_count">Фикс.</string>
+    <string name="info_sat_count_val">спут.</string>
 	<string name="compas_N">С</string>
 	<string name="compas_NE">СВ</string>
 	<string name="compas_E">В</string>

@@ -18,104 +18,67 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
-        <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="match_parent"
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:stretchColumns="0,1,2"
+             android:background="#64729fcf"
+             android:alpha="50">
+
+    <TableRow
+        android:id="@+id/tableRow1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/lat_text"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:stretchColumns="0,1,2" 
-            android:background="#64729fcf"
-            android:alpha="50" >
+            android:layout_gravity="center"
+            android:text="-"
+            android:textColor="#ff000000"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
-            <TableRow
-                android:id="@+id/tableRow1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                
-                <TextView
-                    android:id="@+id/textView1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="@string/info_speed"
-                    android:textColor="#ff000000"
-                    android:textStyle="bold"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
-                
-                <TextView
-                    android:id="@+id/textView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="@string/info_coordinates"
-                    android:textColor="#ff000000"
-                    android:textStyle="bold"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
+        <TextView
+            android:id="@+id/lon_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="-"
+            android:textColor="#ff000000"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
-                <TextView
-                    android:id="@+id/textView3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="@string/info_height"
-                    android:textColor="#ff000000"
-                    android:textStyle="bold"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
+    </TableRow>
 
-            </TableRow>
+    <TableRow
+        android:id="@+id/tableRow2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
-            <TableRow
-                android:id="@+id/tableRow2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+        <TextView
+            android:id="@+id/speed_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="-"
+            android:textColor="#ff000000"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
-                <TextView
-                    android:id="@+id/speed_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="-"
-                    android:textColor="#ff000000"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
+        <TextView
+            android:id="@+id/height_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="-"
+            android:textColor="#ff000000"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical" >
-
-                    <TextView
-                        android:id="@+id/lat_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="-"
-                        android:textColor="#ff000000"
-                        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-                    <TextView
-                        android:id="@+id/lon_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="-"
-                        android:textColor="#ff000000"
-                        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/height_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="-"
-                    android:textColor="#ff000000"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
-
-            </TableRow>
+    </TableRow>
 
     <TableRow
         android:id="@+id/tableRow3"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/accuracy_text"
@@ -124,16 +87,16 @@
             android:layout_gravity="center"
             android:text="-"
             android:textColor="#ff000000"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
         <TextView
-            android:id="@+id/count_sat_text"
+            android:id="@+id/sat_count_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="-"
             android:textColor="#ff000000"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     </TableRow>
 

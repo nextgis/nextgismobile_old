@@ -100,7 +100,11 @@
 	<string name="info_lat">Latitude</string>
 	<string name="info_lon">Longtitude</string>
 	<string name="info_height">Height</string>
-	<string name="info_height_val">m</string>
+	<string name="info_height_val">m altitude</string>
+    <string name="info_accuracy">Acc.</string>
+    <string name="info_accuracy_val">m</string>
+    <string name="info_sat_count">Fix.</string>
+    <string name="info_sat_count_val">sat.</string>
 	<string name="compas_N">N</string>
 	<string name="compas_NE">NE</string>
 	<string name="compas_E">E</string>

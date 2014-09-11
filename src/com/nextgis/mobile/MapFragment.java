@@ -75,20 +75,10 @@ public class MapFragment extends Fragment implements MapEventListener {
 
         public void onLocationChanged(Location location) {
 
-            TextView speedText = (TextView) mInfoPane.findViewById(R.id.speed_text);
-            DecimalFormat df = new DecimalFormat("0.0");
-            double dfSpeed = location.getSpeed() * 3.6;//to km/h
-            speedText.setText("" + df.format(dfSpeed) + " " +
-                    mContext.getString(R.string.info_speed_val));
-
-            TextView heightText = (TextView) mInfoPane.findViewById(R.id.height_text);
-            double dfHeight = location.getAltitude();
-            heightText.setText("" + df.format(dfHeight) + " " +
-                    mContext.getString(R.string.info_height_val));
-
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
             int nFormat = prefs.getInt(Constants.KEY_PREF_COORD_FORMAT + "_int",
                     Location.FORMAT_SECONDS);
+            DecimalFormat df = new DecimalFormat("0.0");
 
             TextView latText = (TextView) mInfoPane.findViewById(R.id.lat_text);
             latText.setText(PositionFragment.formatLat(
@@ -100,9 +90,20 @@ public class MapFragment extends Fragment implements MapEventListener {
                     location.getLongitude(), nFormat, mContext.getResources()) +
                     mContext.getResources().getText(R.string.coord_lon));
 
+            TextView speedText = (TextView) mInfoPane.findViewById(R.id.speed_text);
+            double speed = location.getSpeed() * 3.6; //to km/h
+            speedText.setText("" + df.format(speed) + " " +
+                    mContext.getString(R.string.info_speed_val));
+
+            TextView heightText = (TextView) mInfoPane.findViewById(R.id.height_text);
+            double height = location.getAltitude();
+            heightText.setText("" + df.format(height) + " " +
+                    mContext.getString(R.string.info_height_val));
+
             TextView accuracyText = (TextView) mInfoPane.findViewById(R.id.accuracy_text);
             float accuracy = location.getAccuracy();
-            accuracyText.setText("" + df.format(accuracy) + " " +
+            accuracyText.setText(mContext.getString(R.string.info_accuracy) + " " +
+                    df.format(accuracy) + " " +
                     mContext.getString(R.string.info_accuracy_val));
         }
 
@@ -130,14 +131,17 @@ public class MapFragment extends Fragment implements MapEventListener {
                 Iterator<GpsSatellite> iterator =
                         mLocationManager.getGpsStatus(null).getSatellites().iterator();
 
-                int countSat = 0;
+                int satCount = 0;
                 while (iterator.hasNext()) {
                     iterator.next();
-                    ++countSat;
+                    ++satCount;
                 }
 
-                TextView countSatText = (TextView) mInfoPane.findViewById(R.id.count_sat_text);
-                countSatText.setText(countSat > 0 ? "" + countSat : "-");
+                TextView satCountText = (TextView) mInfoPane.findViewById(R.id.sat_count_text);
+                satCountText.setText(satCount > 0
+                        ? mContext.getString(R.string.info_sat_count) + " " + satCount + " " +
+                        mContext.getString(R.string.info_sat_count_val)
+                        : "-");
             }
         }
     }
