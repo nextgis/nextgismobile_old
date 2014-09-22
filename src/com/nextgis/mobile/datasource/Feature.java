@@ -54,7 +54,7 @@ public class Feature implements JSONStore {
         if(index < 0 || index >= mFields.size())
             return false;
         if(mFieldData.size() <= index){
-            for(int i = 0; i <= index; i++){
+            for(int i = mFieldData.size(); i <= index; i++){
                 mFieldData.add(null);
             }
         }
