@@ -76,6 +76,10 @@ public class Feature implements JSONStore {
         return NOT_FOUND;
     }
 
+    public List<Field> getFields() {
+        return mFields;
+    }
+
     @Override
     public JSONObject toJSON() throws JSONException {
         JSONObject oJSONOut = new JSONObject();

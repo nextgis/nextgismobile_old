@@ -59,7 +59,9 @@ public abstract class GeoJsonLayer extends Layer{
         return mGeometryType;
     }
 
-    protected static boolean store(List<Feature> features, File path) throws IOException, JSONException {
+    protected static void store(List<Feature> features, File path)
+            throws IOException, JSONException {
+
         JSONObject oJSONRoot = new JSONObject();
         oJSONRoot.put(GEOJSON_TYPE, GEOJSON_TYPE_FeatureCollection);
         JSONObject crsJson = new JSONObject();
@@ -78,8 +80,6 @@ public abstract class GeoJsonLayer extends Layer{
 
         File file = new File(path, DATA_GEOJSON);
         FileUtil.writeToFile(file, oJSONRoot.toString());
-
-        return true;
     }
 
     protected void loadFeatures() throws IOException, JSONException {
