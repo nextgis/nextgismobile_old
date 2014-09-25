@@ -20,7 +20,6 @@
  ****************************************************************************/
 package com.nextgis.mobile;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -89,14 +88,14 @@ public class LayersListAdapter extends BaseAdapter {
         //final int id = layer.getId();
 
         ImageButton btShow = (ImageButton)v.findViewById(R.id.btShow);
-        //Log.d(TAG, "Layer #" + id + " is visible " + layer.getVisible());
-        btShow.setBackgroundResource(layer.getVisible() ? R.drawable.ic_brightness_high : R.drawable.ic_bightness_low);
+        //Log.d(TAG, "Layer #" + id + " is visible " + layer.isVisible());
+        btShow.setBackgroundResource(layer.isVisible() ? R.drawable.ic_brightness_high : R.drawable.ic_bightness_low);
         //btShow.refreshDrawableState();
         btShow.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
                 MapBase map = getMap();
                 //Layer layer = map.getLayerById(id);
-                layer.setVisible(!layer.getVisible());
+                layer.setVisible(!layer.isVisible());
             }
         });
 

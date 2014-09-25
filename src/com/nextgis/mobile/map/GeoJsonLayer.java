@@ -21,14 +21,9 @@
 package com.nextgis.mobile.map;
 
 import android.graphics.Color;
-import android.graphics.Paint;
 
-import com.nextgis.mobile.datasource.Feature;
-import com.nextgis.mobile.datasource.Field;
-import com.nextgis.mobile.datasource.GeoEnvelope;
-import com.nextgis.mobile.datasource.GeoGeometry;
+import com.nextgis.mobile.datasource.*;
 import com.nextgis.mobile.display.SimpleMarkerStyle;
-import com.nextgis.mobile.display.Style;
 import com.nextgis.mobile.util.FileUtil;
 
 import org.json.JSONArray;
@@ -134,8 +129,8 @@ public abstract class GeoJsonLayer extends Layer{
     }
 
     @Override
-    protected void setDetailes(JSONObject config) {
-        super.setDetailes(config);
+    protected void setDetails(JSONObject config) {
+        super.setDetails(config);
         try {
             //add geometry type
             mGeometryType = config.getInt(JSON_GEOMETRY_TYPE_KEY);
@@ -161,8 +156,8 @@ public abstract class GeoJsonLayer extends Layer{
     }
 
     @Override
-    protected JSONObject getDetailes() throws JSONException{
-        JSONObject rootObject = super.getDetailes();
+    protected JSONObject getDetails() throws JSONException{
+        JSONObject rootObject = super.getDetails();
         //add geometry type
         rootObject.put(JSON_GEOMETRY_TYPE_KEY, mGeometryType);
         //add bbox

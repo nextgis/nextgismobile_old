@@ -115,7 +115,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
         mStartDrawTime = System.currentTimeMillis();
         for(Layer layer : mLayers) {
-            if(layer.getVisible()) {
+            if(layer.isVisible()) {
                 mDrawThreadPool.execute(layer);
             }
         }

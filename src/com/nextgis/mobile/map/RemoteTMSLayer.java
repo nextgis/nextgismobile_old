@@ -274,8 +274,8 @@ public class RemoteTMSLayer extends TMSLayer {
 
 
     @Override
-    protected void setDetailes(JSONObject config) {
-        super.setDetailes(config);
+    protected void setDetails(JSONObject config) {
+        super.setDetails(config);
         try {
             mURL = config.getString(JSON_URL_KEY);
         } catch (JSONException e) {
@@ -284,8 +284,8 @@ public class RemoteTMSLayer extends TMSLayer {
     }
 
     @Override
-    protected JSONObject getDetailes() throws JSONException {
-        JSONObject rootConfig = super.getDetailes();
+    protected JSONObject getDetails() throws JSONException {
+        JSONObject rootConfig = super.getDetails();
         rootConfig.put(JSON_URL_KEY, mURL);
         return rootConfig;
     }

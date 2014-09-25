@@ -59,7 +59,7 @@ public abstract class Layer implements Runnable{
         mPath = path;
         mId = mMap.getNewId();
         mInterrupted = false;
-        setDetailes(config);
+        setDetails(config);
     }
 
     public final String getName() {
@@ -71,7 +71,7 @@ public abstract class Layer implements Runnable{
         mMap.onLayerChanged(this);
     }
 
-    protected void setDetailes(JSONObject config){
+    protected void setDetails(JSONObject config){
         try {
             mName = config.getString(JSON_NAME_KEY);
             mMaxZoom = config.getInt(JSON_MAXLEVEL_KEY);
@@ -82,13 +82,13 @@ public abstract class Layer implements Runnable{
         }
     }
 
-    protected JSONObject getDetailes() throws JSONException{
+    protected JSONObject getDetails() throws JSONException{
         JSONObject rootConfig = new JSONObject();
         rootConfig.put(JSON_NAME_KEY, getName());
         rootConfig.put(JSON_TYPE_KEY, getType());
         rootConfig.put(JSON_MAXLEVEL_KEY, mMaxZoom);
         rootConfig.put(JSON_MINLEVEL_KEY, mMinZoom);
-        rootConfig.put(JSON_VISIBILITY_KEY, getVisible());
+        rootConfig.put(JSON_VISIBILITY_KEY, isVisible());
         return rootConfig;
     }
 
@@ -119,7 +119,7 @@ public abstract class Layer implements Runnable{
 
     public abstract void changeProperties();
 
-    public final boolean getVisible(){
+    public final boolean isVisible(){
         return mIsVisible;
     }
 
@@ -134,7 +134,7 @@ public abstract class Layer implements Runnable{
 
     public void save(){
         try {
-            JSONObject rootConfig = getDetailes();
+            JSONObject rootConfig = getDetails();
             File outFile = new File(mPath, LAYER_CONFIG);
             FileUtil.writeToFile(outFile, rootConfig.toString());
         } catch (JSONException e){

@@ -108,8 +108,8 @@ public class LocalTMSLayer extends TMSLayer{
     }
 
     @Override
-    protected void setDetailes(JSONObject config){
-        super.setDetailes(config);
+    protected void setDetails(JSONObject config){
+        super.setDetails(config);
         try {
             mLimits = new HashMap<Integer, TileCacheLevelDescItem>();
             final JSONArray jsonArray = config.getJSONArray(JSON_LEVELS_KEY);
@@ -129,8 +129,8 @@ public class LocalTMSLayer extends TMSLayer{
     }
 
     @Override
-    protected JSONObject getDetailes() throws JSONException {
-        JSONObject rootConfig = super.getDetailes();
+    protected JSONObject getDetails() throws JSONException {
+        JSONObject rootConfig = super.getDetails();
         JSONArray jsonArray = new JSONArray();
         rootConfig.put(JSON_LEVELS_KEY, jsonArray);
         int nMaxLevel = 0;
@@ -354,7 +354,7 @@ public class LocalTMSLayer extends TMSLayer{
                 zis.close();
 
                 sMsg = mProgressDialog.getContext().getString(R.string.message_layer_added);
-                getLocalCacheDetailes();
+                getLocalCacheDetails();
                 File file = new File(mOutputPath, LAYER_CONFIG);
                 FileUtil.writeToFile(file, mLayerConfig.toString());
 
@@ -398,7 +398,7 @@ public class LocalTMSLayer extends TMSLayer{
             return false;
         }
 
-        protected void getLocalCacheDetailes() throws JSONException, NumberFormatException {
+        protected void getLocalCacheDetails() throws JSONException, NumberFormatException {
             int nMaxLevel = 0;
             int nMinLevel = 512;
 

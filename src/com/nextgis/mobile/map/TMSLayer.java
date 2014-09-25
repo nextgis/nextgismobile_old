@@ -148,8 +148,8 @@ public abstract class TMSLayer extends Layer {
     public abstract Bitmap getBitmap(TileItem tile);
 
     @Override
-    protected void setDetailes(JSONObject config) {
-        super.setDetailes(config);
+    protected void setDetails(JSONObject config) {
+        super.setDetails(config);
         try {
             mTMSType = config.getInt(JSON_TMSTYPE_KEY);
         } catch (JSONException e){
@@ -158,8 +158,8 @@ public abstract class TMSLayer extends Layer {
     }
 
     @Override
-    protected JSONObject getDetailes() throws JSONException{
-        JSONObject rootObject = super.getDetailes();
+    protected JSONObject getDetails() throws JSONException{
+        JSONObject rootObject = super.getDetails();
         rootObject.put(JSON_TMSTYPE_KEY, mTMSType);
         return rootObject;
     }

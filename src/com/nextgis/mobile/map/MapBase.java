@@ -23,12 +23,10 @@ package com.nextgis.mobile.map;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -52,7 +50,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import static com.nextgis.mobile.util.Constants.*;
 
@@ -158,7 +155,7 @@ public class MapBase extends View {
         mDisplay.clearLayer();
         mStartDrawTime = System.currentTimeMillis();
         for(Layer layer : mLayers) {
-            if(layer.getVisible()) {
+            if(layer.isVisible()) {
                 mDrawThreadPool.execute(layer);
             }
         }
@@ -166,7 +163,7 @@ public class MapBase extends View {
 
     protected synchronized void cancelDrawThread(){
         for(Layer layer : mLayers) {
-            if(layer.getVisible()) {
+            if(layer.isVisible()) {
                 layer.cancelDraw();
             }
         }
@@ -235,7 +232,7 @@ public class MapBase extends View {
     }
 
     /**
-     * Create existed lyer from path and add it to the map
+     * Create existed layer from path and add it to the map
      *
      * @param path A path to layer directory
      */
