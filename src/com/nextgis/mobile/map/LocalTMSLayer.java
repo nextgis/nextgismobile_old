@@ -337,7 +337,7 @@ public class LocalTMSLayer extends TMSLayer{
         protected Boolean doInBackground(String... params) {
             String sMsg = mProgressDialog.getContext().getString(R.string.error_occurred);
             try {
-//                DeleteRecursive(mOutputPath);
+//                deleteRecursive(mOutputPath);
                 int nSize = mInputStream.available();
                 ZipInputStream zis = new ZipInputStream(mInputStream);
                 int nIncrement = 0;

@@ -129,7 +129,7 @@ public abstract class Layer implements Runnable{
     }
 
     public boolean delete(){
-        return mPath.delete();
+        return FileUtil.deleteRecursive(mPath);
     }
 
     public void save(){

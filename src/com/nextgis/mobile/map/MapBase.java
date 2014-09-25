@@ -261,6 +261,7 @@ public class MapBase extends View {
 
             if(layer != null) {
                 mLayers.add(layer);
+                saveMap();
                 onLayerAdded(layer);
             }
         } catch (IOException e){

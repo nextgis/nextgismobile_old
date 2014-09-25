@@ -23,14 +23,12 @@ package com.nextgis.mobile.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.zip.ZipEntry;
 
 public class FileUtil {
 
@@ -81,12 +79,14 @@ public class FileUtil {
         }
     }
 
-    public static void DeleteRecursive(File fileOrDirectory) {
+    public static boolean deleteRecursive(File fileOrDirectory) {
+        boolean isOK = true;
+
         if (fileOrDirectory.isDirectory())
             for (File child : fileOrDirectory.listFiles())
-                DeleteRecursive(child);
+                isOK = deleteRecursive(child) && isOK;
 
-        fileOrDirectory.delete();
+        return fileOrDirectory.delete() && isOK;
     }
 
     public static void copyStream( InputStream is, OutputStream os, byte[] buffer, int bufferSize ) throws IOException {
