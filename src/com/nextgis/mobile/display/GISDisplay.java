@@ -321,8 +321,9 @@ public class GISDisplay {
         rect.set((float) env.getMinX(), (float) env.getMaxY(), (float) env.getMaxX(), (float) env.getMinY());
 
         mInvertTransformMatrix.mapRect(rect);
-        outEnv.setMin(rect.left, rect.bottom);
-        outEnv.setMax(rect.right, rect.top);
+        outEnv.setMin(rect.left, rect.top); // screen axis Y and geo axis Y are inverse
+        outEnv.setMax(rect.right, rect.bottom);
+
 
         return outEnv;
     }
