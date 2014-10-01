@@ -170,6 +170,25 @@ public class GISDisplay {
         mLimits.setMaxX(mLimits.getMaxX() + mMainBitmap.getWidth());
     }
 
+    public void setTransformMatrix(final double zoom, final GeoPoint center) {
+        int nZoom = (int) Math.floor(zoom);
+
+        double mapTileSize = 1 << nZoom;
+        mapTileSize *= 1 + zoom - nZoom;
+        double mapPixelSize = mapTileSize * mTileSize;
+
+        double scaleX = mapPixelSize / mFullBounds.width();
+        double scaleY = mapPixelSize / mFullBounds.height();
+        double scale = (float) ((scaleX + scaleY) / 2.0);
+
+        //default transform matrix
+        mTransformMatrix.reset();
+        mTransformMatrix.postTranslate((float) -center.getX(), (float) -center.getY());
+        mTransformMatrix.postScale((float) scale, (float) -scale);
+        mTransformMatrix.postTranslate(
+                (float) mBackgroundBitmap.getWidth() / 2, (float) mBackgroundBitmap.getHeight() / 2);
+    }
+
     public final GeoEnvelope getLimits(){
         return new GeoEnvelope(mLimits);
     }
@@ -180,6 +199,14 @@ public class GISDisplay {
 
     public synchronized Bitmap getDisplay(boolean clearBackground) {
         return getDisplay(0, 0, clearBackground);
+    }
+
+    public synchronized Bitmap getEditDisplay() {
+        return mBackgroundBitmap;
+    }
+
+    public synchronized Canvas getEditCanvas() {
+        return mBackgroundCanvas;
     }
 
     public synchronized Bitmap getDisplay(float x, float y, boolean clearBackground) {

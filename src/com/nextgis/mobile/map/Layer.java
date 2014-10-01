@@ -49,6 +49,7 @@ public abstract class Layer implements Runnable{
     protected Renderer mRenderer;
     protected Thread mDrawingThread;
     protected boolean mInterrupted;
+    protected int mLayerType;
 
     public Layer(){
 
@@ -73,6 +74,7 @@ public abstract class Layer implements Runnable{
 
     protected void setDetails(JSONObject config){
         try {
+            mLayerType = config.getInt(JSON_TYPE_KEY);
             mName = config.getString(JSON_NAME_KEY);
             mMaxZoom = config.getInt(JSON_MAXLEVEL_KEY);
             mMinZoom = config.getInt(JSON_MINLEVEL_KEY);

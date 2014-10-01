@@ -56,6 +56,7 @@ import static com.nextgis.mobile.util.Constants.*;
 public class MapBase extends View {
     protected String mName;
     protected List<Layer> mLayers;
+    protected LocalGeoJsonEditLayer mEditLayer; // TODO: it is temporary
     protected List<MapEventListener> mListeners;
     protected GISDisplay mDisplay;
     protected File mMapPath;
@@ -80,6 +81,7 @@ public class MapBase extends View {
         mNewId = 0;
         mListeners = new ArrayList<MapEventListener>();
         mLayers = new ArrayList<Layer>();
+        mEditLayer = null; // TODO: it is temporary
 
         mCPUTotalCount = Runtime.getRuntime().availableProcessors() - 1;
         if(mCPUTotalCount < 1)
@@ -226,6 +228,11 @@ public class MapBase extends View {
             case MSGTYPE_DRAWING_DONE:
                 onLayerDrawFinished(bundle.getFloat(BUNDLE_DONE_KEY));
                 break;
+
+            case MSGTYPE_EDIT_DRAWING_DONE:
+                onEditLayerDrawFinished(bundle.getFloat(BUNDLE_DONE_KEY));
+                break;
+
             default:
                 break;
         }
@@ -250,6 +257,9 @@ public class MapBase extends View {
                 case LAYERTYPE_LOCAL_GEOJSON:
                     layer = new LocalGeoJsonLayer(this, path, rootObject);
                     break;
+                case LAYERTYPE_LOCAL_EDIT_GEOJSON:
+                    layer = new LocalGeoJsonEditLayer(this, path, rootObject);
+                    break;
                 case LAYERTYPE_LOCAL_RASTER:
                     break;
                 case LAYERTYPE_TMS:
@@ -261,7 +271,6 @@ public class MapBase extends View {
 
             if(layer != null) {
                 mLayers.add(layer);
-                saveMap();
                 onLayerAdded(layer);
             }
         } catch (IOException e){
@@ -324,6 +333,11 @@ public class MapBase extends View {
                 if(inFile.exists())
                     addLayer(inFile);
             }
+
+            if (mLayers.size() >= 3) { // TODO: it is temporary
+                mEditLayer = (LocalGeoJsonEditLayer) mLayers.get(2);
+            }
+
             //let's draw the map
             runDrawThread();
         } catch (IOException e){
@@ -471,6 +485,7 @@ public class MapBase extends View {
      * Remove all layers
      */
     protected void clearMap(){
+        mEditLayer = null; // TODO: it is temporary
         mLayers.clear(); //TODO: do we need onClearMap event?
     }
 
@@ -482,6 +497,11 @@ public class MapBase extends View {
      */
     public boolean deleteLayerById(int id){
         boolean bRes = false;
+
+        if (id == 2) { // TODO: it is temporary
+            mEditLayer = null;
+        }
+
         for(Layer layer : mLayers) {
             if (layer.getId() == id) {
                 layer.delete();
@@ -530,6 +550,12 @@ public class MapBase extends View {
     protected void onLayerDrawFinished(float percent){
         if(System.currentTimeMillis() - mStartDrawTime > DISPLAY_REDRAW_TIMEOUT || percent >= 100){
             mStartDrawTime = System.currentTimeMillis();
+            invalidate();
+        }
+    }
+
+    protected void onEditLayerDrawFinished(float percent) {
+        if (percent >= 100) {
             invalidate();
         }
     }

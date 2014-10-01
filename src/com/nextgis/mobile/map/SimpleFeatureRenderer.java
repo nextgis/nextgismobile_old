@@ -22,7 +22,6 @@
 package com.nextgis.mobile.map;
 
 
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -36,24 +35,27 @@ import com.nextgis.mobile.display.Style;
 import java.util.List;
 
 import static com.nextgis.mobile.util.Constants.*;
-import static com.nextgis.mobile.util.GeoConstants.*;
 
 public class SimpleFeatureRenderer  extends Renderer{
 
     protected Style mStyle;
     protected GeoJsonLayer mGeoJsonLayer;
+    protected final Handler handler;
+    protected final GISDisplay display;
+    protected int msgtype;
 
     public SimpleFeatureRenderer(Layer layer, Style style) {
         super(layer);
         mGeoJsonLayer = (GeoJsonLayer)layer;
         mStyle = style;
+        MapBase map = mLayer.getMap();
+        handler = map.getMapEventsHandler();
+        display = map.getGISDisplay();
+        msgtype = MSGTYPE_DRAWING_DONE;
     }
 
     @Override
     public void draw() {
-        final MapBase map = mLayer.getMap();
-        final Handler handler = map.getMapEventsHandler();
-        final GISDisplay display = map.getGISDisplay();
         GeoEnvelope env = display.getBounds();
 
         final List<Feature> features = mGeoJsonLayer.getFeatures(env);
@@ -66,7 +68,7 @@ public class SimpleFeatureRenderer  extends Renderer{
             if(handler != null){
                 Bundle bundle = new Bundle();
                 bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
-                bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_DRAWING_DONE);
+                bundle.putInt(BUNDLE_TYPE_KEY, msgtype);
                 bundle.putFloat(BUNDLE_DONE_KEY, (float) i / features.size());
 
                 Message msg = new Message();
@@ -78,7 +80,7 @@ public class SimpleFeatureRenderer  extends Renderer{
         if(handler != null){
             Bundle bundle = new Bundle();
             bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
-            bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_DRAWING_DONE);
+            bundle.putInt(BUNDLE_TYPE_KEY, msgtype);
             bundle.putFloat(BUNDLE_DONE_KEY, 100.0f);
 
             Message msg = new Message();

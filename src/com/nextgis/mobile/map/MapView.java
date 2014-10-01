@@ -32,15 +32,24 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
+import com.nextgis.mobile.datasource.Feature;
 import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.GeoPoint;
+import org.json.JSONException;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.nextgis.mobile.util.Constants.*;
 import static com.nextgis.mobile.util.GeoConstants.*;
 
 public class MapView extends MapBase implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener,  ScaleGestureDetector.OnScaleGestureListener  {
+
+    public static final int toleranceDP = 20;
+    public final float tolerancePX =
+            getContext().getResources().getDisplayMetrics().density * toleranceDP;
 
     protected final GestureDetector mGestureDetector;
     protected final ScaleGestureDetector mScaleGestureDetector;
@@ -83,24 +92,82 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     @Override
     protected void onDraw(Canvas canvas) {
         //Log.d(TAG, "state: " + mDrawingState + ", current loc: " +  mCurrentMouseLocation.toString() + " current focus: " + mCurrentFocusLocation.toString() + " scale: "  + mScaleFactor);
-        if(mDisplay != null){
-            if(mDrawingState == DRAW_SATE_panning){
-                canvas.drawBitmap(mDisplay.getDisplay(-mCurrentMouseLocation.x, -mCurrentMouseLocation.y, true), 0 , 0, null);
-            }
-            else if(mDrawingState == DRAW_SATE_zooming){
-                canvas.drawBitmap(mDisplay.getDisplay(-mCurrentFocusLocation.x, -mCurrentFocusLocation.y, (float)mScaleFactor), 0, 0, null);
-            }
-            else if(mDrawingState == DRAW_SATE_drawing_noclearbk){
-                canvas.drawBitmap(mDisplay.getDisplay(false), 0 , 0, null);
-            }
-            else{
-                canvas.drawBitmap(mDisplay.getDisplay(true), 0, 0, null);
+        if (mDisplay != null) {
+            switch (mDrawingState) {
+
+                case DRAW_SATE_panning:
+                    canvas.drawBitmap(mDisplay.getDisplay(
+                            -mCurrentMouseLocation.x, -mCurrentMouseLocation.y, true), 0, 0, null);
+
+                    if (mEditLayer != null) {
+                        GeoEnvelope bounds = mDisplay.getScreenBounds();
+                        bounds.offset(mCurrentMouseLocation.x, mCurrentMouseLocation.y);
+                        GeoEnvelope mapBounds = mDisplay.screenToMap(bounds);
+                        GeoPoint pt = mapBounds.getCenter();
+
+                        mDisplay.setTransformMatrix(mDisplay.getZoomLevel(), pt);
+
+                        mEditLayer.draw();
+                        canvas.drawBitmap(mDisplay.getEditDisplay(), 0, 0, null);
+                    }
+                    break;
+
+                case DRAW_SATE_zooming:
+                    canvas.drawBitmap(
+                            mDisplay.getDisplay(-mCurrentFocusLocation.x, -mCurrentFocusLocation.y,
+                                    (float) mScaleFactor), 0, 0, null);
+
+                    if (mEditLayer != null) {
+                        GeoPoint focusPt = new GeoPoint(
+                                -mCurrentFocusLocation.x, -mCurrentFocusLocation.y);
+                        double invertScale = 1 / mScaleFactor;
+                        double offX = (1 - invertScale) * focusPt.getX();
+                        double offY = (1 - invertScale) * focusPt.getY();
+
+                        GeoEnvelope env = mDisplay.getScreenBounds();
+                        env.scale(invertScale);
+                        env.offset(offX, offY);
+
+                        GeoPoint center = env.getCenter();
+                        GeoPoint geoCenter = mDisplay.screenToMap(center);
+
+                        mDisplay.setTransformMatrix(getZoomForScaleFactor(mScaleFactor), geoCenter);
+
+                        mEditLayer.draw();
+                        canvas.drawBitmap(mDisplay.getEditDisplay(), 0, 0, null);
+                    }
+                    break;
+
+                case DRAW_SATE_edit_drawing:
+                    canvas.drawBitmap(mDisplay.getDisplay(false), 0, 0, null);
+                    mEditLayer.draw();
+                    canvas.drawBitmap(mDisplay.getEditDisplay(), 0, 0, null);
+                    break;
+
+                case DRAW_SATE_drawing_noclearbk:
+                    canvas.drawBitmap(mDisplay.getDisplay(false), 0, 0, null);
+
+                    if (mEditLayer != null) {
+                        mEditLayer.draw();
+                        canvas.drawBitmap(mDisplay.getEditDisplay(), 0, 0, null);
+                    }
+                    break;
+
+                default: // mDrawingState == DRAW_SATE_drawing and others
+                    canvas.drawBitmap(mDisplay.getDisplay(true), 0, 0, null);
+
+                    if (mEditLayer != null) {
+                        mEditLayer.draw();
+                        canvas.drawBitmap(mDisplay.getEditDisplay(), 0, 0, null);
+                    }
+
+                    if (mDrawingState == DRAW_SATE_double_tap) {
+                        mDrawingState = DRAW_SATE_drawing;
+                    }
+                    break;
             }
 
-            if(mDrawingState == DRAW_SATE_double_tap)
-                mDrawingState = DRAW_SATE_drawing;
-        }
-        else{
+        } else {
             super.onDraw(canvas);
         }
     }
@@ -115,7 +182,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
         mStartDrawTime = System.currentTimeMillis();
         for(Layer layer : mLayers) {
-            if(layer.isVisible()) {
+            if (layer.isVisible() && layer.getType() != LAYERTYPE_LOCAL_EDIT_GEOJSON) {
                 mDrawThreadPool.execute(layer);
             }
         }
@@ -191,7 +258,9 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     }
 
     protected void panStart(final MotionEvent e){
-        if(mDrawingState == DRAW_SATE_zooming || mDrawingState == DRAW_SATE_panning)
+        if (mDrawingState == DRAW_SATE_zooming
+                || mDrawingState == DRAW_SATE_panning
+                || mDrawingState == DRAW_SATE_edit_drawing)
             return;
 
         if(mDrawingState == DRAW_SATE_drawing || mDrawingState == DRAW_SATE_drawing_noclearbk) {
@@ -242,7 +311,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             GeoEnvelope mapBounds = mDisplay.screenToMap(bounds);
 
             GeoPoint pt = mapBounds.getCenter();
-            GeoPoint screenPt = mDisplay.mapToScreen(new GeoPoint(mapBounds.getMinX(), mapBounds.getMinY()));
+            //GeoPoint screenPt = mDisplay.mapToScreen(new GeoPoint(mapBounds.getMinX(), mapBounds.getMinY()));
             //Log.d(TAG, "panStop. x: " + x + ", y:" + y + ", sx:" + screenPt.getX() + ", sy:" + screenPt.getY());
             //mDisplay.panStop((float) screenPt.getX(), (float) screenPt.getY());
 
@@ -268,18 +337,88 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         super.onLayerDrawFinished(percent);
     }
 
+    protected void editStart(MotionEvent event) {
+        if (mDrawingState == DRAW_SATE_edit_drawing)
+            return;
+
+        if (mEditLayer != null) {
+            Feature selectedFeature = getSelectedFeature(event, mEditLayer);
+
+            if (selectedFeature != null) {
+                mEditLayer.setEditFeature(selectedFeature);
+                mHandler.removeMessages(MSGTYPE_EDIT_DRAWING_DONE);
+                mDrawingState = DRAW_SATE_edit_drawing;
+            }
+        }
+    }
+
+    protected void editFeatureMoveTo(MotionEvent event) {
+        if (mDrawingState == DRAW_SATE_edit_drawing) {
+            GeoPoint screenPt = new GeoPoint(event.getX(), event.getY());
+            GeoPoint geoPt = mDisplay.screenToMap(screenPt);
+
+            mEditLayer.getEditFeature().setGeometry(geoPt);
+
+            invalidate();
+        }
+    }
+
+    protected void editStop(MotionEvent event) {
+        if (mDrawingState == DRAW_SATE_edit_drawing) {
+            mDrawingState = DRAW_SATE_drawing_noclearbk;
+
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
+            bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_EDIT_DRAWING_DONE);
+            bundle.putFloat(BUNDLE_DONE_KEY, 100.0f);
+            bundle.putInt(BUNDLE_DRAWSTATE_KEY, DRAW_SATE_drawing_noclearbk);
+
+            Message msg = new Message();
+            msg.setData(bundle);
+            msg.what = MSGTYPE_EDIT_DRAWING_DONE;
+            mHandler.sendMessageDelayed(msg, DISPLAY_REDRAW_TIMEOUT);
+        }
+    }
+
+    protected Feature getSelectedFeature(MotionEvent event, GeoJsonLayer layer) {
+        GeoEnvelope screenEnvelope = new GeoEnvelope(
+                event.getX() - tolerancePX, event.getX() + tolerancePX,
+                event.getY() - tolerancePX, event.getY() + tolerancePX);
+        GeoEnvelope geoEnvelope = mDisplay.screenToMap(screenEnvelope);
+
+        Feature selectedFeature = layer.getSelectedFeature(geoEnvelope);
+
+        if (selectedFeature != null) {
+            return selectedFeature;
+        }
+
+        return null;
+    }
+
     @Override
-    protected void processMessage(Bundle bundle){
-        switch (bundle.getInt(BUNDLE_TYPE_KEY)){
+    protected void processMessage(Bundle bundle) {
+        switch (bundle.getInt(BUNDLE_TYPE_KEY)) {
+            case MSGTYPE_PANNING_DONE:
+            case MSGTYPE_ZOOMING_DONE:
+                mDrawingState = bundle.getInt(BUNDLE_DRAWSTATE_KEY); // TODO: remove it
+                onExtentChanged((int) mDisplay.getZoomLevel(), mDisplay.getCenter());
+                break;
+
             case MSGTYPE_LAYER_ADDED: //the new layer was create and need to be added on map
                 File path = (File) bundle.getSerializable(BUNDLE_PATH_KEY);
                 addLayer(path);
+                saveMap();
                 break;
-            case MSGTYPE_PANNING_DONE:
-            case MSGTYPE_ZOOMING_DONE:
-                    mDrawingState = bundle.getInt(BUNDLE_DRAWSTATE_KEY);
-                    onExtentChanged((int) mDisplay.getZoomLevel(), mDisplay.getCenter());
+
+            case MSGTYPE_EDIT_LAYER_ADDED: //the new edit layer was create and need to be added on map
+                File editorPath = (File) bundle.getSerializable(BUNDLE_PATH_KEY);
+                addLayer(editorPath);
+                saveMap();
+                if (mLayers.size() >= 3) { // TODO: it is temporary
+                    mEditLayer = (LocalGeoJsonEditLayer) mLayers.get(2);
+                }
                 break;
+
             default:
                 super.processMessage(bundle);
         }
@@ -287,23 +426,33 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     // delegate the event to the gesture detector
     @Override
-    public boolean onTouchEvent(MotionEvent e) {
-        boolean retVal = mScaleGestureDetector.onTouchEvent(e);
-        //Log.d(TAG, "onTouchEvent: " + e.toString());
-        if(e.getAction() == MotionEvent.ACTION_UP){
-            panStop(e);
-            zoomStop(e);
-        }
-        else if(e.getAction() == MotionEvent.ACTION_DOWN){
-            panStart(e);
-        }
-        else if(e.getAction() == MotionEvent.ACTION_MOVE){
-            panMoveTo(e);
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean retVal = mScaleGestureDetector.onTouchEvent(event);
+        //Log.d(TAG, "onTouchEvent: " + event.toString());
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                editStart(event); // editStart() must be before panStart()
+                panStart(event);
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                panMoveTo(event);
+                editFeatureMoveTo(event);
+                break;
+
+            case MotionEvent.ACTION_UP:
+                panStop(event);
+                zoomStop(event);
+                editStop(event);
+                break;
+
+            default:
+                break;
         }
 
-        retVal = mGestureDetector.onTouchEvent(e) || retVal;
-        return retVal || super.onTouchEvent(e);
-
+        retVal = mGestureDetector.onTouchEvent(event) || retVal;
+        return retVal || super.onTouchEvent(event);
     }
 
     @Override
@@ -318,7 +467,37 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     }
 
     @Override
-    public void onLongPress(MotionEvent e) {
+    public void onLongPress(MotionEvent event) {
+
+        // TODO: skip in list of layers with LAYERTYPE_LOCAL_EDIT_GEOJSON
+
+        if (mEditLayer != null) {
+            return;
+        }
+
+        // TODO: dialog for selection layer
+        Feature selectedFeature =
+                getSelectedFeature(event, (GeoJsonLayer) mLayers.get(1));
+        // TODO: dialog with "delete", "edit", ...
+
+        if (selectedFeature != null) {
+            try {
+                List<Feature> features = new ArrayList<Feature>(1);
+                features.add(selectedFeature);
+                // TODO: what name must be for LayerEditor?
+                LocalGeoJsonEditLayer.create(this, "LayerEditor", features);
+
+                mHandler.removeMessages(MSGTYPE_EDIT_DRAWING_DONE);
+                mDrawingState = DRAW_SATE_edit_drawing;
+
+            } catch (JSONException e) {
+                // TODO: warning message
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO: warning message
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

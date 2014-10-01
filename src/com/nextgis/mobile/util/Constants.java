@@ -94,9 +94,11 @@ public interface Constants {
      * message type
      */
     public final static int MSGTYPE_LAYER_ADDED  = 300;
+    public final static int MSGTYPE_EDIT_LAYER_ADDED = 301;
     public final static int MSGTYPE_DRAWING_DONE = 500;
     public final static int MSGTYPE_PANNING_DONE = 501;
     public final static int MSGTYPE_ZOOMING_DONE = 502;
+    public final static int MSGTYPE_EDIT_DRAWING_DONE = 503;
 
     /**
      * Bundle keys
@@ -147,6 +149,7 @@ public interface Constants {
     public static final int LAYERTYPE_LOCAL_GEOJSON = 3;
     public static final int LAYERTYPE_TMS = 4;
     public static final int LAYERTYPE_NGW = 5;
+    public static final int LAYERTYPE_LOCAL_EDIT_GEOJSON = 6;
 
 
     /**
@@ -169,6 +172,7 @@ public interface Constants {
     public static final int DRAW_SATE_panning = 3;
     public static final int DRAW_SATE_zooming = 4;
     public static final int DRAW_SATE_double_tap = 5;
+    public static final int DRAW_SATE_edit_drawing = 6;
 
     /**
      * Service constants

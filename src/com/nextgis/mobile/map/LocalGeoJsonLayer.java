@@ -247,11 +247,11 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
     public static void create(final MapBase map, String layerName, List<Feature> features)
             throws JSONException, IOException {
 
-        create(map, layerName, features, LAYERTYPE_LOCAL_GEOJSON);
+        create(map, layerName, features, LAYERTYPE_LOCAL_GEOJSON, MSGTYPE_LAYER_ADDED);
     }
 
     protected static void create(
-            final MapBase map, String layerName, List<Feature> features, int layerType)
+            final MapBase map, String layerName, List<Feature> features, int layerType, int msgType)
             throws JSONException, IOException {
 
         GeoEnvelope extents = new GeoEnvelope();
@@ -298,9 +298,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         if (map.getMapEventsHandler() != null) {
             Bundle bundle = new Bundle();
             bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
-            bundle.putString(BUNDLE_MSG_KEY,
-                    map.getContext().getString(R.string.message_layer_added));
-            bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_LAYER_ADDED);
+            bundle.putInt(BUNDLE_TYPE_KEY, msgType);
             bundle.putSerializable(BUNDLE_PATH_KEY, outputPath);
 
             Message msg = new Message();

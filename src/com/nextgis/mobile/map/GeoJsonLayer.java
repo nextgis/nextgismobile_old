@@ -45,11 +45,14 @@ public abstract class GeoJsonLayer extends Layer{
     protected List<Field> mFields;
     protected int mGeometryType;
     protected GeoEnvelope mExtents;
+    protected float mPointSize = 6;
 
     public GeoJsonLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
+
         if(mGeometryType == GTPoint) {
-            SimpleMarkerStyle style = new SimpleMarkerStyle(Color.RED, Color.BLACK, 6, MarkerStyleCircle);
+            SimpleMarkerStyle style =
+                    new SimpleMarkerStyle(Color.RED, Color.BLACK, mPointSize, MarkerStyleCircle);
             style.setWidth(2);
             mRenderer = new SimpleFeatureRenderer(this, style);
         }
@@ -197,5 +200,15 @@ public abstract class GeoJsonLayer extends Layer{
     @Override
     public void changeProperties(){
 
+    }
+
+    public Feature getSelectedFeature(GeoEnvelope geoMapEnvelope) {
+        for (Feature feature : mFeatures) {
+            if (geoMapEnvelope.contains((GeoPoint) feature.getGeometry())) {
+                return feature;
+            }
+        }
+
+        return null;
     }
 }

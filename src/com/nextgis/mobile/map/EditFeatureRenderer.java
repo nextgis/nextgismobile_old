@@ -18,17 +18,16 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-package com.nextgis.mobile.util;
+package com.nextgis.mobile.map;
 
-public interface DisplayConstants {
-    /**
-     * Marker style
-     */
-    public final static int MarkerStylePoint = 1;
-    public final static int MarkerStyleCircle = 2;
-    public final static int MarkerStyleDiamond = 3;
-    public final static int MarkerStyleCross = 4;
-    public final static int MarkerStyleTriangle = 5;
-    public final static int MarkerStyleBox = 6;
-    public final static int MarkerEditStyleCircle = 7;
+import com.nextgis.mobile.display.Style;
+
+import static com.nextgis.mobile.util.Constants.*;
+
+public class EditFeatureRenderer extends SimpleFeatureRenderer {
+
+    public EditFeatureRenderer(Layer layer, Style style) {
+        super(layer, style);
+        msgtype = MSGTYPE_EDIT_DRAWING_DONE;
+    }
 }
