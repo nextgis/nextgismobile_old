@@ -23,36 +23,43 @@ package com.nextgis.mobile;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.*;
 
 import com.nextgis.mobile.map.Layer;
 import com.nextgis.mobile.map.MapBase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.nextgis.mobile.util.Constants.*;
 
 /**
  * An adapter to show layers as list
  */
-public class LayersListAdapter extends BaseAdapter {
+public class LayersListAdapter extends BaseAdapter implements Filterable {
 
     protected MapBase mMap;
 
+    private List<Layer> mLayerList;
+    private List<Layer> mFilteredLayerList;
+    private LayerFilter mLayerFilter;
+
+
     public LayersListAdapter(MapBase map) {
         mMap = map;
+        mLayerList = mFilteredLayerList = map.getLayers();
+        getFilter();
     }
 
     @Override
     public int getCount() {
-        return mMap.getLayers().size();
+        return mFilteredLayerList.size();
     }
 
     @Override
     public Object getItem(int i) {
         int nIndex = getCount() - 1 - i;
-        return mMap.getLayers().get(nIndex);
+        return mFilteredLayerList.get(nIndex);
     }
 
     @Override
@@ -123,4 +130,44 @@ public class LayersListAdapter extends BaseAdapter {
         return mMap;
     }
 
+
+    @Override
+    public Filter getFilter() {
+        if(mLayerFilter==null) {
+            mLayerFilter=new LayerFilter();
+        }
+
+        return mLayerFilter;
+    }
+
+
+    private class LayerFilter extends Filter {
+
+        //Invoked in a worker thread to filter the data according to the constraint.
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            FilterResults results = new FilterResults();
+            List<Layer> filterList = new ArrayList<Layer>();
+
+            for (Layer layer : mLayerList) {
+                if (layer.getType() != LAYERTYPE_LOCAL_EDIT_GEOJSON) {
+                    filterList.add(layer);
+                }
+            }
+
+            results.count = filterList.size();
+            results.values = filterList;
+            return results;
+        }
+
+
+        //Invoked in the UI thread to publish the filtering results in the user interface.
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void publishResults(CharSequence constraint,
+                                      FilterResults results) {
+            mFilteredLayerList = (List<Layer>) results.values;
+            notifyDataSetChanged();
+        }
+    }
 }

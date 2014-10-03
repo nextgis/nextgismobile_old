@@ -218,6 +218,7 @@ public class LayersFragment extends Fragment implements MapEventListener{
     @Override
     public void onLayerAdded(Layer layer) {
         if(mListAdapter != null){
+            mListAdapter.getFilter().filter(null);
             mListAdapter.notifyDataSetChanged();
         }
     }
@@ -225,6 +226,7 @@ public class LayersFragment extends Fragment implements MapEventListener{
     @Override
     public void onLayerDeleted(int id) {
         if(mListAdapter != null){
+            mListAdapter.getFilter().filter(null);
             mListAdapter.notifyDataSetChanged();
         }
     }
@@ -232,6 +234,7 @@ public class LayersFragment extends Fragment implements MapEventListener{
     @Override
     public void onLayerChanged(Layer layer) {
         if(mListAdapter != null){
+            mListAdapter.getFilter().filter(null);
             mListAdapter.notifyDataSetInvalidated();
         }
     }

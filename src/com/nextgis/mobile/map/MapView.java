@@ -469,8 +469,6 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     @Override
     public void onLongPress(MotionEvent event) {
 
-        // TODO: skip in list of layers with LAYERTYPE_LOCAL_EDIT_GEOJSON
-
         if (mEditLayer != null) {
             return;
         }
