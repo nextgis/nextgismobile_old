@@ -24,7 +24,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
-
 import com.nextgis.mobile.map.Layer;
 import com.nextgis.mobile.map.MapBase;
 
@@ -36,7 +35,8 @@ import static com.nextgis.mobile.util.Constants.*;
 /**
  * An adapter to show layers as list
  */
-public class LayersListAdapter extends BaseAdapter implements Filterable {
+// TODO: combine it with LayersListAdapter
+public class GeoJsonLayersListAdapter extends BaseAdapter implements Filterable {
 
     protected MapBase mMap;
 
@@ -45,7 +45,7 @@ public class LayersListAdapter extends BaseAdapter implements Filterable {
     private LayerFilter mLayerFilter;
 
 
-    public LayersListAdapter(MapBase map) {
+    public GeoJsonLayersListAdapter(MapBase map) {
         mMap = map;
         mLayerList = mFilteredLayerList = map.getLayers();
         getFilter();
@@ -58,8 +58,8 @@ public class LayersListAdapter extends BaseAdapter implements Filterable {
 
     @Override
     public Object getItem(int i) {
-        int nIndex = getCount() - 1 - i;
-        return mFilteredLayerList.get(nIndex);
+//        int nIndex = getCount() - 1 - i;
+        return mFilteredLayerList.get(i);
     }
 
     @Override
@@ -72,8 +72,7 @@ public class LayersListAdapter extends BaseAdapter implements Filterable {
     public View getView(int i, View view, ViewGroup viewGroup) {
         final Layer layer = (Layer) getItem(i);
         switch (layer.getType()){
-            case LAYERTYPE_LOCAL_TMS:
-            case LAYERTYPE_TMS:
+            case LAYERTYPE_LOCAL_GEOJSON:
             default:
                 return getStandardLayerView(layer, view);
         }
@@ -83,7 +82,7 @@ public class LayersListAdapter extends BaseAdapter implements Filterable {
         View v = view;
         if(v == null){
             LayoutInflater inflater = LayoutInflater.from(mMap.getContext());
-            v = inflater.inflate(R.layout.layer_row_layout, null);
+            v = inflater.inflate(R.layout.select_geojson_layer_row_layout, null);
         }
 
         ImageView ivIcon = (ImageView)v.findViewById(R.id.ivIcon);
@@ -92,35 +91,11 @@ public class LayersListAdapter extends BaseAdapter implements Filterable {
         TextView tvPaneName = (TextView)v.findViewById(R.id.tvLayerName);
         tvPaneName.setText(layer.getName());
 
-        //final int id = layer.getId();
-
-        ImageButton btShow = (ImageButton)v.findViewById(R.id.btShow);
-        //Log.d(TAG, "Layer #" + id + " is visible " + layer.isVisible());
-        btShow.setBackgroundResource(layer.isVisible() ? R.drawable.ic_brightness_high : R.drawable.ic_bightness_low);
-        //btShow.refreshDrawableState();
-        btShow.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View arg0) {
-                //Layer layer = mMap.getLayerById(id);
-                layer.setVisible(!layer.isVisible());
-            }
-        });
-
-        ImageButton btSettings = (ImageButton)v.findViewById(R.id.btSettings);
-        btSettings.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View arg0) {
-                //Layer layer = mMap.getLayerById(id);
-                layer.changeProperties();
-            }
-        });
-
-        ImageButton btDelete = (ImageButton)v.findViewById(R.id.btDelete);
-        btDelete.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View arg0) {
-                mMap.deleteLayerById(layer.getId());//.deleteLayerById(id);
-            }
-        });
-
         return v;
+    }
+
+    public MapBase getMap(){
+        return mMap;
     }
 
 
@@ -143,7 +118,7 @@ public class LayersListAdapter extends BaseAdapter implements Filterable {
             List<Layer> filterList = new ArrayList<Layer>();
 
             for (Layer layer : mLayerList) {
-                if (layer.getType() != LAYERTYPE_LOCAL_EDIT_GEOJSON) {
+                if (layer.getType() == LAYERTYPE_LOCAL_GEOJSON) {
                     filterList.add(layer);
                 }
             }

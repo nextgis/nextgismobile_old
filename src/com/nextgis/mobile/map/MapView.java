@@ -21,7 +21,9 @@
 package com.nextgis.mobile.map;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.net.Uri;
@@ -32,6 +34,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
+import com.nextgis.mobile.GeoJsonLayersListAdapter;
+import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.Feature;
 import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.GeoPoint;
@@ -93,13 +97,18 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     protected void onDraw(Canvas canvas) {
         //Log.d(TAG, "state: " + mDrawingState + ", current loc: " +  mCurrentMouseLocation.toString() + " current focus: " + mCurrentFocusLocation.toString() + " scale: "  + mScaleFactor);
         if (mDisplay != null) {
+            boolean isEditLayer = getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1;
+            LocalGeoJsonEditLayer editLayer = isEditLayer
+                    ? (LocalGeoJsonEditLayer) getLayers(LAYERTYPE_LOCAL_EDIT_GEOJSON).get(0)
+                    : null;
+
             switch (mDrawingState) {
 
                 case DRAW_SATE_panning:
                     canvas.drawBitmap(mDisplay.getDisplay(
                             -mCurrentMouseLocation.x, -mCurrentMouseLocation.y, true), 0, 0, null);
 
-                    if (mEditLayer != null) {
+                    if (editLayer != null) {
                         GeoEnvelope bounds = mDisplay.getScreenBounds();
                         bounds.offset(mCurrentMouseLocation.x, mCurrentMouseLocation.y);
                         GeoEnvelope mapBounds = mDisplay.screenToMap(bounds);
@@ -107,7 +116,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
                         mDisplay.setTransformMatrix(mDisplay.getZoomLevel(), pt);
 
-                        mEditLayer.draw();
+                        editLayer.draw();
                         canvas.drawBitmap(mDisplay.getEditDisplay(), 0, 0, null);
                     }
                     break;
@@ -117,7 +126,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
                             mDisplay.getDisplay(-mCurrentFocusLocation.x, -mCurrentFocusLocation.y,
                                     (float) mScaleFactor), 0, 0, null);
 
-                    if (mEditLayer != null) {
+                    if (editLayer != null) {
                         GeoPoint focusPt = new GeoPoint(
                                 -mCurrentFocusLocation.x, -mCurrentFocusLocation.y);
                         double invertScale = 1 / mScaleFactor;
@@ -133,22 +142,25 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
                         mDisplay.setTransformMatrix(getZoomForScaleFactor(mScaleFactor), geoCenter);
 
-                        mEditLayer.draw();
+                        editLayer.draw();
                         canvas.drawBitmap(mDisplay.getEditDisplay(), 0, 0, null);
                     }
                     break;
 
                 case DRAW_SATE_edit_drawing:
                     canvas.drawBitmap(mDisplay.getDisplay(false), 0, 0, null);
-                    mEditLayer.draw();
-                    canvas.drawBitmap(mDisplay.getEditDisplay(), 0, 0, null);
+
+                    if (editLayer != null) {
+                        editLayer.draw();
+                        canvas.drawBitmap(mDisplay.getEditDisplay(), 0, 0, null);
+                    }
                     break;
 
                 case DRAW_SATE_drawing_noclearbk:
                     canvas.drawBitmap(mDisplay.getDisplay(false), 0, 0, null);
 
-                    if (mEditLayer != null) {
-                        mEditLayer.draw();
+                    if (editLayer != null) {
+                        editLayer.draw();
                         canvas.drawBitmap(mDisplay.getEditDisplay(), 0, 0, null);
                     }
                     break;
@@ -156,8 +168,8 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
                 default: // mDrawingState == DRAW_SATE_drawing and others
                     canvas.drawBitmap(mDisplay.getDisplay(true), 0, 0, null);
 
-                    if (mEditLayer != null) {
-                        mEditLayer.draw();
+                    if (editLayer != null) {
+                        editLayer.draw();
                         canvas.drawBitmap(mDisplay.getEditDisplay(), 0, 0, null);
                     }
 
@@ -341,11 +353,15 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         if (mDrawingState == DRAW_SATE_edit_drawing)
             return;
 
-        if (mEditLayer != null) {
-            Feature selectedFeature = getSelectedFeature(event, mEditLayer);
+        if (getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1) {
+            LocalGeoJsonEditLayer editLayer =
+                    (LocalGeoJsonEditLayer) getLayers(LAYERTYPE_LOCAL_EDIT_GEOJSON).get(0);
+
+            Feature selectedFeature =
+                    getSelectedFeature(new GeoPoint(event.getX(), event.getY()), editLayer);
 
             if (selectedFeature != null) {
-                mEditLayer.setEditFeature(selectedFeature);
+                editLayer.setEditFeature(selectedFeature);
                 mHandler.removeMessages(MSGTYPE_EDIT_DRAWING_DONE);
                 mDrawingState = DRAW_SATE_edit_drawing;
             }
@@ -357,7 +373,9 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             GeoPoint screenPt = new GeoPoint(event.getX(), event.getY());
             GeoPoint geoPt = mDisplay.screenToMap(screenPt);
 
-            mEditLayer.getEditFeature().setGeometry(geoPt);
+            LocalGeoJsonEditLayer editLayer =
+                    (LocalGeoJsonEditLayer) getLayers(LAYERTYPE_LOCAL_EDIT_GEOJSON).get(0);
+            editLayer.getEditFeature().setGeometry(geoPt);
 
             invalidate();
         }
@@ -380,10 +398,10 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         }
     }
 
-    protected Feature getSelectedFeature(MotionEvent event, GeoJsonLayer layer) {
+    protected Feature getSelectedFeature(GeoPoint screenPoint, GeoJsonLayer layer) {
         GeoEnvelope screenEnvelope = new GeoEnvelope(
-                event.getX() - tolerancePX, event.getX() + tolerancePX,
-                event.getY() - tolerancePX, event.getY() + tolerancePX);
+                screenPoint.getX() - tolerancePX, screenPoint.getX() + tolerancePX,
+                screenPoint.getY() - tolerancePX, screenPoint.getY() + tolerancePX);
         GeoEnvelope geoEnvelope = mDisplay.screenToMap(screenEnvelope);
 
         Feature selectedFeature = layer.getSelectedFeature(geoEnvelope);
@@ -405,18 +423,10 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
                 break;
 
             case MSGTYPE_LAYER_ADDED: //the new layer was create and need to be added on map
+            case MSGTYPE_EDIT_LAYER_ADDED: //the new edit layer was create and need to be added on map
                 File path = (File) bundle.getSerializable(BUNDLE_PATH_KEY);
                 addLayer(path);
                 saveMap();
-                break;
-
-            case MSGTYPE_EDIT_LAYER_ADDED: //the new edit layer was create and need to be added on map
-                File editorPath = (File) bundle.getSerializable(BUNDLE_PATH_KEY);
-                addLayer(editorPath);
-                saveMap();
-                if (mLayers.size() >= 3) { // TODO: it is temporary
-                    mEditLayer = (LocalGeoJsonEditLayer) mLayers.get(2);
-                }
                 break;
 
             default:
@@ -466,35 +476,71 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         return false;
     }
 
-    @Override
-    public void onLongPress(MotionEvent event) {
+    public MapView getSelf() {
+        return this;
+    }
 
-        if (mEditLayer != null) {
-            return;
-        }
-
-        // TODO: dialog for selection layer
-        Feature selectedFeature =
-                getSelectedFeature(event, (GeoJsonLayer) mLayers.get(1));
+    private void createLayerEditor(GeoJsonLayer layer, GeoPoint screenPoint) {
         // TODO: dialog with "delete", "edit", ...
+        // TODO: button for "save", "cancel" edit layer
+
+        Feature selectedFeature = getSelectedFeature(screenPoint, layer);
 
         if (selectedFeature != null) {
+
             try {
                 List<Feature> features = new ArrayList<Feature>(1);
                 features.add(selectedFeature);
-                // TODO: what name must be for LayerEditor?
                 LocalGeoJsonEditLayer.create(this, "LayerEditor", features);
 
                 mHandler.removeMessages(MSGTYPE_EDIT_DRAWING_DONE);
                 mDrawingState = DRAW_SATE_edit_drawing;
 
             } catch (JSONException e) {
-                // TODO: warning message
-                e.printStackTrace();
+                reportError(e.getLocalizedMessage());
             } catch (IOException e) {
-                // TODO: warning message
-                e.printStackTrace();
+                reportError(e.getLocalizedMessage());
             }
+
+        } else {
+            reportError(getContext().getString(R.string.object_is_not_selected));
+        }
+    }
+
+    @Override
+    public void onLongPress(MotionEvent event) {
+
+        if (getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1) {
+            return;
+        }
+
+        List<Layer> geoJsonLayers = getLayers(LAYERTYPE_LOCAL_GEOJSON);
+
+        switch (geoJsonLayers.size()) {
+            case 0:
+                return;
+
+            case 1:
+                createLayerEditor((GeoJsonLayer) geoJsonLayers.get(0),
+                        new GeoPoint(event.getX(), event.getY()));
+                break;
+
+            default:
+                final GeoPoint screenGeoPoint = new GeoPoint(event.getX(), event.getY());
+                final GeoJsonLayersListAdapter listAdapter = new GeoJsonLayersListAdapter(getSelf());
+                listAdapter.getFilter().filter(null);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+                builder.setTitle(R.string.select_layer_for_edit);
+                builder.setAdapter(listAdapter, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        GeoJsonLayer layer = (GeoJsonLayer) listAdapter.getItem(which);
+                        createLayerEditor(layer, screenGeoPoint);
+                    }
+
+                });
+                builder.show();
         }
     }
 

@@ -56,7 +56,6 @@ import static com.nextgis.mobile.util.Constants.*;
 public class MapBase extends View {
     protected String mName;
     protected List<Layer> mLayers;
-    protected LocalGeoJsonEditLayer mEditLayer; // TODO: it is temporary
     protected List<MapEventListener> mListeners;
     protected GISDisplay mDisplay;
     protected File mMapPath;
@@ -81,7 +80,6 @@ public class MapBase extends View {
         mNewId = 0;
         mListeners = new ArrayList<MapEventListener>();
         mLayers = new ArrayList<Layer>();
-        mEditLayer = null; // TODO: it is temporary
 
         mCPUTotalCount = Runtime.getRuntime().availableProcessors() - 1;
         if(mCPUTotalCount < 1)
@@ -130,6 +128,30 @@ public class MapBase extends View {
      */
     public List<Layer> getLayers() {
         return mLayers;
+    }
+
+    protected List<Layer> getLayers(int layerType) {
+        List<Layer> layerList = new ArrayList<Layer>();
+
+        for (Layer layer : mLayers) {
+            if (layer.getType() == layerType) {
+                layerList.add(layer);
+            }
+        }
+
+        return layerList;
+    }
+
+    protected int getLayerCount(int layerType) {
+        int count = 0;
+
+        for (Layer layer : mLayers) {
+            if (layer.getType() == layerType) {
+                ++count;
+            }
+        }
+
+        return count;
     }
 
     @Override
@@ -334,10 +356,6 @@ public class MapBase extends View {
                     addLayer(inFile);
             }
 
-            if (mLayers.size() >= 3) { // TODO: it is temporary
-                mEditLayer = (LocalGeoJsonEditLayer) mLayers.get(2);
-            }
-
             //let's draw the map
             runDrawThread();
         } catch (IOException e){
@@ -485,7 +503,6 @@ public class MapBase extends View {
      * Remove all layers
      */
     protected void clearMap(){
-        mEditLayer = null; // TODO: it is temporary
         mLayers.clear(); //TODO: do we need onClearMap event?
     }
 
@@ -497,10 +514,6 @@ public class MapBase extends View {
      */
     public boolean deleteLayerById(int id){
         boolean bRes = false;
-
-        if (id == 2) { // TODO: it is temporary
-            mEditLayer = null;
-        }
 
         for(Layer layer : mLayers) {
             if (layer.getId() == id) {

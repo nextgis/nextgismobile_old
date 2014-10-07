@@ -151,6 +151,9 @@
     <string name="input_layer_properties">Input layer properties</string>
     <string name="change_layer_properties">Change layer properties</string>
 
+    <string name="select_layer_for_edit">Select layer for edit</string>
+    <string name="object_is_not_selected">Object is not selected</string>
+
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>
 
