@@ -27,10 +27,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v7.view.ActionMode;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.GeoPoint;
 import com.nextgis.mobile.display.GISDisplay;
@@ -356,8 +361,14 @@ public class MapBase extends View {
                     addLayer(inFile);
             }
 
+            if (getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1) {
+                MainActivity mainActivity = (MainActivity) getContext();
+                mActionMode = mainActivity.startSupportActionMode(mActionModeCallback);
+            }
+
             //let's draw the map
             runDrawThread();
+
         } catch (IOException e){
             reportError(e.getLocalizedMessage());
         } catch (JSONException e){
@@ -585,5 +596,116 @@ public class MapBase extends View {
 
     public boolean isNetworkAvaliable() {
         return newtworkUtil.isNetworkAvailible();
+    }
+
+    public MapBase getSelf() {
+        return this;
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+
+        if (!hasWindowFocus) {
+            setKeyStateActionMode(MapActionModeCallback.KEY_NONE_FOCUS);
+        } else {
+            setKeyStateActionMode(MapActionModeCallback.KEY_NONE);
+        }
+    }
+
+    public void setKeyStateActionMode(int keyState) {
+        if (mActionModeCallback != null) {
+            mActionModeCallback.setKeyState(keyState);
+        }
+    }
+
+    protected ActionMode mActionMode = null;
+
+    public boolean isActionModeActive() {
+        return mActionMode != null;
+    }
+
+    protected MapActionModeCallback mActionModeCallback = new MapActionModeCallback();
+
+    public class MapActionModeCallback implements ActionMode.Callback {
+
+        public static final int KEY_NONE = 0;
+        public static final int KEY_NONE_FOCUS = 1;
+        public static final int KEY_CANCEL = 2;
+        public static final int KEY_SAVE = 3;
+
+        private int mKeyState = KEY_NONE;
+
+        public void setKeyState(int keyState) {
+            this.mKeyState = keyState;
+        }
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.edit_layer, menu);
+            mode.setTitle(getContext().getString(R.string.select_layer_for_edit));
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+
+                case R.id.menu_save:
+                    mKeyState = KEY_SAVE;
+                    break;
+
+                case R.id.menu_cancel:
+                    mKeyState = KEY_CANCEL;
+                    break;
+
+                default:
+                    mKeyState = KEY_NONE;
+                    break;
+            }
+
+            mode.finish();
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            if (mKeyState == KEY_NONE) { // ActionMode Done is pressed
+                mKeyState = KEY_SAVE;
+            }
+
+            onMakeAction();
+
+            mActionMode = null;
+        }
+
+        public void onMakeAction() {
+            switch (mKeyState) {
+
+                case KEY_SAVE:
+                    // TODO: save edit layer
+
+                case KEY_CANCEL:
+                    if (getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1) {
+                        deleteLayerById(getLayers(LAYERTYPE_LOCAL_EDIT_GEOJSON).get(0).getId());
+                    }
+                    break;
+
+                case KEY_NONE_FOCUS:
+                case KEY_NONE:
+                    break;
+
+                default:
+                    break;
+            }
+
+            mKeyState = KEY_NONE;
+        }
     }
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:sabd="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_save"
+        android:title="@string/save_layer"
+        android:icon="@drawable/ic_action_accept"
+        android:orderInCategory="1"
+        sabd:showAsAction="always"/>
+
+    <item
+        android:id="@+id/menu_cancel"
+        android:title="@string/cancel"
+        android:icon="@drawable/ic_action_cancel"
+        android:orderInCategory="2"
+        sabd:showAsAction="always"/>
+
+</menu>

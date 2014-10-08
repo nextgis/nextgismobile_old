@@ -35,6 +35,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
 import com.nextgis.mobile.GeoJsonLayersListAdapter;
+import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.Feature;
 import com.nextgis.mobile.datasource.GeoEnvelope;
@@ -427,6 +428,12 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
                 File path = (File) bundle.getSerializable(BUNDLE_PATH_KEY);
                 addLayer(path);
                 saveMap();
+
+                if (getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1) {
+                    MainActivity mainActivity = (MainActivity) getContext();
+                    mActionMode = mainActivity.startSupportActionMode(mActionModeCallback);
+                }
+
                 break;
 
             default:
@@ -476,13 +483,8 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         return false;
     }
 
-    public MapView getSelf() {
-        return this;
-    }
-
     private void createLayerEditor(GeoJsonLayer layer, GeoPoint screenPoint) {
         // TODO: dialog with "delete", "edit", ...
-        // TODO: button for "save", "cancel" edit layer
 
         Feature selectedFeature = getSelectedFeature(screenPoint, layer);
 
@@ -510,7 +512,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     @Override
     public void onLongPress(MotionEvent event) {
 
-        if (getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1) {
+        if (mActionMode != null) {
             return;
         }
 
@@ -667,6 +669,3 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         super.onLayerDeleted(id);
     }
 }
-
-
-

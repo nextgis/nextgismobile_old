@@ -35,10 +35,12 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.nextgis.mobile.map.MapBase;
 import com.nextgis.mobile.map.MapView;
 import com.nextgis.mobile.services.TrackerService;
 import com.nextgis.mobile.services.TrackerService.TSBinder;
@@ -502,4 +504,16 @@ public class MainActivity extends ActionBarActivity {
 	public void setMap(MapView map) {
 		this.mMap = map;
 	}
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (mMap.isActionModeActive()
+                && event.getKeyCode() == KeyEvent.KEYCODE_BACK
+                && event.getAction() == KeyEvent.ACTION_UP) {
+
+            mMap.setKeyStateActionMode(MapBase.MapActionModeCallback.KEY_CANCEL);
+        }
+
+        return super.dispatchKeyEvent(event);
+    }
 }
