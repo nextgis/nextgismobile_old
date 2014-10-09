@@ -52,10 +52,6 @@ import static com.nextgis.mobile.util.GeoConstants.*;
 
 public class MapView extends MapBase implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener,  ScaleGestureDetector.OnScaleGestureListener  {
 
-    public static final int toleranceDP = 20;
-    public final float tolerancePX =
-            getContext().getResources().getDisplayMetrics().density * toleranceDP;
-
     protected final GestureDetector mGestureDetector;
     protected final ScaleGestureDetector mScaleGestureDetector;
     protected PointF mStartMouseLocation;
@@ -399,21 +395,6 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         }
     }
 
-    protected Feature getSelectedFeature(GeoPoint screenPoint, GeoJsonLayer layer) {
-        GeoEnvelope screenEnvelope = new GeoEnvelope(
-                screenPoint.getX() - tolerancePX, screenPoint.getX() + tolerancePX,
-                screenPoint.getY() - tolerancePX, screenPoint.getY() + tolerancePX);
-        GeoEnvelope geoEnvelope = mDisplay.screenToMap(screenEnvelope);
-
-        Feature selectedFeature = layer.getSelectedFeature(geoEnvelope);
-
-        if (selectedFeature != null) {
-            return selectedFeature;
-        }
-
-        return null;
-    }
-
     @Override
     protected void processMessage(Bundle bundle) {
         switch (bundle.getInt(BUNDLE_TYPE_KEY)) {
@@ -493,7 +474,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             try {
                 List<Feature> features = new ArrayList<Feature>(1);
                 features.add(selectedFeature);
-                LocalGeoJsonEditLayer.create(this, "LayerEditor", features);
+                LocalGeoJsonEditLayer.create(this, layer.getName(), features);
 
                 mHandler.removeMessages(MSGTYPE_EDIT_DRAWING_DONE);
                 mDrawingState = DRAW_SATE_edit_drawing;

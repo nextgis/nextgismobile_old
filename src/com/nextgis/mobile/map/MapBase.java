@@ -37,6 +37,8 @@ import android.widget.Toast;
 
 import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
+import com.nextgis.mobile.datasource.Feature;
+import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.GeoPoint;
 import com.nextgis.mobile.display.GISDisplay;
 import com.nextgis.mobile.util.FileUtil;
@@ -59,6 +61,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import static com.nextgis.mobile.util.Constants.*;
 
 public class MapBase extends View {
+
+    public static final int toleranceDP = 20;
+    public final float tolerancePX =
+            getContext().getResources().getDisplayMetrics().density * toleranceDP;
+
     protected String mName;
     protected List<Layer> mLayers;
     protected List<MapEventListener> mListeners;
@@ -553,6 +560,14 @@ public class MapBase extends View {
         return null;
     }
 
+    public Layer getLayerByName(String name) {
+        for (Layer layer : mLayers) {
+            if (layer.getName().equals(name))
+                return layer;
+        }
+        return null;
+    }
+
     /**
      *  Create new folder in map directory to store layer data
      */
@@ -600,6 +615,38 @@ public class MapBase extends View {
 
     public MapBase getSelf() {
         return this;
+    }
+
+    protected Feature getSelectedFeature(GeoPoint screenPoint, GeoJsonLayer layer) {
+        GeoEnvelope screenEnvelope = new GeoEnvelope(
+                screenPoint.getX() - tolerancePX, screenPoint.getX() + tolerancePX,
+                screenPoint.getY() - tolerancePX, screenPoint.getY() + tolerancePX);
+        GeoEnvelope geoEnvelope = mDisplay.screenToMap(screenEnvelope);
+
+        Feature selectedFeature = layer.getSelectedFeature(geoEnvelope);
+
+        if (selectedFeature != null) {
+            return selectedFeature;
+        }
+
+        return null;
+    }
+
+    protected void saveEditableLayer() {
+        if (getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1) {
+            LocalGeoJsonEditLayer editLayer =
+                    (LocalGeoJsonEditLayer) getLayers(LAYERTYPE_LOCAL_EDIT_GEOJSON).get(0);
+            Feature editFeature = editLayer.getEditFeature();
+
+            GeoJsonLayer editableLayer =
+                    (GeoJsonLayer) getLayerByName(editLayer.getEditableLayerName());
+            Feature editableFeature = editableLayer.getFeatureById(editFeature.getID());
+
+            if (editableFeature != null) {
+                editableFeature.setGeometry(editFeature.getGeometry());
+                editableLayer.save();
+            }
+        }
     }
 
     @Override
@@ -689,7 +736,9 @@ public class MapBase extends View {
             switch (mKeyState) {
 
                 case KEY_SAVE:
-                    // TODO: save edit layer
+                    saveEditableLayer();
+                    Toast.makeText(getContext(), getContext().getString(R.string.layer_is_saved),
+                            Toast.LENGTH_LONG).show();
 
                 case KEY_CANCEL:
                     if (getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1) {

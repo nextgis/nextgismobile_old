@@ -33,6 +33,8 @@ import static com.nextgis.mobile.util.GeoConstants.*;
 import static com.nextgis.mobile.util.Constants.*;
 
 public class Feature implements JSONStore {
+
+    protected int mID = -1;
     protected GeoGeometry mGeometry;
     protected List<Object> mFieldData;
     protected List<Field> mFields;
@@ -40,6 +42,18 @@ public class Feature implements JSONStore {
     public Feature(List<Field> fields) {
         mFields = fields;
         mFieldData = new ArrayList<Object>(mFields.size());
+    }
+
+    public int getID() {
+        if (mID == -1) {
+            Object field = getField(GEOJSON_ID);
+
+            if (field != null) {
+                mID = (Integer) field;
+            }
+        }
+
+        return mID;
     }
 
     public void setGeometry(GeoGeometry geometry){
@@ -66,6 +80,18 @@ public class Feature implements JSONStore {
     public boolean setField(String fieldName, Object value){
         int index = getFieldIndex(fieldName);
         return setField(index, value);
+    }
+
+    public Object getField(int index) {
+        if (index < 0 || index >= mFields.size() || index >= mFieldData.size())
+            return null;
+
+        return mFieldData.get(index);
+    }
+
+    public Object getField(String fieldName){
+        int index = getFieldIndex(fieldName);
+        return getField(index);
     }
 
     public int getFieldIndex(String fieldName){

@@ -37,7 +37,7 @@ import static com.nextgis.mobile.util.GeoConstants.GTPoint;
 
 public class LocalGeoJsonEditLayer extends LocalGeoJsonLayer {
 
-    protected Feature editFeature;
+    protected Feature mEditFeature;
 
     public LocalGeoJsonEditLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
@@ -47,6 +47,10 @@ public class LocalGeoJsonEditLayer extends LocalGeoJsonLayer {
                     new EditMarkerStyle(Color.BLUE, Color.BLACK, mPointSize, MarkerEditStyleCircle);
             style.setWidth(2);
             mRenderer = new EditFeatureRenderer(this, style);
+
+            if (mFeatures.size() > 0) { // TODO: it is hack
+                mEditFeature = mFeatures.get(0);
+            }
         }
     }
 
@@ -55,20 +59,24 @@ public class LocalGeoJsonEditLayer extends LocalGeoJsonLayer {
         return LAYERTYPE_LOCAL_EDIT_GEOJSON;
     }
 
+    public String getEditableLayerName() {
+        return mName.substring(5);
+    }
+
     /**
      * Create a LocalGeoJsonLayerEditor from the GeoJson data submitted by features.
      */
-    public static void create(final MapBase map, String layerName, List<Feature> features)
+    public static void create(final MapBase map, String editLayerName, List<Feature> features)
             throws JSONException, IOException {
 
-        create(map, layerName, features, LAYERTYPE_LOCAL_EDIT_GEOJSON, MSGTYPE_EDIT_LAYER_ADDED);
+        create(map, "edit_" + editLayerName, features, LAYERTYPE_LOCAL_EDIT_GEOJSON, MSGTYPE_EDIT_LAYER_ADDED);
     }
 
     public Feature getEditFeature() {
-        return editFeature;
+        return mEditFeature;
     }
 
     public void setEditFeature(Feature editFeature) {
-        this.editFeature = editFeature;
+        this.mEditFeature = editFeature;
     }
 }

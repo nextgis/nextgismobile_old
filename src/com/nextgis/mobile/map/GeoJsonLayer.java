@@ -175,8 +175,8 @@ public abstract class GeoJsonLayer extends Layer{
         return rootObject;
     }
 
-    public List<Feature> getFeatures(GeoEnvelope bounds){
-        if(mFeatures.isEmpty()) {
+    public List<Feature> getFeatures() {
+        if (mFeatures.isEmpty()) {
             try {
                 loadFeatures();
             } catch (IOException e) {
@@ -188,6 +188,12 @@ public abstract class GeoJsonLayer extends Layer{
             }
         }
 
+        return mFeatures;
+    }
+
+    public List<Feature> getFeatures(GeoEnvelope bounds){
+        getFeatures();
+
         List<Feature> out = new ArrayList<Feature>();
         //get features
         for(Feature feature : mFeatures){
@@ -197,12 +203,21 @@ public abstract class GeoJsonLayer extends Layer{
         return out;
     }
 
-    @Override
-    public void changeProperties(){
+    public Feature getFeatureById(int id) {
+        getFeatures();
 
+        for (Feature feature: mFeatures) {
+            if (feature.getID() == id) {
+                return feature;
+            }
+        }
+
+        return null;
     }
 
     public Feature getSelectedFeature(GeoEnvelope geoMapEnvelope) {
+        getFeatures();
+
         for (Feature feature : mFeatures) {
             if (geoMapEnvelope.contains((GeoPoint) feature.getGeometry())) {
                 return feature;
@@ -210,5 +225,10 @@ public abstract class GeoJsonLayer extends Layer{
         }
 
         return null;
+    }
+
+    @Override
+    public void changeProperties(){
+
     }
 }
