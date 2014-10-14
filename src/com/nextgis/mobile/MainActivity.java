@@ -40,8 +40,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.nextgis.mobile.map.MapBase;
 import com.nextgis.mobile.map.MapView;
+import com.nextgis.mobile.map.MapViewEditable;
 import com.nextgis.mobile.services.TrackerService;
 import com.nextgis.mobile.services.TrackerService.TSBinder;
 import com.nextgis.mobile.util.Constants;
@@ -52,7 +52,7 @@ public class MainActivity extends ActionBarActivity {
 	
 	protected TrackerService mTrackerService;
 	protected Handler mTrackAddPointHandler;
-    protected MapView mMap;
+    protected MapViewEditable mMap;
     protected MapFragment mMapFragment;
 	protected boolean mbGpxRecord;
 	protected LayersFragment mLayersFragment;
@@ -61,7 +61,7 @@ public class MainActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        mMap = new MapView(this);
+        mMap = new MapViewEditable(this);
         //mMap.initMap(nTileSize, nZoom, nScrollX, nScrollY);
         //mMap.showInfoPane(bInfoOn);
         //mMap.showCompass(bCompassOn);
@@ -501,7 +501,7 @@ public class MainActivity extends ActionBarActivity {
 		return mMap;
 	}
 
-	public void setMap(MapView map) {
+	public void setMap(MapViewEditable map) {
 		this.mMap = map;
 	}
 
@@ -511,7 +511,7 @@ public class MainActivity extends ActionBarActivity {
                 && event.getKeyCode() == KeyEvent.KEYCODE_BACK
                 && event.getAction() == KeyEvent.ACTION_UP) {
 
-            mMap.setKeyStateActionMode(MapBase.MapActionModeCallback.KEY_CANCEL);
+            mMap.setKeyStateActionMode(MapViewEditable.MapActionModeCallback.KEY_CANCEL);
         }
 
         return super.dispatchKeyEvent(event);

@@ -27,18 +27,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.support.v7.view.ActionMode;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
-import com.nextgis.mobile.datasource.Feature;
-import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.GeoPoint;
 import com.nextgis.mobile.display.GISDisplay;
 import com.nextgis.mobile.util.FileUtil;
@@ -61,10 +54,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import static com.nextgis.mobile.util.Constants.*;
 
 public class MapBase extends View {
-
-    public static final int toleranceDP = 20;
-    public final float tolerancePX =
-            getContext().getResources().getDisplayMetrics().density * toleranceDP;
 
     protected String mName;
     protected List<Layer> mLayers;
@@ -142,7 +131,7 @@ public class MapBase extends View {
         return mLayers;
     }
 
-    protected List<Layer> getLayers(int layerType) {
+    protected List<Layer> getLayersByType(int layerType) {
         List<Layer> layerList = new ArrayList<Layer>();
 
         for (Layer layer : mLayers) {
@@ -154,7 +143,7 @@ public class MapBase extends View {
         return layerList;
     }
 
-    protected int getLayerCount(int layerType) {
+    protected int getLayersCountByType(int layerType) {
         int count = 0;
 
         for (Layer layer : mLayers) {
@@ -263,10 +252,6 @@ public class MapBase extends View {
                 onLayerDrawFinished(bundle.getFloat(BUNDLE_DONE_KEY));
                 break;
 
-            case MSGTYPE_EDIT_DRAWING_DONE:
-                onEditLayerDrawFinished(bundle.getFloat(BUNDLE_DONE_KEY));
-                break;
-
             default:
                 break;
         }
@@ -290,9 +275,6 @@ public class MapBase extends View {
                     break;
                 case LAYERTYPE_LOCAL_GEOJSON:
                     layer = new LocalGeoJsonLayer(this, path, rootObject);
-                    break;
-                case LAYERTYPE_LOCAL_EDIT_GEOJSON:
-                    layer = new LocalGeoJsonEditLayer(this, path, rootObject);
                     break;
                 case LAYERTYPE_LOCAL_RASTER:
                     break;
@@ -366,11 +348,6 @@ public class MapBase extends View {
                 File inFile = new File(mMapPath, sPath);
                 if(inFile.exists())
                     addLayer(inFile);
-            }
-
-            if (getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1) {
-                MainActivity mainActivity = (MainActivity) getContext();
-                mActionMode = mainActivity.startSupportActionMode(mActionModeCallback);
             }
 
             //let's draw the map
@@ -593,12 +570,6 @@ public class MapBase extends View {
         }
     }
 
-    protected void onEditLayerDrawFinished(float percent) {
-        if (percent >= 100) {
-            invalidate();
-        }
-    }
-
     public final GISDisplay getGISDisplay(){
         return mDisplay;
     }
@@ -615,146 +586,5 @@ public class MapBase extends View {
 
     public MapBase getSelf() {
         return this;
-    }
-
-    protected Feature getSelectedFeature(GeoPoint screenPoint, GeoJsonLayer layer) {
-        GeoEnvelope screenEnvelope = new GeoEnvelope(
-                screenPoint.getX() - tolerancePX, screenPoint.getX() + tolerancePX,
-                screenPoint.getY() - tolerancePX, screenPoint.getY() + tolerancePX);
-        GeoEnvelope geoEnvelope = mDisplay.screenToMap(screenEnvelope);
-
-        Feature selectedFeature = layer.getSelectedFeature(geoEnvelope);
-
-        if (selectedFeature != null) {
-            return selectedFeature;
-        }
-
-        return null;
-    }
-
-    protected void saveEditableLayer() {
-        if (getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1) {
-            LocalGeoJsonEditLayer editLayer =
-                    (LocalGeoJsonEditLayer) getLayers(LAYERTYPE_LOCAL_EDIT_GEOJSON).get(0);
-            Feature editFeature = editLayer.getEditFeature();
-
-            GeoJsonLayer editableLayer =
-                    (GeoJsonLayer) getLayerByName(editLayer.getEditableLayerName());
-            Feature editableFeature = editableLayer.getFeatureById(editFeature.getID());
-
-            if (editableFeature != null) {
-                editableFeature.setGeometry(editFeature.getGeometry());
-                editableLayer.save();
-            }
-        }
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasWindowFocus) {
-        super.onWindowFocusChanged(hasWindowFocus);
-
-        if (!hasWindowFocus) {
-            setKeyStateActionMode(MapActionModeCallback.KEY_NONE_FOCUS);
-        } else {
-            setKeyStateActionMode(MapActionModeCallback.KEY_NONE);
-        }
-    }
-
-    public void setKeyStateActionMode(int keyState) {
-        if (mActionModeCallback != null) {
-            mActionModeCallback.setKeyState(keyState);
-        }
-    }
-
-    protected ActionMode mActionMode = null;
-
-    public boolean isActionModeActive() {
-        return mActionMode != null;
-    }
-
-    protected MapActionModeCallback mActionModeCallback = new MapActionModeCallback();
-
-    public class MapActionModeCallback implements ActionMode.Callback {
-
-        public static final int KEY_NONE = 0;
-        public static final int KEY_NONE_FOCUS = 1;
-        public static final int KEY_CANCEL = 2;
-        public static final int KEY_SAVE = 3;
-
-        private int mKeyState = KEY_NONE;
-
-        public void setKeyState(int keyState) {
-            this.mKeyState = keyState;
-        }
-
-        @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.edit_layer, menu);
-            mode.setTitle(getContext().getString(R.string.select_layer_for_edit));
-            return true;
-        }
-
-        @Override
-        public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
-            return false;
-        }
-
-        @Override
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            switch (item.getItemId()) {
-
-                case R.id.menu_save:
-                    mKeyState = KEY_SAVE;
-                    break;
-
-                case R.id.menu_cancel:
-                    mKeyState = KEY_CANCEL;
-                    break;
-
-                default:
-                    mKeyState = KEY_NONE;
-                    break;
-            }
-
-            mode.finish();
-            return true;
-        }
-
-        @Override
-        public void onDestroyActionMode(ActionMode mode) {
-            if (mKeyState == KEY_NONE) { // ActionMode Done is pressed
-                mKeyState = KEY_SAVE;
-            }
-
-            onMakeAction();
-
-            mActionMode = null;
-        }
-
-        public void onMakeAction() {
-            switch (mKeyState) {
-
-                case KEY_SAVE:
-                    saveEditableLayer();
-                    Toast.makeText(getContext(), getContext().getString(R.string.layer_is_saved),
-                            Toast.LENGTH_LONG).show();
-
-                case KEY_CANCEL:
-                    if (getLayerCount(LAYERTYPE_LOCAL_EDIT_GEOJSON) == 1) {
-                        deleteLayerById(getLayers(LAYERTYPE_LOCAL_EDIT_GEOJSON).get(0).getId());
-                    }
-                    break;
-
-                case KEY_NONE_FOCUS:
-                case KEY_NONE:
-                    break;
-
-                default:
-                    break;
-            }
-
-            mKeyState = KEY_NONE;
-        }
     }
 }
