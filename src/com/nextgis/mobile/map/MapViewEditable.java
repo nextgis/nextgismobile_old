@@ -115,9 +115,8 @@ public class MapViewEditable extends MapView {
                 addLayer(path);
                 saveMap();
 
-                if (mEditLayer != null) {
-                    MainActivity mainActivity = (MainActivity) getContext();
-                    mActionMode = mainActivity.startSupportActionMode(mActionModeCallback);
+                if (isEditModeActive()) {
+                    switchEditMode();
                 }
 
                 break;
@@ -213,9 +212,8 @@ public class MapViewEditable extends MapView {
             if (retVal && mEditLayer != null
                     && mEditLayer.getEditableLayerName().equals(delLayerName)) {
 
-                if (mActionMode != null) {
-                    mActionMode.finish();
-                    mActionMode = null;
+                if (isEditModeActive()) {
+                    onCancelEditLayer();
                 }
 
                 return true;
@@ -232,9 +230,8 @@ public class MapViewEditable extends MapView {
     protected synchronized void loadMap() {
         super.loadMap();
 
-        if (mEditLayer != null) {
-            MainActivity mainActivity = (MainActivity) getContext();
-            mActionMode = mainActivity.startSupportActionMode(mActionModeCallback);
+        if (isEditModeActive()) {
+            switchEditMode();
         }
     }
 
@@ -356,7 +353,7 @@ public class MapViewEditable extends MapView {
     @Override
     public void onLongPress(MotionEvent event) {
 
-        if (mActionMode != null) {
+        if (isEditModeActive()) {
             return;
         }
 
@@ -433,108 +430,22 @@ public class MapViewEditable extends MapView {
         return null;
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasWindowFocus) {
-        super.onWindowFocusChanged(hasWindowFocus);
-
-        if (!hasWindowFocus) {
-            setKeyStateActionMode(MapActionModeCallback.KEY_NONE_FOCUS);
-        } else {
-            setKeyStateActionMode(MapActionModeCallback.KEY_NONE);
-        }
+    public boolean isEditModeActive() {
+        return mEditLayer != null;
     }
 
-    protected ActionMode mActionMode = null;
-
-    public boolean isActionModeActive() {
-        return mActionMode != null;
+    public void onSaveEditLayer() {
+        saveEditableLayer();
+        deleteEditLayer();
+        switchEditMode();
     }
 
-    protected MapActionModeCallback mActionModeCallback = new MapActionModeCallback();
-
-    public void setKeyStateActionMode(int keyState) {
-        if (mActionModeCallback != null) {
-            mActionModeCallback.setKeyState(keyState);
-        }
+    public void onCancelEditLayer() {
+        deleteEditLayer();
+        switchEditMode();
     }
 
-    public class MapActionModeCallback implements ActionMode.Callback {
-
-        public static final int KEY_NONE = 0;
-        public static final int KEY_NONE_FOCUS = 1;
-        public static final int KEY_CANCEL = 2;
-        public static final int KEY_SAVE = 3;
-
-        private int mKeyState = KEY_NONE;
-
-        public void setKeyState(int keyState) {
-            this.mKeyState = keyState;
-        }
-
-        @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.edit_layer, menu);
-            mode.setTitle(getContext().getString(R.string.select_layer_for_edit));
-            return true;
-        }
-
-        @Override
-        public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
-            return false;
-        }
-
-        @Override
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            switch (item.getItemId()) {
-
-                case R.id.menu_save:
-                    mKeyState = KEY_SAVE;
-                    break;
-
-                case R.id.menu_cancel:
-                    mKeyState = KEY_CANCEL;
-                    break;
-
-                default:
-                    mKeyState = KEY_NONE;
-                    break;
-            }
-
-            mode.finish();
-            return true;
-        }
-
-        @Override
-        public void onDestroyActionMode(ActionMode mode) {
-            if (mKeyState == KEY_NONE) { // ActionMode Done is pressed
-                mKeyState = KEY_SAVE;
-            }
-
-            onMakeAction();
-
-            mActionMode = null;
-        }
-
-        public void onMakeAction() {
-            switch (mKeyState) {
-
-                case KEY_SAVE:
-                    saveEditableLayer();
-
-                case KEY_CANCEL:
-                    deleteEditLayer();
-                    break;
-
-                case KEY_NONE_FOCUS:
-                case KEY_NONE:
-                    break;
-
-                default:
-                    break;
-            }
-
-            mKeyState = KEY_NONE;
-        }
+    public void switchEditMode() {
+        ((MainActivity) getContext()).supportInvalidateOptionsMenu();
     }
 }

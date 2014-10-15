@@ -158,6 +158,15 @@ public class MainActivity extends ActionBarActivity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		if(!mLayersFragment.isDrawerOpen()){
 			getMenuInflater().inflate(R.menu.main, menu);
+
+            if (mMap != null) {
+                menu.setGroupVisible(R.id.group_menu_main, !mMap.isEditModeActive());
+                menu.setGroupVisible(R.id.group_menu_edit_layer, mMap.isEditModeActive());
+            } else {
+                menu.setGroupVisible(R.id.group_menu_main, true);
+                menu.setGroupVisible(R.id.group_menu_edit_layer, false);
+            }
+
 			restoreActionBar();
 		}
 
@@ -197,6 +206,12 @@ public class MainActivity extends ActionBarActivity {
             return true;
         case R.id.menu_add_json:
             onAdd(DS_TYPE_LOCAL_GEOJSON);
+            return true;
+        case R.id.menu_save:
+            mMap.onSaveEditLayer();
+            return true;
+        case R.id.menu_cancel:
+            mMap.onCancelEditLayer();
             return true;
         }
 
@@ -507,11 +522,12 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (mMap.isActionModeActive()
+        if (mMap.isEditModeActive()
                 && event.getKeyCode() == KeyEvent.KEYCODE_BACK
                 && event.getAction() == KeyEvent.ACTION_UP) {
 
-            mMap.setKeyStateActionMode(MapViewEditable.MapActionModeCallback.KEY_CANCEL);
+            mMap.onCancelEditLayer();
+            return true;
         }
 
         return super.dispatchKeyEvent(event);
