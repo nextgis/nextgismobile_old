@@ -172,6 +172,8 @@ public class MapFragment extends Fragment implements MapEventListener {
         }
 
         mInfoPane = inflater.inflate(R.layout.infopane, null, true);
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mIsInfoPaneShow = prefs.getBoolean(Constants.PREFS_SHOW_INFO, false);
 
         mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
         mChangeLocationListener = new ChangeLocationListener();
@@ -351,6 +353,10 @@ public class MapFragment extends Fragment implements MapEventListener {
 
     public void switchInfoPane() {
         showInfoPane(!mIsInfoPaneShow);
+    }
+
+    public boolean isInfoPaneShow() {
+        return mIsInfoPaneShow;
     }
 
     @Override

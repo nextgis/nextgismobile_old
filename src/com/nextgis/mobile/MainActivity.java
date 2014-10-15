@@ -56,8 +56,9 @@ public class MainActivity extends ActionBarActivity {
     protected MapFragment mMapFragment;
 	protected boolean mbGpxRecord;
 	protected LayersFragment mLayersFragment;
-	
-	@Override
+    protected boolean warInfoPaneShowBeforeEditMode;
+
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -79,7 +80,8 @@ public class MainActivity extends ActionBarActivity {
 		int nZoom = prefs.getInt(Constants.PREFS_ZOOM_LEVEL, 1);
 		int nScrollX = prefs.getInt(Constants.PREFS_SCROLL_X, 0);
 		int nScrollY = prefs.getInt(Constants.PREFS_SCROLL_Y, 0);
-		
+        warInfoPaneShowBeforeEditMode = prefs.getBoolean(Constants.PREFS_WAR_SHOW_INFO, false);
+
 		ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
@@ -101,7 +103,7 @@ public class MainActivity extends ActionBarActivity {
         layersFragment.setUp(R.id.layers, (DrawerLayout) findViewById(R.id.drawer_layout));
 /*		
 		showLayersList(m_bShowLayersList);
-*/		
+*/
 	}
 	
 	@Override
@@ -153,7 +155,7 @@ public class MainActivity extends ActionBarActivity {
         super.onStop();
     }
 	
-	@Override
+    @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		if(!mLayersFragment.isDrawerOpen()){
@@ -162,6 +164,26 @@ public class MainActivity extends ActionBarActivity {
             if (mMap != null) {
                 menu.setGroupVisible(R.id.group_menu_main, !mMap.isEditModeActive());
                 menu.setGroupVisible(R.id.group_menu_edit_layer, mMap.isEditModeActive());
+
+                boolean isForHide = mMap.isEditModeActive() && mMapFragment.isInfoPaneShow();
+                boolean isForShow = !mMap.isEditModeActive() && !mMapFragment.isInfoPaneShow()
+                        && warInfoPaneShowBeforeEditMode;
+
+                if (isForHide) {
+                    warInfoPaneShowBeforeEditMode = true;
+                } else if (isForShow) {
+                    warInfoPaneShowBeforeEditMode = false;
+                }
+
+                if (isForHide || isForShow) {
+                    mMapFragment.switchInfoPane();
+
+                    SharedPreferences.Editor edit =
+                            PreferenceManager.getDefaultSharedPreferences(this).edit();
+                    edit.putBoolean(Constants.PREFS_WAR_SHOW_INFO, warInfoPaneShowBeforeEditMode);
+                    edit.commit();
+                }
+
             } else {
                 menu.setGroupVisible(R.id.group_menu_main, true);
                 menu.setGroupVisible(R.id.group_menu_edit_layer, false);
