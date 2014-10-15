@@ -274,7 +274,7 @@ public class MapViewEditable extends MapView {
         }
     }
 
-    protected void editStop(MotionEvent event) {
+    protected void editStop() {
         if (mDrawingState == DRAW_SATE_edit_drawing) {
             mDrawingState = DRAW_SATE_drawing_noclearbk;
 
@@ -294,25 +294,37 @@ public class MapViewEditable extends MapView {
     // delegate the event to the gesture detector
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        mScaleGestureDetector.onTouchEvent(event);
 
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                editStart(event); // editStart() must run before panStart()
-                break;
+        if (!mGestureDetector.onTouchEvent(event)) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    break;
 
-            case MotionEvent.ACTION_MOVE:
-                editFeatureMoveTo(event);
-                break;
+                case MotionEvent.ACTION_MOVE:
+                    break;
 
-            case MotionEvent.ACTION_UP:
-                editStop(event);
-                break;
+                case MotionEvent.ACTION_UP:
+                    editStop();
+                    panStop();
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
+            }
         }
 
-        return super.onTouchEvent(event); // super.onTouchEvent(event) must run last
+        return true;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent event1, MotionEvent event2, float distanceX, float distanceY) {
+//        Log.d(TAG, "onScroll: " + event1.toString() + ", " + event2.toString() + ", "
+//                + distanceX + ", " + distanceY);
+
+        editStart(event1); // editStart() must run before panStart()
+        editFeatureMoveTo(event2);
+        return super.onScroll(event1, event2, distanceX, distanceY); // must run last
     }
 
     @Override

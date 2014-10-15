@@ -170,7 +170,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         return zoom;
     }
 
-    protected void zoomStop(MotionEvent e){
+    protected void zoomStop(){
         if(mDrawingState == DRAW_SATE_zooming ) {
             mDrawingState = DRAW_SATE_drawing_noclearbk;
 
@@ -243,7 +243,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         }
     }
 
-    protected void panStop(final MotionEvent e){
+    protected void panStop(){
         if(mDrawingState == DRAW_SATE_panning ) {
 
             mDrawingState = DRAW_SATE_drawing_noclearbk;
@@ -306,29 +306,26 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     // delegate the event to the gesture detector
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        boolean retVal = mScaleGestureDetector.onTouchEvent(event);
-        //Log.d(TAG, "onTouchEvent: " + event.toString());
+        mScaleGestureDetector.onTouchEvent(event);
 
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                panStart(event); // editStart() must run before panStart()
-                break;
+        if (!mGestureDetector.onTouchEvent(event)) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    break;
 
-            case MotionEvent.ACTION_MOVE:
-                panMoveTo(event);
-                break;
+                case MotionEvent.ACTION_MOVE:
+                    break;
 
-            case MotionEvent.ACTION_UP:
-                panStop(event);
-                zoomStop(event);
-                break;
+                case MotionEvent.ACTION_UP:
+                    panStop();
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
+            }
         }
 
-        retVal = mGestureDetector.onTouchEvent(event) || retVal;
-        return retVal || super.onTouchEvent(event);
+        return true;
     }
 
     @Override
@@ -348,8 +345,12 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     }
 
     @Override
-    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-//        Log.d(TAG, "onScroll: " + e1.toString() + ", " + e2.toString() + ", " + distanceX + ", " + distanceY);
+    public boolean onScroll(MotionEvent event1, MotionEvent event2, float distanceX, float distanceY) {
+//        Log.d(TAG, "onScroll: " + event1.toString() + ", " + event2.toString() + ", "
+//                + distanceX + ", " + distanceY);
+
+        panStart(event1);
+        panMoveTo(event2);
         return true;
     }
 
@@ -373,7 +374,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
             setZoomAndCenter((float)Math.ceil(getZoomLevel() + 0.5), pt);
             return true;
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -419,7 +420,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
     @Override
     public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
         zoom(scaleGestureDetector);
-        return false;
+        return true;
     }
 
     @Override
@@ -430,7 +431,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     public void onScaleEnd(ScaleGestureDetector scaleGestureDetector) {
-        //zoomStop(scaleGestureDetector);
+        zoomStop();
     }
 
     public static double lg(double x) {
