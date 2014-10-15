@@ -360,7 +360,7 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
-        Log.d(TAG, "onSingleTapUp: " + e.toString());
+//        Log.d(TAG, "onSingleTapUp: " + e.toString());
         return false;
     }
 

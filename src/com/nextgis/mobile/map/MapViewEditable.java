@@ -168,16 +168,31 @@ public class MapViewEditable extends MapView {
 
     protected void saveEditableLayer() {
         if (mEditLayer != null) {
-            Feature editFeature = mEditLayer.getEditFeature();
 
             GeoJsonLayer editableLayer =
                     (GeoJsonLayer) getLayerByName(mEditLayer.getEditableLayerName());
-            Feature editableFeature = editableLayer.getFeatureById(editFeature.getID());
 
-            if (editableFeature != null) {
-                editableFeature.setGeometry(editFeature.getGeometry());
-                editableLayer.save();
+            if (editableLayer != null) {
+                Feature editFeature = mEditLayer.getEditFeature();
+                Feature editableFeature = editableLayer.getFeatureById(editFeature.getID());
+
+                if (editableFeature != null) {
+                    editableFeature.setGeometry(editFeature.getGeometry());
+                    editableLayer.save();
+
+                    Toast.makeText(getContext(), getContext().getString(R.string.layer_is_saved),
+                            Toast.LENGTH_LONG).show();
+                }
             }
+        }
+    }
+
+    protected void deleteEditLayer() {
+        if (mEditLayer != null) {
+            int id = mEditLayer.getId();
+            mEditLayer.delete();
+            mEditLayer = null;
+            onLayerDeleted(id);
         }
     }
 
@@ -189,14 +204,25 @@ public class MapViewEditable extends MapView {
      */
     public boolean deleteLayerById(int id) {
 
-        if (mEditLayer.getId() == id) {
-            mEditLayer.delete();
-            mEditLayer = null;
-            onLayerDeleted(id);
-            return true;
+        Layer layer = getLayerById(id);
+
+        if (layer != null) {
+            String delLayerName = layer.getName();
+            boolean retVal = super.deleteLayerById(id);
+
+            if (retVal && mEditLayer != null
+                    && mEditLayer.getEditableLayerName().equals(delLayerName)) {
+
+                if (mActionMode != null) {
+                    mActionMode.finish();
+                    mActionMode = null;
+                }
+
+                return true;
+            }
         }
 
-        return super.deleteLayerById(id);
+        return false;
     }
 
     /**
@@ -495,13 +521,9 @@ public class MapViewEditable extends MapView {
 
                 case KEY_SAVE:
                     saveEditableLayer();
-                    Toast.makeText(getContext(), getContext().getString(R.string.layer_is_saved),
-                            Toast.LENGTH_LONG).show();
 
                 case KEY_CANCEL:
-                    if (mEditLayer != null) {
-                        deleteLayerById(mEditLayer.getId());
-                    }
+                    deleteEditLayer();
                     break;
 
                 case KEY_NONE_FOCUS:
