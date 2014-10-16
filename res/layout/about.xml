@@ -55,11 +55,23 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"/>
     <TextView
-        android:id="@+id/txtLinks"
+        android:id="@+id/txtLinks2"
         android:autoLink="web"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/home_page"
         android:layout_gravity="center"
         android:gravity="center"/>
+    <TextView
+        android:id="@+id/txtCreditsCaption"
+        android:layout_marginTop="24dp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:text="@string/credits_caption"/>
+    <TextView
+        android:id="@+id/txtCreditsText"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"/>
 </LinearLayout>

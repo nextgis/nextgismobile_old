@@ -26,15 +26,19 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 
-public class AboutActivity extends Activity {
+public class AboutActivity extends ActionBarActivity {
     private TextView txtVersion;
     private TextView txtDescription;
+    private TextView txtCreditsText;
     private ImageView imgLogo;
 
     private String versionName = "unknown";
@@ -48,6 +52,7 @@ public class AboutActivity extends Activity {
         txtVersion = (TextView) findViewById(R.id.txtVersion);
         txtDescription = (TextView) findViewById(R.id.txtDescription);
         imgLogo = (ImageView) findViewById(R.id.imgLogo);
+        txtCreditsText = (TextView) findViewById(R.id.txtCreditsText);
 
         imgLogo.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -64,9 +69,12 @@ public class AboutActivity extends Activity {
         }
 
         txtVersion.setText("v. " + versionName + " (rev. " + versionCode + ")");
-        
-       	getActionBar().setHomeButtonEnabled(true);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        txtCreditsText.setText(Html.fromHtml(getString(R.string.credits_text)));
+        txtCreditsText.setMovementMethod(LinkMovementMethod.getInstance());
+
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private void onLogoClicked() {

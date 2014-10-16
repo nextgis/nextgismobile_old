@@ -9,8 +9,11 @@
 	<string name="tracker_service_name">NGMTrackerService</string>
 	<string name="sendpos_service_name">NGMSendPosService</string>
 	<string name="about_app">This is the application for geoposition tracking, send position information to the tracking server, show map and pick geodata. \n\nDevelopers:\n  Dmitriy Baryshnikov\n\nMore info at</string>
-	
-	<string name="settings">Settings</string>
+
+    <string name="credits_caption">Credits:</string>
+    <string name="credits_text">Some icons used in the application are from &lt;a href="http://icons8.com/android-icons"&gt;Icons8.com&lt;/a&gt;, licensed under a &lt;a href="http://creativecommons.org/licenses/by-nd/3.0/"&gt;CC BY-ND 3.0 license&lt;/a&gt;</string>
+
+    <string name="settings">Settings</string>
 	<string name="about">About</string>
 	<string name="mark">Add Point</string>
 	<string name="layers">Manage layers</string>
