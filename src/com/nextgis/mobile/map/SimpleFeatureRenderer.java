@@ -88,4 +88,8 @@ public class SimpleFeatureRenderer  extends Renderer{
             handler.sendMessage(msg);
         }
     }
+
+    public Style getStyle() {
+        return mStyle;
+    }
 }

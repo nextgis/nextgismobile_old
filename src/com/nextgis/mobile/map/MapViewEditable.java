@@ -26,11 +26,7 @@ import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Message;
-import android.support.v7.view.ActionMode;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.widget.Toast;
 import com.nextgis.mobile.GeoJsonLayersListAdapter;
@@ -39,6 +35,7 @@ import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.Feature;
 import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.GeoPoint;
+import com.nextgis.mobile.display.EditMarkerStyle;
 import com.nextgis.mobile.util.FileUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,6 +55,7 @@ public class MapViewEditable extends MapView {
             getContext().getResources().getDisplayMetrics().density * toleranceDP;
 
     protected LocalGeoJsonEditLayer mEditLayer;
+    protected float mAnchorOffsetY;
 
     public MapViewEditable(Context context) {
         super(context);
@@ -154,6 +152,10 @@ public class MapViewEditable extends MapView {
             switch (nType) {
                 case LAYERTYPE_LOCAL_EDIT_GEOJSON:
                     mEditLayer = new LocalGeoJsonEditLayer(this, path, rootObject);
+
+                    EditMarkerStyle drawStyle = (EditMarkerStyle) ((EditFeatureRenderer) mEditLayer
+                            .getRenderer()).getStyle();
+                    mAnchorOffsetY = drawStyle.getAnchorCenterY();
                     break;
             }
 
@@ -275,8 +277,8 @@ public class MapViewEditable extends MapView {
             return;
 
         if (mEditLayer != null) {
-            Feature selectedFeature =
-                    getSelectedFeature(new GeoPoint(event.getX(), event.getY()), mEditLayer);
+            Feature selectedFeature = getSelectedFeature(
+                    new GeoPoint(event.getX(), event.getY() + mAnchorOffsetY), mEditLayer);
 
             if (selectedFeature != null) {
                 mEditLayer.setEditFeature(selectedFeature);
@@ -288,7 +290,7 @@ public class MapViewEditable extends MapView {
 
     protected void editFeatureMoveTo(MotionEvent event) {
         if (mDrawingState == DRAW_SATE_edit_drawing) {
-            GeoPoint screenPt = new GeoPoint(event.getX(), event.getY());
+            GeoPoint screenPt = new GeoPoint(event.getX(), event.getY() + mAnchorOffsetY);
             GeoPoint geoPt = mDisplay.screenToMap(screenPt);
 
             mEditLayer.getEditFeature().setGeometry(geoPt);

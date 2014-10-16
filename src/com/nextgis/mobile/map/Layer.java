@@ -204,4 +204,8 @@ public abstract class Layer implements Runnable{
         }
         return fileName;
     }
+
+    public Renderer getRenderer() {
+        return mRenderer;
+    }
 }

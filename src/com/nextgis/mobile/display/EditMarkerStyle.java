@@ -20,8 +20,12 @@
  ****************************************************************************/
 package com.nextgis.mobile.display;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.GeoGeometry;
 import com.nextgis.mobile.datasource.GeoPoint;
 
@@ -29,8 +33,21 @@ import static com.nextgis.mobile.util.DisplayConstants.*;
 
 public class EditMarkerStyle extends SimpleMarkerStyle {
 
-    public EditMarkerStyle(int fillColor, int outColor, float size, int type) {
+    protected Context mContext;
+    protected Bitmap mAnchor;
+    protected float mAnchorRectOffsetX, mAnchorRectOffsetY;
+    protected float mAnchorCenterY;
+
+
+    public EditMarkerStyle(int fillColor, int outColor, float size, int type, Context context) {
         super(fillColor, outColor, size, type);
+
+        mContext = context;
+
+        mAnchor = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.ic_action_anchor);
+        mAnchorRectOffsetX = mAnchor.getWidth() / 2;
+        mAnchorRectOffsetY = mAnchor.getHeight();
+        mAnchorCenterY = mAnchor.getHeight() / 2;
     }
 
     @Override
@@ -41,6 +58,10 @@ public class EditMarkerStyle extends SimpleMarkerStyle {
         switch (mType){
             case MarkerEditStyleCircle:
                 Canvas editCanvas = display.getEditCanvas();
+
+                float anchorX = (float) pt.getX() - mAnchorRectOffsetX;
+                float anchorY = (float) pt.getY() - mAnchorRectOffsetY;
+                editCanvas.drawBitmap(mAnchor, anchorX, anchorY, null);
 
                 Paint fillCirclePaint = new Paint();
                 fillCirclePaint.setColor(mColor);
@@ -61,5 +82,9 @@ public class EditMarkerStyle extends SimpleMarkerStyle {
             default:
                 break;
         }
+    }
+
+    public float getAnchorCenterY() {
+        return mAnchorCenterY;
     }
 }

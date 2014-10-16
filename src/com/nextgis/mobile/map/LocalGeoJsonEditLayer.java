@@ -44,7 +44,8 @@ public class LocalGeoJsonEditLayer extends LocalGeoJsonLayer {
 
         if(mGeometryType == GTPoint) {
             EditMarkerStyle style =
-                    new EditMarkerStyle(Color.BLUE, Color.BLACK, mPointSize, MarkerEditStyleCircle);
+                    new EditMarkerStyle(Color.BLUE, Color.BLACK, mPointSize, MarkerEditStyleCircle,
+                            getContext());
             style.setWidth(2);
             mRenderer = new EditFeatureRenderer(this, style);
 
