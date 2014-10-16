@@ -162,7 +162,7 @@
     <string name="show_attributes">Show attributes</string>
     <string name="delete_feature">Delete feature</string>
     <string name="edit_feature">Edit feature</string>
-
+    <string name="change_attributes">Change attributes</string>
 
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>

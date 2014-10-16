@@ -83,10 +83,17 @@
             sabd:showAsAction="always"/>
 
         <item
+            android:id="@+id/menu_change_attributes"
+            android:title="@string/change_attributes"
+            android:icon="@drawable/ic_action_settings"
+            android:orderInCategory="2"
+            sabd:showAsAction="always"/>
+
+        <item
             android:id="@+id/menu_cancel"
             android:title="@string/cancel"
             android:icon="@drawable/ic_action_cancel"
-            android:orderInCategory="2"
+            android:orderInCategory="3"
             sabd:showAsAction="always"/>
 
     </group>

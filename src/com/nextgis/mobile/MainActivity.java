@@ -232,6 +232,9 @@ public class MainActivity extends ActionBarActivity {
         case R.id.menu_save:
             mMap.onSaveEditLayer();
             return true;
+        case R.id.menu_change_attributes:
+//            mMap.onChangeFeatureAttributes();
+            return true;
         case R.id.menu_cancel:
             mMap.onCancelEditLayer();
             return true;
