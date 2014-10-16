@@ -28,6 +28,9 @@ import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 import com.nextgis.mobile.GeoJsonLayersListAdapter;
 import com.nextgis.mobile.MainActivity;
@@ -391,26 +394,43 @@ public class MapViewEditable extends MapView {
         super.onLongPress(event);
     }
 
-    private void createLayerEditor(GeoJsonLayer layer, GeoPoint screenPoint) {
-        // TODO: dialog with "delete", "edit", ...
-
-        Feature selectedFeature = getSelectedFeature(screenPoint, layer);
+    private void createLayerEditor(final GeoJsonLayer layer, GeoPoint screenPoint) {
+        final Feature selectedFeature = getSelectedFeature(screenPoint, layer);
 
         if (selectedFeature != null) {
+            LinearLayout dialogView = (LinearLayout) ((MainActivity) getContext()).getLayoutInflater()
+                    .inflate(R.layout.dialog_choose_action_for_feature, null);
+            Button btnShowAttributes = (Button) dialogView.findViewById(R.id.btn_show_attributes);
+            Button btnDeleteFeature = (Button) dialogView.findViewById(R.id.btn_delete_feature);
+            Button btnEditFeature = (Button) dialogView.findViewById(R.id.btn_edit_feature);
 
-            try {
-                List<Feature> features = new ArrayList<Feature>(1);
-                features.add(selectedFeature);
-                LocalGeoJsonEditLayer.create(this, layer.getName(), features);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setTitle(R.string.choose_action_for_feature);
+            builder.setView(dialogView);
+            final AlertDialog dialog = builder.create();
 
-                mHandler.removeMessages(MSGTYPE_EDIT_DRAWING_DONE);
-                mDrawingState = DRAW_SATE_edit_drawing;
+            btnEditFeature.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        List<Feature> features = new ArrayList<Feature>(1);
+                        features.add(selectedFeature);
+                        LocalGeoJsonEditLayer.create(getSelf(), layer.getName(), features);
 
-            } catch (JSONException e) {
-                reportError(e.getLocalizedMessage());
-            } catch (IOException e) {
-                reportError(e.getLocalizedMessage());
-            }
+                        mHandler.removeMessages(MSGTYPE_EDIT_DRAWING_DONE);
+                        mDrawingState = DRAW_SATE_edit_drawing;
+
+                    } catch (JSONException e) {
+                        reportError(e.getLocalizedMessage());
+                    } catch (IOException e) {
+                        reportError(e.getLocalizedMessage());
+                    }
+
+                    dialog.dismiss();
+                }
+            });
+
+            dialog.show();
 
         } else {
             reportError(getContext().getString(R.string.object_is_not_selected));

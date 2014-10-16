@@ -158,6 +158,11 @@
     <string name="select_layer_for_edit">Select layer for edit</string>
     <string name="object_is_not_selected">Object is not selected</string>
     <string name="layer_is_saved">Layer is saved</string>
+    <string name="choose_action_for_feature">Choose action for the feature</string>
+    <string name="show_attributes">Show attributes</string>
+    <string name="delete_feature">Delete feature</string>
+    <string name="edit_feature">Edit feature</string>
+
 
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>

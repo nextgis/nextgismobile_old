@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/btn_show_attributes"
+        android:text="@string/show_attributes"
+        android:drawableLeft="@drawable/ic_action_about"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_margin="5dp"/>
+
+    <Button
+        android:id="@+id/btn_delete_feature"
+        android:text="@string/delete_feature"
+        android:drawableLeft="@drawable/ic_action_delete"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_margin="5dp"/>
+
+    <Button
+        android:id="@+id/btn_edit_feature"
+        android:text="@string/edit_feature"
+        android:drawableLeft="@drawable/ic_action_settings"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_margin="5dp"/>
+
+</LinearLayout>
