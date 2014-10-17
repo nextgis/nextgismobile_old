@@ -36,7 +36,7 @@ public class EditMarkerStyle extends SimpleMarkerStyle {
     protected Context mContext;
     protected Bitmap mAnchor;
     protected float mAnchorRectOffsetX, mAnchorRectOffsetY;
-    protected float mAnchorCenterY;
+    protected float mAnchorCenterX, mAnchorCenterY;
 
 
     public EditMarkerStyle(int fillColor, int outColor, float size, int type, Context context) {
@@ -45,9 +45,10 @@ public class EditMarkerStyle extends SimpleMarkerStyle {
         mContext = context;
 
         mAnchor = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.ic_action_anchor);
-        mAnchorRectOffsetX = mAnchor.getWidth() / 2;
-        mAnchorRectOffsetY = mAnchor.getHeight();
-        mAnchorCenterY = mAnchor.getHeight() / 2;
+        mAnchorRectOffsetX = -mAnchor.getWidth() * 0.1f;
+        mAnchorRectOffsetY = -mAnchor.getHeight() * 0.1f;
+        mAnchorCenterX = mAnchor.getWidth() * 0.75f;
+        mAnchorCenterY = mAnchor.getHeight() * 0.75f;
     }
 
     @Override
@@ -59,8 +60,8 @@ public class EditMarkerStyle extends SimpleMarkerStyle {
             case MarkerEditStyleCircle:
                 Canvas editCanvas = display.getEditCanvas();
 
-                float anchorX = (float) pt.getX() - mAnchorRectOffsetX;
-                float anchorY = (float) pt.getY() - mAnchorRectOffsetY;
+                float anchorX = (float) pt.getX() + mAnchorRectOffsetX;
+                float anchorY = (float) pt.getY() + mAnchorRectOffsetY;
                 editCanvas.drawBitmap(mAnchor, anchorX, anchorY, null);
 
                 Paint fillCirclePaint = new Paint();
@@ -82,6 +83,10 @@ public class EditMarkerStyle extends SimpleMarkerStyle {
             default:
                 break;
         }
+    }
+
+    public float getAnchorCenterX() {
+        return mAnchorCenterX;
     }
 
     public float getAnchorCenterY() {

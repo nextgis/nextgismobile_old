@@ -58,7 +58,7 @@ public class MapViewEditable extends MapView {
             getContext().getResources().getDisplayMetrics().density * toleranceDP;
 
     protected LocalGeoJsonEditLayer mEditLayer;
-    protected float mAnchorOffsetY;
+    protected float mAnchorOffsetX, mAnchorOffsetY;
 
     public MapViewEditable(Context context) {
         super(context);
@@ -158,6 +158,7 @@ public class MapViewEditable extends MapView {
 
                     EditMarkerStyle drawStyle = (EditMarkerStyle) ((EditFeatureRenderer) mEditLayer
                             .getRenderer()).getStyle();
+                    mAnchorOffsetX = drawStyle.getAnchorCenterX();
                     mAnchorOffsetY = drawStyle.getAnchorCenterY();
                     break;
             }
@@ -281,7 +282,8 @@ public class MapViewEditable extends MapView {
 
         if (mEditLayer != null) {
             Feature selectedFeature = getSelectedFeature(
-                    new GeoPoint(event.getX(), event.getY() + mAnchorOffsetY), mEditLayer);
+                    new GeoPoint(event.getX() - mAnchorOffsetX, event.getY() - mAnchorOffsetY),
+                    mEditLayer);
 
             if (selectedFeature != null) {
                 mEditLayer.setEditFeature(selectedFeature);
@@ -293,7 +295,8 @@ public class MapViewEditable extends MapView {
 
     protected void editFeatureMoveTo(MotionEvent event) {
         if (mDrawingState == DRAW_SATE_edit_drawing) {
-            GeoPoint screenPt = new GeoPoint(event.getX(), event.getY() + mAnchorOffsetY);
+            GeoPoint screenPt =
+                    new GeoPoint(event.getX() - mAnchorOffsetX, event.getY() - mAnchorOffsetY);
             GeoPoint geoPt = mDisplay.screenToMap(screenPt);
 
             mEditLayer.getEditFeature().setGeometry(geoPt);
