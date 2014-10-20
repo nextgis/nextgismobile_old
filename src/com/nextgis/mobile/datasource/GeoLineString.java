@@ -76,8 +76,23 @@ public class GeoLineString extends GeoGeometry {
 
     @Override
     public GeoEnvelope getEnvelope() {
-        // TODO: implement it
-        return null;
+        double minX = MERCATOR_MAX + 1;
+        double minY = MERCATOR_MAX + 1;
+        double maxX = -(MERCATOR_MAX + 1);
+        double maxY = -(MERCATOR_MAX + 1);
+
+        for (GeoRawPoint point : coordinates) {
+            if(point.x < minX)
+                minX = point.x;
+            if(point.y < minY)
+                minY = point.y;
+            if(point.x > maxX)
+                maxX = point.x;
+            if(point.y > maxY)
+                maxY = point.y;
+        }
+
+        return new GeoEnvelope(minX, maxX, minY, maxY);
     }
 
     @Override
