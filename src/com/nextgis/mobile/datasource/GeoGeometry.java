@@ -50,13 +50,30 @@ public abstract class GeoGeometry{
 
         }
         else if(sType.equals(GEOJSON_TYPE_LineString)){
-
+            GeoLineString lineString = new GeoLineString();
+            JSONArray coordinates = jsonObject.getJSONArray(GEOJSON_COORDINATES);
+            for (int i = 0; i < coordinates.length(); ++i) {
+                double x = coordinates.getJSONArray(i).getDouble(0);
+                double y = coordinates.getJSONArray(i).getDouble(1);
+                lineString.add(x, y);
+            }
+            // TODO: if (pointCount < 2) then error
+            output = lineString;
         }
         else if(sType.equals(GEOJSON_TYPE_MultiLineString)){
 
         }
         else if(sType.equals(GEOJSON_TYPE_Polygon)){
-
+            GeoPolygon polygon = new GeoPolygon();
+            JSONArray coordinates = jsonObject.getJSONArray(GEOJSON_COORDINATES);
+            for (int i = 0; i < coordinates.getJSONArray(0).length(); ++i) {
+                double x = coordinates.getJSONArray(0).getJSONArray(i).getDouble(0);
+                double y = coordinates.getJSONArray(0).getJSONArray(i).getDouble(1);
+                polygon.add(x, y);
+            }
+            // TODO: for each linearRing
+            // TODO: if (pointCount < 4 || points.get(0) != points.get(last)) then error
+            output = polygon;
         }
         else if(sType.equals(GEOJSON_TYPE_MultiPolygon)){
 
