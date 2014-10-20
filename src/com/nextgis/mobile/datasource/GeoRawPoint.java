@@ -43,4 +43,8 @@ public class GeoRawPoint {
         this.x = gpt.getX();
         this.y = gpt.getY();
     }
+
+    public boolean equals(GeoRawPoint grp) {
+        return x == grp.x && y == grp.y;
+    }
 }
