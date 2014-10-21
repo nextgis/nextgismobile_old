@@ -99,7 +99,7 @@ public class MapViewEditable extends MapView {
                     break;
 
                 case DRAW_SATE_edit_drawing:
-                    canvas.drawBitmap(mDisplay.getDisplay(false), 0, 0, null);
+                    canvas.drawBitmap(mDisplay.getDisplay(true), 0, 0, null);
                     break;
             }
 
