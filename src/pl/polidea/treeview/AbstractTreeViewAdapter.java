@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
+import com.nextgis.mobile.R;
 
 /**
  * Adapter used to feed the table view.
