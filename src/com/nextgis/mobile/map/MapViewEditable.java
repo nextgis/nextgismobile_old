@@ -99,7 +99,7 @@ public class MapViewEditable extends MapView {
                     break;
 
                 case DRAW_SATE_edit_drawing:
-                    canvas.drawBitmap(mDisplay.getDisplay(false), 0, 0, null);
+                    canvas.drawBitmap(mDisplay.getDisplay(true), 0, 0, null);
                     break;
             }
 
@@ -307,13 +307,13 @@ public class MapViewEditable extends MapView {
 
     protected void editStop() {
         if (mDrawingState == DRAW_SATE_edit_drawing) {
-            mDrawingState = DRAW_SATE_drawing_noclearbk;
+            mDrawingState = DRAW_SATE_drawing;
 
             Bundle bundle = new Bundle();
             bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
             bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_EDIT_DRAWING_DONE);
             bundle.putFloat(BUNDLE_DONE_KEY, 100.0f);
-            bundle.putInt(BUNDLE_DRAWSTATE_KEY, DRAW_SATE_drawing_noclearbk);
+            bundle.putInt(BUNDLE_DRAWSTATE_KEY, DRAW_SATE_drawing);
 
             Message msg = new Message();
             msg.setData(bundle);
