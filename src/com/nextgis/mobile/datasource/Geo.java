@@ -36,14 +36,9 @@ public class Geo {
         return retPt;
     }
 
-    public static void mercatorToWgs84Sphere(GeoPoint pt) {
-        pt.setX(mercatorToWgs84SphereX(pt.getX()));
-        pt.setY(mercatorToWgs84SphereY(pt.getY()));
-    }
-
     public static void mercatorToWgs84Sphere(GeoRawPoint pt) {
-        pt.x = mercatorToWgs84SphereX(pt.x);
-        pt.y = mercatorToWgs84SphereY(pt.y);
+        pt.mX = mercatorToWgs84SphereX(pt.mX);
+        pt.mY = mercatorToWgs84SphereY(pt.mY);
     }
 
     public static double mercatorToWgs84SphereX(final double x) {
@@ -61,14 +56,9 @@ public class Geo {
         return retPt;
     }
 
-    public static void mercatorToWgs84Ellipse(GeoPoint pt) {
-        pt.setX(mercatorToWgs84EllipseX(pt.getX()));
-        pt.setY(mercatorToWgs84EllipseY(pt.getY()));
-    }
-
     public static void mercatorToWgs84Ellipse(GeoRawPoint pt) {
-        pt.x = mercatorToWgs84EllipseX(pt.x);
-        pt.y = mercatorToWgs84EllipseY(pt.y);
+        pt.mX = mercatorToWgs84EllipseX(pt.mX);
+        pt.mY = mercatorToWgs84EllipseY(pt.mY);
     }
 
     public static double mercatorToWgs84EllipseX(final double x) {
@@ -91,14 +81,9 @@ public class Geo {
         return retPt;
     }
 
-    public static void wgs84ToMercatorSphere(GeoPoint pt) {
-        pt.setX(wgs84ToMercatorSphereX(pt.getX()));
-        pt.setY(wgs84ToMercatorSphereY(pt.getY()));
-    }
-
     public static void wgs84ToMercatorSphere(GeoRawPoint pt) {
-        pt.x = wgs84ToMercatorSphereX(pt.x);
-        pt.y = wgs84ToMercatorSphereY(pt.y);
+        pt.mX = wgs84ToMercatorSphereX(pt.mX);
+        pt.mY = wgs84ToMercatorSphereY(pt.mY);
     }
 
     public static double wgs84ToMercatorSphereX(final double x) {

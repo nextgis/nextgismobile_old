@@ -20,31 +20,47 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
+import static com.nextgis.mobile.util.GeoConstants.CRS_WEB_MERCATOR;
+import static com.nextgis.mobile.util.GeoConstants.CRS_WGS84;
+
 public class GeoRawPoint {
 
-    public double x;
-    public double y;
+    public double mX;
+    public double mY;
 
     public GeoRawPoint() {
-        x = y = 0.0;
+        mX = mY = 0.0;
     }
 
     public GeoRawPoint(double x, double y) {
-        this.x = x;
-        this.y = y;
+        this.mX = x;
+        this.mY = y;
     }
 
     public GeoRawPoint(GeoRawPoint rpt) {
-        this.x = rpt.x;
-        this.y = rpt.y;
+        this.mX = rpt.mX;
+        this.mY = rpt.mY;
     }
 
     public GeoRawPoint(GeoPoint gpt) {
-        this.x = gpt.getX();
-        this.y = gpt.getY();
+        this.mX = gpt.getX();
+        this.mY = gpt.getY();
     }
 
     public boolean equals(GeoRawPoint grp) {
-        return x == grp.x && y == grp.y;
+        return mX == grp.mX && mY == grp.mY;
+    }
+
+    public boolean project(int toCrs) {
+        switch (toCrs) {
+            case CRS_WEB_MERCATOR:
+                Geo.wgs84ToMercatorSphere(this);
+                return true;
+            case CRS_WGS84:
+                Geo.mercatorToWgs84Sphere(this);
+                return true;
+            default:
+                return false;
+        }
     }
 }

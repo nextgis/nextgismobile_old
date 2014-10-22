@@ -85,7 +85,7 @@ public abstract class GeoGeometry{
                 polygon.add(x, y);
             }
 
-            List<GeoRawPoint> points = polygon.getLinearRings().get(0).getCoordinates();
+            List<GeoRawPoint> points = polygon.getOuterRing().getPoints();
 
             if (!points.get(0).equals(points.get(i))) {
                 throw new JSONException("For type \"Polygon\", the \"coordinates\" member must be an array of LinearRing coordinate arrays. The first and last positions of LinearRing must be equivalent (they represent equivalent points).");

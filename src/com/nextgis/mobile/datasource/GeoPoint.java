@@ -27,42 +27,46 @@ import org.json.JSONObject;
 import static com.nextgis.mobile.util.GeoConstants.*;
 
 public class GeoPoint extends GeoGeometry{
-    protected double mX;
-    protected double mY;
+
+    protected GeoRawPoint mPoint;
 
     public GeoPoint(){
-        mX = mY = 0;
+        mPoint = new GeoRawPoint();
     }
 
     public GeoPoint(double x, double y){
-        mX = x;
-        mY = y;
+        mPoint.mX = x;
+        mPoint.mY = y;
     }
 
     public GeoPoint(final GeoPoint pt){
-        mX = pt.mX;
-        mY = pt.mY;
+        mPoint.mX = pt.getX();
+        mPoint.mY = pt.getY();
+    }
+
+    public GeoRawPoint getCoordinates() {
+        return mPoint;
     }
 
     public final double getX(){
-        return mX;
+        return mPoint.mX;
     }
 
     public final double getY(){
-        return mY;
+        return mPoint.mY;
     }
 
     public void setX(double x){
-        mX = x;
+        mPoint.mX = x;
     }
 
     public void setY(double y){
-        mY = y;
+        mPoint.mY = y;
     }
 
     public void setCoordinates(double x, double y){
-        mX = x;
-        mY = y;
+        mPoint.mX = x;
+        mPoint.mY = y;
     }
 
     @Override
@@ -72,20 +76,14 @@ public class GeoPoint extends GeoGeometry{
 
     @Override
     public boolean project(int crs) {
-        if(mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR){
-            Geo.wgs84ToMercatorSphere(this);
-            return true;
-        }
-        else if(mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84){
-            Geo.mercatorToWgs84Sphere(this);
-            return true;
-        }
-        return false;
+        return (mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR
+                || mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84)
+                && mPoint.project(crs);
     }
 
     @Override
     public GeoEnvelope getEnvelope() {
-        return new GeoEnvelope(mX - .5, mX + .5, mY - .5, mY + .5);
+        return new GeoEnvelope(mPoint.mX - .5, mPoint.mX + .5, mPoint.mY - .5, mPoint.mY + .5);
     }
 
     @Override
@@ -94,12 +92,12 @@ public class GeoPoint extends GeoGeometry{
         oJSONOut.put(GEOJSON_TYPE, GEOJSON_TYPE_Point);
         JSONArray coordinates = new JSONArray();
         oJSONOut.put(GEOJSON_COORDINATES, coordinates);
-        coordinates.put(mX);
-        coordinates.put(mY);
+        coordinates.put(mPoint.mX);
+        coordinates.put(mPoint.mY);
         return oJSONOut;
     }
 
     public String toString(){
-        return "X: " + mX + ", Y: " + mY;
+        return "X: " + mPoint.mX + ", Y: " + mPoint.mY;
     }
 }
