@@ -31,26 +31,26 @@ import static com.nextgis.mobile.util.GeoConstants.*;
 
 public class GeoLineString extends GeoGeometry {
 
-    private List<GeoRawPoint> coordinates;
+    protected List<GeoRawPoint> mPoints;
 
     public GeoLineString() {
-        coordinates = new ArrayList<GeoRawPoint>();
+        mPoints = new ArrayList<GeoRawPoint>();
     }
 
-    public List<GeoRawPoint> getCoordinates() {
-        return coordinates;
+    public List<GeoRawPoint> getPoints() {
+        return mPoints;
     }
 
     public void add(double x, double y) {
-        coordinates.add(new GeoRawPoint(x, y));
+        mPoints.add(new GeoRawPoint(x, y));
     }
 
     public void add(GeoRawPoint rpt) {
-        coordinates.add(rpt);
+        mPoints.add(rpt);
     }
 
     public void remove(int index) {
-        coordinates.remove(index);
+        mPoints.remove(index);
     }
 
     @Override
@@ -60,16 +60,13 @@ public class GeoLineString extends GeoGeometry {
 
     @Override
     public boolean project(int crs) {
-        if (mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR) {
-            for (GeoRawPoint point : coordinates) {
-                Geo.wgs84ToMercatorSphere(point);
+        if (mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR
+                || mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84) {
+            boolean isOk = true;
+            for (GeoRawPoint point : mPoints) {
+                isOk = isOk && point.project(crs);
             }
-            return true;
-        } else if (mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84) {
-            for (GeoRawPoint point : coordinates) {
-                Geo.mercatorToWgs84Sphere(point);
-            }
-            return true;
+            return isOk;
         }
         return false;
     }
@@ -81,15 +78,15 @@ public class GeoLineString extends GeoGeometry {
         double maxX = -(MERCATOR_MAX + 1);
         double maxY = -(MERCATOR_MAX + 1);
 
-        for (GeoRawPoint point : coordinates) {
-            if(point.x < minX)
-                minX = point.x;
-            if(point.y < minY)
-                minY = point.y;
-            if(point.x > maxX)
-                maxX = point.x;
-            if(point.y > maxY)
-                maxY = point.y;
+        for (GeoRawPoint point : mPoints) {
+            if(point.mX < minX)
+                minX = point.mX;
+            if(point.mY < minY)
+                minY = point.mY;
+            if(point.mX > maxX)
+                maxX = point.mX;
+            if(point.mY > maxY)
+                maxY = point.mY;
         }
 
         return new GeoEnvelope(minX, maxX, minY, maxY);
@@ -102,10 +99,10 @@ public class GeoLineString extends GeoGeometry {
         JSONArray coordinates = new JSONArray();
         jsonOutObject.put(GEOJSON_COORDINATES, coordinates);
 
-        for (GeoRawPoint point : this.coordinates) {
+        for (GeoRawPoint point : this.mPoints) {
             JSONArray pointCoordinates = new JSONArray();
-            pointCoordinates.put(point.x);
-            pointCoordinates.put(point.y);
+            pointCoordinates.put(point.mX);
+            pointCoordinates.put(point.mY);
             coordinates.put(pointCoordinates);
         }
 

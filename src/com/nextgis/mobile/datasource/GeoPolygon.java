@@ -31,27 +31,26 @@ import static com.nextgis.mobile.util.GeoConstants.*;
 
 public class GeoPolygon extends GeoGeometry {
 
-    private List<GeoLinearRing> linearRings;
+    protected GeoLinearRing mOuterRing;
 
     public GeoPolygon() {
-        linearRings = new ArrayList<GeoLinearRing>();
-        linearRings.add(new GeoLinearRing());
+        mOuterRing = new GeoLinearRing();
     }
 
-    public List<GeoLinearRing> getLinearRings() {
-        return linearRings;
+    public GeoLinearRing getOuterRing() {
+        return mOuterRing;
     }
 
     public void add(double x, double y) {
-        linearRings.get(0).add(x, y);
+        mOuterRing.add(x, y);
     }
 
     public void add(GeoRawPoint rpt) {
-        linearRings.get(0).add(rpt);
+        mOuterRing.add(rpt);
     }
 
     public void remove(int index) {
-        linearRings.get(0).remove(index);
+        mOuterRing.remove(index);
     }
 
     @Override
@@ -61,39 +60,14 @@ public class GeoPolygon extends GeoGeometry {
 
     @Override
     public boolean project(int crs) {
-        if (mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR) {
-            for (GeoRawPoint point : linearRings.get(0).getCoordinates()) {
-                Geo.wgs84ToMercatorSphere(point);
-            }
-            return true;
-        } else if (mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84) {
-            for (GeoRawPoint point : linearRings.get(0).getCoordinates()) {
-                Geo.mercatorToWgs84Sphere(point);
-            }
-            return true;
-        }
-        return false;
+        return (mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR
+                || mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84)
+                && mOuterRing.project(crs);
     }
 
     @Override
     public GeoEnvelope getEnvelope() {
-        double minX = MERCATOR_MAX + 1;
-        double minY = MERCATOR_MAX + 1;
-        double maxX = -(MERCATOR_MAX + 1);
-        double maxY = -(MERCATOR_MAX + 1);
-
-        for (GeoRawPoint point : linearRings.get(0).getCoordinates()) {
-            if(point.x < minX)
-                minX = point.x;
-            if(point.y < minY)
-                minY = point.y;
-            if(point.x > maxX)
-                maxX = point.x;
-            if(point.y > maxY)
-                maxY = point.y;
-        }
-
-        return new GeoEnvelope(minX, maxX, minY, maxY);
+        return mOuterRing.getEnvelope();
     }
 
     @Override
@@ -105,10 +79,10 @@ public class GeoPolygon extends GeoGeometry {
         JSONArray linearRingCoordinates = new JSONArray();
         coordinates.put(linearRingCoordinates);
 
-        for (GeoRawPoint point : linearRings.get(0).getCoordinates()) {
+        for (GeoRawPoint point : mOuterRing.getPoints()) {
             JSONArray pointCoordinates = new JSONArray();
-            pointCoordinates.put(point.x);
-            pointCoordinates.put(point.y);
+            pointCoordinates.put(point.mX);
+            pointCoordinates.put(point.mY);
             linearRingCoordinates.put(pointCoordinates);
         }
 
