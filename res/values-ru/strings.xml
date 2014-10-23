@@ -30,15 +30,23 @@
 	<string name="tracker_service_name">NGMTrackerService</string>
 	<string name="sendpos_service_name">NGMSendPosService</string>
 	<string name="about_app">Приложение для отслеживания местоположения, отправки данных местоположения на сервер хранения в сети Интернет, показа карты и ввода геоданных. \n\nРазработчики:\n  Дмитрий Барышников\n\n\nДетали см. по ссылке</string>
+
+    <string name="credits_caption">Credits:</string>
+    <string name="credits_text">Часть иконок данного приложения получена из &lt;a href="http://icons8.com/android-icons"&gt;Icons8.com&lt;/a&gt;, лицензия &lt;a href="http://creativecommons.org/licenses/by-nd/3.0/"&gt;CC BY-ND 3.0 license&lt;/a&gt;</string>
 	
 	<string name="settings">Настройки</string>
 	<string name="about">О программе</string>
 	<string name="mark">Добавить точку</string>
-	<string name="cancel">Отмена</string>
-	<string name="GPXRecord">Записать трек GPX</string>	
-	<string name="info">Показать/скрыть инфопанель</string>
-	<string name="pan">Центрировать</string>
-		
+    <string name="layers">Manage layers</string>
+    <string name="gpx_record">Записать трек GPX</string>
+    <string name="info">Показать/скрыть инфопанель</string>
+    <string name="pan">Центрировать</string>
+    <string name="add">Add</string>
+    <string name="add_zip">Add from ZIP</string>
+    <string name="add_geojson">Add GeoJSON</string>
+    <string name="add_tms">Add TMS</string>
+    <string name="add_ngw">Add NGW Layer</string>
+
 	<string name="pref_title">Настройки NextGIS Mobile</string>
 	<string name="pref_cat_main">Основные установки</string>
 	<string name="pref_cat_tracker">Установки трекера</string>
@@ -84,11 +92,23 @@
 	<string name="pref_compass_true_north">Показывать истинный полюс</string>
 	<string name="pref_compass_true_north_summary">Показывать истинный полюс</string>
 	<string name="pref_compass_show_magnetic">Показывать магнитый полюс</string>
-	<string name="pref_compass_show_magnetic_summary">Показывать магнитый полюс</string>	
-	
+	<string name="pref_compass_show_magnetic_summary">Показывать магнитый полюс</string>
+
+    <string name="pref_cat_map">Карта</string>
 	<string name="pref_tile_size_name">Размер тайлов</string>
 	<string name="pref_tile_size_summary">Установите размер тайлов</string>
 	<string name="pref_tile_size_name_dlg_title">Выберите размер тайлов</string>
+
+    <string name="pref_cat_acc">Точность снятие координат</string>
+    <string name="pref_accurate_coordinates_pick">Уточненное снятие координат</string>
+    <string name="pref_accurate_coordinates_pick_summary">Если отмечено, выполняется более точное снятие координат. Выполняется накопление координат в точке и их усреднение</string>
+    <string name="acc_gather_dlg_title">Снятие координат</string>
+
+    <string name="pref_accurate_coordinates_pick_count">Количество измерений GPS координат</string>
+    <string name="pref_accurate_coordinates_pick_count_summary">Количество измерений GPS координат для более точного позиционирования</string>
+
+    <string name="pref_accurate_ce">Радиус погрешности</string>
+    <string name="pref_accurate_ce_summary">Радиус возможной погрешности</string>
 		
 	<string name="default_azimuth">0°С</string>	
 	<string name="compass_title">Компас</string>
@@ -97,8 +117,7 @@
 	<string name="tabs_position_tab">Координаты</string>
 	<string name="tabs_description_tab">Описание</string>
 	<string name="tabs_camera_tab">Фото</string>
-	<string name="tabs_note_tab">Примечания</string>	
-	<string name="error_loc_fix">Ошибка определения координат</string>
+	<string name="tabs_note_tab">Примечания</string>
 	<string name="input_poi_title">Ввести точку</string>
 	<string name="input_poi_step1">1. Введите описание</string>
 	<string name="input_poi_step2">2. Введите местоположение и ориентировку</string>
@@ -150,18 +169,68 @@
 	<string name="set_mode_show_me">Начать ведение</string>
 	<string name="set_mode_hide_me">Прекратить ведение</string>
 	
-	<string name="pref_cat_acc">Точность снятие координат</string>
-	<string name="pref_cat_map">Карта</string>
-	<string name="pref_accurate_coordinates_pick">Уточненное снятие координат</string>
-	<string name="pref_accurate_coordinates_pick_summary">Если отмечено, выполняется более точное снятие координат. Выполняется накопление координат в точке и их усреднение</string>
-	<string name="acc_gather_dlg_title">Снятие координат</string>
-	
-	<string name="pref_accurate_coordinates_pick_count">Количество измерений GPS координат</string>
-	<string name="pref_accurate_coordinates_pick_count_summary">Количество измерений GPS координат для более точного позиционирования</string>
-	
-	<string name="pref_accurate_ce">Радиус погрешности</string>
-	<string name="pref_accurate_ce_summary">Радиус возможной погрешности</string>
+	<string name="layers_drawer_open">Open layers list</string>
+    <string name="layers_drawer_close">Close layers list</string>
+
+    <string name="input_layer_properties">Input layer properties</string>
+    <string name="change_layer_properties">Change layer properties</string>
+
+    <string name="layer_editor">Layer editor</string>
+    <string name="select_layer_for_edit">Select layer for edit</string>
+    <string name="object_is_not_selected">Object is not selected</string>
+    <string name="layer_is_saved">Layer is saved</string>
+    <string name="choose_action_for_feature">Choose action for the feature</string>
+    <string name="show_attributes">Show attributes</string>
+    <string name="delete_feature">Delete feature</string>
+    <string name="edit_feature">Edit feature</string>
+    <string name="change_attributes">Change attributes</string>
+
+    <string name="ok">Ok</string>
+    <string name="cancel">Отмена</string>
+    <string name="save_layer">Save Layer</string>
+
+    <!-- messages -->
+    <string name="message_zip_extract_progress">Extracting...</string>
+    <string name="message_loading_progress">Loading...</string>
+    <string name="message_layer_added">The layer added successfully</string>
+    <string name="message_select_file">Select a File to Upload</string>
+    <string name="message_opening_progress">Opening...</string>
+
+    <!-- errors -->
+    <string name="error_loc_fix">Ошибка определения координат</string>
+    <string name="error_file_manager">Please install a File Manager</string>
+    <string name="error_cancel_by_user">Cancel by user</string>
+    <string name="error_occurred">The error occurred</string>
+    <string name="error_geojson_unsupported">The GeoJSON is corrupted or unsupported format</string>
+    <string name="error_geojson_crs_unsupported">The GeoJSON CRS is unsupported</string>
+    <string name="error_savefile_failed">Save file filed</string>
+
+    <!-- geo specific -->
+    <string name="tmstype_qtiles">QTiles</string>
+    <string name="tmstype_osm">OSM</string>
+    <string name="tmstype_normal">Normal</string>
+    <string name="tmstype_ngw">NGW</string>
+
+    <string name="default_map_name">New map</string>
     <string name="layer_name">Name</string>
     <string name="layer_url">URL</string>
     <string name="layer_type">Type</string>
+
+    <!-- TreeView -->
+    <string name="simple_menu_name">Simple Adapter</string>
+    <string name="simple_menu_condensed">Simple</string>
+    <string name="fancy_menu_name">Fancy Menu</string>
+    <string name="fancy_menu_condensed">Fancy</string>
+    <string name="expand_all_menu">Expand all</string>
+    <string name="expand_all_condensed">Expand All</string>
+    <string name="collapsible_menu_enable">Enable collapsible</string>
+    <string name="collapsible_condensed_enable">Enable collapsible</string>
+    <string name="collapsible_menu_disable">Disable collapsible</string>
+    <string name="collapsible_condensed_disable">Disable collapsible</string>
+    <string name="collapse_all_menu">Collapse all</string>
+    <string name="collapse_all_condesed">Collapse all</string>
+    <string name="expand_menu">Expand</string>
+    <string name="expand_menu_condensed">Expand</string>
+    <string name="delete_menu">Delete</string>
+    <string name="delete_menu_condensed">Delete</string>
 </resources>
