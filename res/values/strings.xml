@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Project:  NextGIS Mobile
+ Purpose:  mobile GIS for Android
+Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
+Copyright (C) 2012-2014 NextGIS
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
 <resources>
 
     <string name="app_name">NextGIS Mobile</string>
     <string name="home_page">http://nextgis.ru</string>
     <string name="detail_page">http://gis-lab.info/qa/nextgis-mobile.html</string>
+
+    <string name="action_settings">Настройки</string>
     
     <string name="switch_track_service">Start tracker service</string>
 	<string name="tracker_service_name">NGMTrackerService</string>
@@ -72,6 +93,22 @@
 	<string name="pref_compass_true_north_summary">Show true north</string>
 	<string name="pref_compass_show_magnetic">Show magnetic</string>
 	<string name="pref_compass_show_magnetic_summary">Show magnetic</string>
+
+    <string name="pref_cat_map">Map</string>
+    <string name="pref_tile_size_name">Map tile size</string>
+    <string name="pref_tile_size_summary">Set map tile size</string>
+    <string name="pref_tile_size_name_dlg_title">Choose map tile size</string>
+
+    <string name="pref_cat_acc">Coordinate accuracy</string>
+    <string name="pref_accurate_coordinates_pick">Accurate coordinates pick</string>
+    <string name="pref_accurate_coordinates_pick_summary">If on, more accurate coordinates pick provided. The point coordinates accumulated and averaged</string>
+    <string name="acc_gather_dlg_title">Gather coordinates</string>
+
+    <string name="pref_accurate_coordinates_pick_count">Count of GPS measures</string>
+    <string name="pref_accurate_coordinates_pick_count_summary">Count of GPS measures for more accurate coordinates pick</string>
+
+    <string name="pref_accurate_ce">Circular error</string>
+    <string name="pref_accurate_ce_summary">Circular error probability</string>
 			
 	<string name="default_azimuth">0°N</string>	
 	<string name="compass_title">Compass</string>
@@ -131,23 +168,7 @@
 
 	<string name="set_mode_show_me">showing and tracking my current location</string>
 	<string name="set_mode_hide_me">hiding my current location</string>
-	
-	<string name="pref_cat_map">Map</string>
-	<string name="pref_tile_size_name">Map tile size</string>
-	<string name="pref_tile_size_summary">Set map tile size</string>
-	<string name="pref_tile_size_name_dlg_title">Choose map tile size</string>
-	
-	<string name="pref_cat_acc">Coordinate accuracy</string>
-	<string name="pref_accurate_coordinates_pick">Accurate coordinates pick</string>
-	<string name="pref_accurate_coordinates_pick_summary">If on, more accurate coordinates pick provided. The point coordinates accumulated and averaged</string>	
-	<string name="acc_gather_dlg_title">Gather coordinates</string>
-	
-	<string name="pref_accurate_coordinates_pick_count">Count of GPS measures</string>
-	<string name="pref_accurate_coordinates_pick_count_summary">Count of GPS measures for more accurate coordinates pick</string>
 
-	<string name="pref_accurate_ce">Circular error</string>
-	<string name="pref_accurate_ce_summary">Circular error probability</string>
-	
 	<string name="layers_drawer_open">Open layers list</string>
     <string name="layers_drawer_close">Close layers list</string>
 

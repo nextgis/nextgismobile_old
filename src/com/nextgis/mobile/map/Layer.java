@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static com.nextgis.mobile.util.Constants.*;
+import static com.nextgis.mobile.util.GeoConstants.*;
 
 public abstract class Layer implements Runnable{
     protected String mName;
@@ -76,8 +77,15 @@ public abstract class Layer implements Runnable{
         try {
             mLayerType = config.getInt(JSON_TYPE_KEY);
             mName = config.getString(JSON_NAME_KEY);
-            mMaxZoom = config.getInt(JSON_MAXLEVEL_KEY);
-            mMinZoom = config.getInt(JSON_MINLEVEL_KEY);
+            if(config.has(JSON_MAXLEVEL_KEY))
+                mMaxZoom = config.getInt(JSON_MAXLEVEL_KEY);
+            else
+                mMaxZoom = DEFAULT_MAX_ZOOM;
+            if(config.has(JSON_MINLEVEL_KEY))
+                mMinZoom = config.getInt(JSON_MINLEVEL_KEY);
+            else
+                mMinZoom = DEFAULT_MIN_ZOOM;
+
             setVisible( config.getBoolean(JSON_VISIBILITY_KEY) );
         } catch (JSONException e){
             reportError(e.getLocalizedMessage());

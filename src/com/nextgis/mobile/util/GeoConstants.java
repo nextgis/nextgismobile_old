@@ -40,6 +40,9 @@ public interface GeoConstants {
     public static final int TMSTYPE_NORMAL = 1;
     public static final int TMSTYPE_OSM = 2;
 
+    public static final int DEFAULT_MAX_ZOOM = 25;
+    public static final int DEFAULT_MIN_ZOOM = 0;
+
     /**
      * geometry type
      */
