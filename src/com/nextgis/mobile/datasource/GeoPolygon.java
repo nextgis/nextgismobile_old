@@ -60,9 +60,15 @@ public class GeoPolygon extends GeoGeometry {
 
     @Override
     public boolean project(int crs) {
-        return (mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR
-                || mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84)
-                && mOuterRing.project(crs);
+        if (mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR
+                || mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84) {
+            boolean isOk = true;
+            for (GeoRawPoint point : mOuterRing.getPoints()) {
+                isOk = isOk && point.project(crs);
+            }
+            return isOk;
+        }
+        return false;
     }
 
     @Override
