@@ -44,7 +44,7 @@ public class GeoPoint extends GeoGeometry{
         mPoint.mY = pt.getY();
     }
 
-    public GeoRawPoint getCoordinates() {
+    public GeoRawPoint getRawPoint() {
         return mPoint;
     }
 
