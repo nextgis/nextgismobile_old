@@ -27,10 +27,4 @@
    	    <item name="android:background">#65000000</item>
    	</style> 
     	    
-    <!-- TreeView -->
-    <style name="treeViewListStyle" parent="@android:attr/listViewStyle">
-        <item name="android:background">@android:color/white</item>
-        <item name="android:divider">@drawable/divider</item>
-    </style>
-
 </resources>
