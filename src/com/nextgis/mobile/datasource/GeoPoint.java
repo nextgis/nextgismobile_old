@@ -35,15 +35,11 @@ public class GeoPoint extends GeoGeometry{
     }
 
     public GeoPoint(double x, double y){
-        mPoint = new GeoRawPoint();
-        mPoint.mX = x;
-        mPoint.mY = y;
+        mPoint = new GeoRawPoint(x, y);
     }
 
     public GeoPoint(final GeoPoint pt){
-        mPoint = new GeoRawPoint();
-        mPoint.mX = pt.getX();
-        mPoint.mY = pt.getY();
+        mPoint = new GeoRawPoint(pt.getX(), pt.getY());
     }
 
     public GeoRawPoint getRawPoint() {

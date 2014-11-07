@@ -345,7 +345,8 @@ public class MainActivity extends ActionBarActivity {
                 break;
             case DS_TYPE_LOCAL_GEOJSON:
                 Intent intent_geojson = new Intent(Intent.ACTION_GET_CONTENT);
-                intent_geojson.setType("application/json");
+                //intent_geojson.setType("application/json");
+                intent_geojson.setType("application/*");
                 intent_geojson.addCategory(Intent.CATEGORY_OPENABLE);
 
                 try {
