@@ -90,6 +90,7 @@ public interface Constants {
     public static final String LAYER_PREFIX = "layer_";
     public static final String TILE_EXT = ".tile";
     public static final String DATA_GEOJSON = "data.geojson";
+    public static final String NGW_CONNECTIONS_JSON = "ngw_connections.json";
 
     /**
      * message type
@@ -131,6 +132,8 @@ public interface Constants {
     public static final String JSON_PATH_KEY = "path";
     public static final String JSON_MAP_KEY = "map";
     public static final String JSON_URL_KEY = "url";
+    public static final String JSON_LOGIN_KEY = "login";
+    public static final String JSON_PASSWORD_KEY = "password";
     public static final String JSON_BBOX_KEY = "bbox";
     public static final String JSON_BBOX_MINX_KEY = "bbox_minx";
     public static final String JSON_BBOX_MINY_KEY = "bbox_miny";
@@ -141,6 +144,7 @@ public interface Constants {
     public static final String JSON_FIELD_ALIAS_KEY = "field_alias";
     public static final String JSON_FIELD_TYPE_KEY = "field_type";
     public static final String JSON_GEOMETRY_TYPE_KEY = "geometry_type";
+    public static final String JSON_NGW_CONNECTIONS_KEY = "ngw_connections";
 
     /**
      * Layer type

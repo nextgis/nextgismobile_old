@@ -33,6 +33,8 @@ import android.widget.Toast;
 
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.GeoPoint;
+import com.nextgis.mobile.datasource.NgwConnection;
+import com.nextgis.mobile.datasource.NgwJsonWorker;
 import com.nextgis.mobile.display.GISDisplay;
 import com.nextgis.mobile.util.FileUtil;
 import com.nextgis.mobile.util.NetworkUtil;
@@ -66,6 +68,7 @@ public class MapBase extends View {
     protected boolean mContinueDrawing;
     protected final BlockingQueue<Runnable> mDrawWorkQueue;
     protected ThreadPoolExecutor mDrawThreadPool;
+    protected List<NgwConnection> mNgwConnections;
 
     protected static int mCPUTotalCount;
     protected NetworkUtil newtworkUtil;
@@ -153,6 +156,17 @@ public class MapBase extends View {
         }
 
         return count;
+    }
+
+    public File getMapPath() {
+        return mMapPath;
+    }
+
+    public List<NgwConnection> getNgwConnections() {
+        if (mNgwConnections == null) {
+            mNgwConnections = NgwJsonWorker.loadNgwConnections(mMapPath);
+        }
+        return mNgwConnections;
     }
 
     @Override

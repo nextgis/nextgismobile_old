@@ -40,7 +40,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.nextgis.mobile.map.MapView;
+import com.nextgis.mobile.dialogs.NgwConnectionsDialog;
 import com.nextgis.mobile.map.MapViewEditable;
 import com.nextgis.mobile.services.TrackerService;
 import com.nextgis.mobile.services.TrackerService.TSBinder;
@@ -229,6 +229,9 @@ public class MainActivity extends ActionBarActivity {
         case R.id.menu_add_json:
             onAdd(DS_TYPE_LOCAL_GEOJSON);
             return true;
+        case R.id.menu_add_ngw:
+            onAddNgwLayers();
+            return true;
         case R.id.menu_save:
             mMap.onSaveEditLayer();
             return true;
@@ -357,6 +360,11 @@ public class MainActivity extends ActionBarActivity {
                 }
                 break;
         }
+    }
+
+    public void onAddNgwLayers() {
+        NgwConnectionsDialog dialog = new NgwConnectionsDialog();
+        dialog.show(getSupportFragmentManager(), "NgwConnectionsDialog");
     }
 
     @Override
@@ -538,7 +546,7 @@ public class MainActivity extends ActionBarActivity {
 		}*/
 	}
 
-	public MapView getMap() {
+	public MapViewEditable getMap() {
 		return mMap;
 	}
 

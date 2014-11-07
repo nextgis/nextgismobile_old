@@ -185,6 +185,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <string name="edit_feature">Edit feature</string>
     <string name="change_attributes">Change attributes</string>
 
+    <string name="ngw_connections">NGW Connections</string>
+    <string name="add_ngw_connection">Add NGW Connection</string>
+    <string name="ngw_layers">NGW Layers</string>
+
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>
     <string name="save_layer">Save Layer</string>
