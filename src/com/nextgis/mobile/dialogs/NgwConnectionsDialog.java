@@ -53,6 +53,7 @@ public class NgwConnectionsDialog extends DialogFragment {
     protected NgwJsonWorker mNgwJsonWorker;
     protected List<NgwConnection> mNgwConnections;
     protected NgwConnection mCurrConn;
+    protected JSONArray mCurrJsonArray;
 
     protected ImageButton mAddConnectionButton;
     protected TextView mParentFolderTextView;
@@ -61,13 +62,16 @@ public class NgwConnectionsDialog extends DialogFragment {
     protected AdapterView.OnItemClickListener mConnectionOnClickListener;
     protected AdapterView.OnItemLongClickListener mConnectionOnLongClickListener;
 
-    // TODO: save pointers by screen rotation on http loading
     // TODO: dialog design
     // TODO: network cashing
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+
         mMainActivity = (MainActivity) getActivity();
         mMap = mMainActivity.getMap();
         mNgwConnections = mMap.getNgwConnections();
@@ -92,6 +96,25 @@ public class NgwConnectionsDialog extends DialogFragment {
             }
         };
 
+        mNgwJsonWorker = new NgwJsonWorker();
+        mNgwJsonWorker.setJsonArrayLoadedListener(new NgwJsonWorker.JsonArrayLoadedListener() {
+            @Override
+            public void onJsonArrayLoaded(final JSONArray jsonArray) {
+                mCurrJsonArray = jsonArray;
+                setJsonView();
+            }
+        });
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (getDialog() != null && getRetainInstance())
+            getDialog().setOnDismissListener(null);
+        super.onDestroyView();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.ngw_connections_dialog, container);
 
         mAddConnectionButton = (ImageButton) view.findViewById(R.id.btn_add_connection);
@@ -106,15 +129,12 @@ public class NgwConnectionsDialog extends DialogFragment {
         mParentFolderTextView = (TextView) view.findViewById(R.id.tv_parent);
 
         mConnectionsList = (ListView) view.findViewById(R.id.ngw_connections_list);
-        setConnectionView();
 
-        mNgwJsonWorker = new NgwJsonWorker();
-        mNgwJsonWorker.setJsonArrayLoadedListener(new NgwJsonWorker.JsonArrayLoadedListener() {
-            @Override
-            public void onJsonArrayLoaded(final JSONArray jsonArray) {
-                setJsonView(jsonArray);
-            }
-        });
+        if (mCurrJsonArray == null) {
+            setConnectionView();
+        } else {
+            setJsonView();
+        }
 
         return view;
     }
@@ -130,14 +150,14 @@ public class NgwConnectionsDialog extends DialogFragment {
         mConnectionsList.setOnItemLongClickListener(mConnectionOnLongClickListener);
     }
 
-    protected void setJsonView(final JSONArray jsonArray) {
+    protected void setJsonView() {
         // TODO: title as path
         getDialog().setTitle(mMainActivity.getString(R.string.ngw_layers));
 
         mAddConnectionButton.setVisibility(View.GONE);
         mParentFolderTextView.setVisibility(View.VISIBLE);
 
-        mConnectionsList.setAdapter(new NgwJsonArrayAdapter(mMainActivity, jsonArray));
+        mConnectionsList.setAdapter(new NgwJsonArrayAdapter(mMainActivity, mCurrJsonArray));
         mConnectionsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -145,7 +165,7 @@ public class NgwConnectionsDialog extends DialogFragment {
                 // TODO: ProgressBar on
 
                 try {
-                    JSONObject resource = jsonArray.getJSONObject(position).getJSONObject(Constants.JSON_RESOURCE_KEY);
+                    JSONObject resource = mCurrJsonArray.getJSONObject(position).getJSONObject(Constants.JSON_RESOURCE_KEY);
                     int resourceId = resource.getInt(Constants.JSON_ID_KEY);
                     mNgwJsonWorker.loadNgwJsonArrayString(mCurrConn, resourceId);
                 } catch (JSONException e) {
@@ -159,7 +179,7 @@ public class NgwConnectionsDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 try {
-                    JSONObject resource = jsonArray.getJSONObject(0).getJSONObject(Constants.JSON_RESOURCE_KEY);
+                    JSONObject resource = mCurrJsonArray.getJSONObject(0).getJSONObject(Constants.JSON_RESOURCE_KEY);
                     JSONObject jsonParent = null;
 
                     try {
@@ -187,6 +207,7 @@ public class NgwConnectionsDialog extends DialogFragment {
                         }
 
                     } else {
+                        mCurrJsonArray = null;
                         setConnectionView();
                     }
 
@@ -203,7 +224,6 @@ public class NgwConnectionsDialog extends DialogFragment {
 
     public static class NgwAddConnectionDialog extends DialogFragment {
 
-        // TODO: scrolling view for screen rotation
         // TODO: field verifications
         // TODO: dialog design
 
@@ -216,12 +236,12 @@ public class NgwConnectionsDialog extends DialogFragment {
             getDialog().setTitle(mainActivity.getString(R.string.add_ngw_connection));
 
             View view = inflater.inflate(R.layout.ngw_add_connection_dialog, container);
-            final EditText edName = (EditText) view.findViewById(R.id.edName);
-            final EditText edUrl = (EditText) view.findViewById(R.id.edUrl);
-            final EditText edLogin = (EditText) view.findViewById(R.id.edLogin);
-            final EditText edPassword = (EditText) view.findViewById(R.id.edPassword);
+            final EditText edName = (EditText) view.findViewById(R.id.ed_name);
+            final EditText edUrl = (EditText) view.findViewById(R.id.ed_url);
+            final EditText edLogin = (EditText) view.findViewById(R.id.ed_login);
+            final EditText edPassword = (EditText) view.findViewById(R.id.ed_password);
 
-            Button btnOk = (Button) view.findViewById(R.id.btnOk);
+            Button btnOk = (Button) view.findViewById(R.id.btn_ok);
             btnOk.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -250,7 +270,7 @@ public class NgwConnectionsDialog extends DialogFragment {
                 }
             });
 
-            Button btnCancel = (Button) view.findViewById(R.id.btnCancel);
+            Button btnCancel = (Button) view.findViewById(R.id.btn_cancel);
             btnCancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

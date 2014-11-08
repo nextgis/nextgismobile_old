@@ -26,80 +26,104 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/tvName"
-        android:text="Name:"
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:ellipsize="marquee"/>
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:id="@+id/edName"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:inputType="text"/>
+        <Button
+            android:id="@+id/btn_ok"
+            android:text="OK"
+            android:layout_margin="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-    <TextView
-        android:id="@+id/tvUrl"
-        android:text="URL:"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:ellipsize="marquee"/>
+        <Button
+            android:id="@+id/btn_cancel"
+            android:text="Cancel"
+            android:layout_margin="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-    <EditText
-        android:id="@+id/edUrl"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:inputType="textUri"/>
+    </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvLogin"
-        android:text="Login:"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:ellipsize="marquee"/>
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
 
-    <EditText
-        android:id="@+id/edLogin"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:inputType="text"/>
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/tvPassword"
-        android:text="Password:"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:ellipsize="marquee"/>
+            <TextView
+                android:id="@+id/tv_name"
+                android:text="Name:"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:ellipsize="marquee"/>
 
-    <EditText
-        android:id="@+id/edPassword"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:inputType="textVisiblePassword"/>
+            <EditText
+                android:id="@+id/ed_name"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:inputType="text"/>
 
-    <Button
-        android:id="@+id/btnOk"
-        android:text="OK"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tv_url"
+                android:text="URL:"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:ellipsize="marquee"/>
 
-    <Button
-        android:id="@+id/btnCancel"
-        android:text="Cancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+            <EditText
+                android:id="@+id/ed_url"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:inputType="textUri"/>
+
+            <TextView
+                android:id="@+id/tv_login"
+                android:text="Login:"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:ellipsize="marquee"/>
+
+            <EditText
+                android:id="@+id/ed_login"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:inputType="text"/>
+
+            <TextView
+                android:id="@+id/tv_password"
+                android:text="Password:"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:ellipsize="marquee"/>
+
+            <EditText
+                android:id="@+id/ed_password"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:inputType="textVisiblePassword"/>
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </LinearLayout>
