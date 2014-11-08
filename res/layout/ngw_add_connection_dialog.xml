@@ -31,7 +31,6 @@
         android:text="Name:"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:gravity="center_vertical"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:ellipsize="marquee"/>
@@ -40,7 +39,6 @@
         android:id="@+id/edName"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:gravity="center_vertical"
         android:inputType="text"/>
 
@@ -49,7 +47,6 @@
         android:text="URL:"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:gravity="center_vertical"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:ellipsize="marquee"/>
@@ -58,7 +55,6 @@
         android:id="@+id/edUrl"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:gravity="center_vertical"
         android:inputType="textUri"/>
 
@@ -67,7 +63,6 @@
         android:text="Login:"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:gravity="center_vertical"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:ellipsize="marquee"/>
@@ -76,7 +71,6 @@
         android:id="@+id/edLogin"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:gravity="center_vertical"
         android:inputType="text"/>
 
@@ -85,7 +79,6 @@
         android:text="Password:"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:gravity="center_vertical"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:ellipsize="marquee"/>
@@ -94,7 +87,6 @@
         android:id="@+id/edPassword"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:gravity="center_vertical"
         android:inputType="textVisiblePassword"/>
 

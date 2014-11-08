@@ -27,16 +27,16 @@
 
 <!--
     <ImageView
-        android:id="@+id/ivIcon"
+        android:id="@+id/iv_icon"
         android:layout_width="48dip"
         android:layout_height="48dip"
         android:layout_marginRight="5dip"/>
 -->
 
     <TextView
-        android:id="@+id/tvConnectionName"
+        android:id="@+id/tv_connection_name"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_marginLeft="15dip"
         android:layout_marginRight="15dip"

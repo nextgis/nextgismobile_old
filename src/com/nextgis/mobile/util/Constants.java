@@ -146,6 +146,11 @@ public interface Constants {
     public static final String JSON_GEOMETRY_TYPE_KEY = "geometry_type";
     public static final String JSON_NGW_CONNECTIONS_KEY = "ngw_connections";
 
+    public static final String JSON_ID_KEY = "id";
+    public static final String JSON_DISPLAY_NAME_KEY = "display_name";
+    public static final String JSON_RESOURCE_KEY = "resource";
+    public static final String JSON_PARENT_KEY = "parent";
+
     /**
      * Layer type
      */

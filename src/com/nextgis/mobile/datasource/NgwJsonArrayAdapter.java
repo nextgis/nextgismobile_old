@@ -18,7 +18,7 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-package com.nextgis.mobile.dialogs;
+package com.nextgis.mobile.datasource;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -27,34 +27,40 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import com.nextgis.mobile.R;
-import com.nextgis.mobile.datasource.NgwConnection;
+import com.nextgis.mobile.util.Constants;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.util.List;
+public class NgwJsonArrayAdapter extends BaseAdapter {
 
-public class NgwConnectionsListAdapter extends BaseAdapter {
-
-    protected List<NgwConnection> mNgwConnections;
+    protected JSONArray mJSONArray;
 
     protected Context mContext;
     protected LayoutInflater mLayoutInflater;
 
 
-    public NgwConnectionsListAdapter(Context context, List<NgwConnection> connections) {
+    public NgwJsonArrayAdapter(Context context, JSONArray jsonArray) {
         super();
 
-        this.mNgwConnections = connections;
+        this.mJSONArray = jsonArray;
         this.mContext = context;
-        mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public int getCount() {
-        return mNgwConnections.size();
+        return mJSONArray.length();
     }
 
     @Override
     public Object getItem(int position) {
-        return mNgwConnections.get(position);
+        try {
+            return mJSONArray.getJSONObject(position);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -70,9 +76,17 @@ public class NgwConnectionsListAdapter extends BaseAdapter {
 
         // TODO: design (icons)
 
-        TextView tvConnectionName = (TextView) convertView.findViewById(R.id.tv_connection_name);
-        tvConnectionName.setText(mNgwConnections.get(position).getName());
+        TextView tvJsonName = (TextView) convertView.findViewById(R.id.tv_connection_name);
+        String displayName = "-----";
 
+        try {
+            JSONObject resource = mJSONArray.getJSONObject(position).getJSONObject(Constants.JSON_RESOURCE_KEY);
+            displayName = resource.getString(Constants.JSON_DISPLAY_NAME_KEY);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        tvJsonName.setText(displayName);
         return convertView;
     }
 }

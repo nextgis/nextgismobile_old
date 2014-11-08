@@ -22,7 +22,6 @@ package com.nextgis.mobile.dialogs;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.widget.AdapterView.OnItemClickListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,37 +31,71 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.NgwConnection;
+import com.nextgis.mobile.datasource.NgwJsonArrayAdapter;
 import com.nextgis.mobile.datasource.NgwJsonWorker;
 import com.nextgis.mobile.map.MapBase;
+import com.nextgis.mobile.util.Constants;
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
 public class NgwConnectionsDialog extends DialogFragment {
 
-    protected MainActivity mainActivity;
-    protected MapBase map;
-    protected static ListView connectionsList;
+    protected MainActivity mMainActivity;
+    protected MapBase mMap;
+
     protected NgwJsonWorker mNgwJsonWorker;
+    protected List<NgwConnection> mNgwConnections;
+    protected NgwConnection mCurrConn;
+
+    protected ImageButton mAddConnectionButton;
+    protected TextView mParentFolderTextView;
+    protected static ListView mConnectionsList;
+    protected NgwConnectionsListAdapter mConnectionsAdapter;
+    protected AdapterView.OnItemClickListener mConnectionOnClickListener;
+    protected AdapterView.OnItemLongClickListener mConnectionOnLongClickListener;
 
     // TODO: save pointers by screen rotation on http loading
     // TODO: dialog design
+    // TODO: network cashing
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mainActivity = (MainActivity) getActivity();
-        map = mainActivity.getMap();
-        final List<NgwConnection> ngwConnections = map.getNgwConnections();
+        mMainActivity = (MainActivity) getActivity();
+        mMap = mMainActivity.getMap();
+        mNgwConnections = mMap.getNgwConnections();
 
-        getDialog().setTitle(mainActivity.getString(R.string.ngw_connections));
+        mConnectionsAdapter = new NgwConnectionsListAdapter(mMainActivity, mNgwConnections);
+        mConnectionOnClickListener = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // TODO: ProgressBar on
+                mCurrConn = mNgwConnections.get(position);
+                mNgwJsonWorker.loadNgwRootJsonArrayString(mCurrConn);
+            }
+        };
+        mConnectionOnLongClickListener = new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                // TODO: message "Are you sure to delete connection mMap.getNgwConnections().get(position).getName() ?"
+                mNgwConnections.remove(position);
+                NgwJsonWorker.saveNgwConnections(mMap.getNgwConnections(), mMap.getMapPath());
+                ((BaseAdapter) mConnectionsList.getAdapter()).notifyDataSetChanged();
+                return true;
+            }
+        };
+
         View view = inflater.inflate(R.layout.ngw_connections_dialog, container);
 
-        ImageButton btnAddConnection = (ImageButton) view.findViewById(R.id.btn_add_connection);
-        btnAddConnection.setOnClickListener(new View.OnClickListener() {
+        mAddConnectionButton = (ImageButton) view.findViewById(R.id.btn_add_connection);
+        mAddConnectionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 NgwAddConnectionDialog dialog = new NgwAddConnectionDialog();
@@ -70,37 +103,101 @@ public class NgwConnectionsDialog extends DialogFragment {
             }
         });
 
-        connectionsList = (ListView) view.findViewById(R.id.ngw_connections_list);
-        connectionsList.setAdapter(new NgwConnectionsListAdapter(mainActivity, ngwConnections));
-        connectionsList.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: ProgressBar on
-                mNgwJsonWorker.loadNgwRootJsonArrayString(ngwConnections.get(position));
-            }
-        });
-        connectionsList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                ngwConnections.remove(position);
-                NgwJsonWorker.saveNgwConnections(map.getNgwConnections(), map.getMapPath());
-                ((BaseAdapter) connectionsList.getAdapter()).notifyDataSetChanged();
-                return true;
-            }
-        });
+        mParentFolderTextView = (TextView) view.findViewById(R.id.tv_parent);
+
+        mConnectionsList = (ListView) view.findViewById(R.id.ngw_connections_list);
+        setConnectionView();
 
         mNgwJsonWorker = new NgwJsonWorker();
         mNgwJsonWorker.setJsonArrayLoadedListener(new NgwJsonWorker.JsonArrayLoadedListener() {
             @Override
-            public void onJsonArrayLoaded(JSONArray jsonArray) {
-                // TODO: work with jsonArray
-
-                getDialog().setTitle(mainActivity.getString(R.string.ngw_layers));
-                // TODO: ProgressBar off
+            public void onJsonArrayLoaded(final JSONArray jsonArray) {
+                setJsonView(jsonArray);
             }
         });
 
         return view;
+    }
+
+    protected void setConnectionView() {
+        getDialog().setTitle(mMainActivity.getString(R.string.ngw_connections));
+
+        mAddConnectionButton.setVisibility(View.VISIBLE);
+        mParentFolderTextView.setVisibility(View.GONE);
+
+        mConnectionsList.setAdapter(mConnectionsAdapter);
+        mConnectionsList.setOnItemClickListener(mConnectionOnClickListener);
+        mConnectionsList.setOnItemLongClickListener(mConnectionOnLongClickListener);
+    }
+
+    protected void setJsonView(final JSONArray jsonArray) {
+        // TODO: title as path
+        getDialog().setTitle(mMainActivity.getString(R.string.ngw_layers));
+
+        mAddConnectionButton.setVisibility(View.GONE);
+        mParentFolderTextView.setVisibility(View.VISIBLE);
+
+        mConnectionsList.setAdapter(new NgwJsonArrayAdapter(mMainActivity, jsonArray));
+        mConnectionsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                // TODO: ProgressBar on
+
+                try {
+                    JSONObject resource = jsonArray.getJSONObject(position).getJSONObject(Constants.JSON_RESOURCE_KEY);
+                    int resourceId = resource.getInt(Constants.JSON_ID_KEY);
+                    mNgwJsonWorker.loadNgwJsonArrayString(mCurrConn, resourceId);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        mConnectionsList.setOnItemLongClickListener(null);
+
+        mParentFolderTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    JSONObject resource = jsonArray.getJSONObject(0).getJSONObject(Constants.JSON_RESOURCE_KEY);
+                    JSONObject jsonParent = null;
+
+                    try {
+                        jsonParent = resource.getJSONObject(Constants.JSON_PARENT_KEY);
+                    } catch (JSONException e) {
+                        //e.printStackTrace();
+                    }
+
+                    if (jsonParent != null) {
+                        jsonParent = jsonParent.getJSONObject(Constants.JSON_PARENT_KEY);
+
+                        if (jsonParent != null) {
+                            Integer parentId = null;
+                            try {
+                                parentId = jsonParent.getInt(Constants.JSON_ID_KEY);
+                            } catch (JSONException e) {
+                                //e.printStackTrace();
+                            }
+
+                            if (parentId != null) {
+                                mNgwJsonWorker.loadNgwJsonArrayString(mCurrConn, parentId);
+                            } else {
+                                mNgwJsonWorker.loadNgwRootJsonArrayString(mCurrConn);
+                            }
+                        }
+
+                    } else {
+                        setConnectionView();
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
+        // TODO: ProgressBar off
     }
 
 
@@ -128,15 +225,27 @@ public class NgwConnectionsDialog extends DialogFragment {
             btnOk.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    String name = edName.getText().toString();
+                    String url = edUrl.getText().toString();
+
+                    if (name.length() == 0) {
+
+                        if (url.length() > 0) {
+                            name = url;
+                        } else {
+                            name = "-----";
+                        }
+                    }
+
                     connections.add(new NgwConnection(
-                            edName.getText().toString(),
-                            edUrl.getText().toString(),
+                            name,
+                            url,
                             edLogin.getText().toString(),
                             edPassword.getText().toString()
                     ));
 
                     NgwJsonWorker.saveNgwConnections(map.getNgwConnections(), map.getMapPath());
-                    ((BaseAdapter) connectionsList.getAdapter()).notifyDataSetChanged();
+                    ((BaseAdapter) mConnectionsList.getAdapter()).notifyDataSetChanged();
                     dismiss();
                 }
             });

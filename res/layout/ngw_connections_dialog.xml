@@ -32,7 +32,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dip"
-        android:layout_marginRight="5dip"/>
+        android:layout_marginRight="5dip"
+        android:visibility="visible"/>
+
+    <TextView
+        android:id="@+id/tv_parent"
+        android:text=".."
+        android:layout_width="fill_parent"
+        android:layout_height="90dip"
+        android:layout_marginLeft="15dip"
+        android:layout_marginRight="15dip"
+        android:gravity="center_vertical"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:ellipsize="marquee"
+        android:visibility="gone"/>
 
     <ListView
         android:id="@+id/ngw_connections_list"
