@@ -31,7 +31,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.ProgressBar;
 import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.NgwConnection;
@@ -53,10 +53,13 @@ public class NgwConnectionsDialog extends DialogFragment {
     protected NgwJsonWorker mNgwJsonWorker;
     protected List<NgwConnection> mNgwConnections;
     protected NgwConnection mCurrConn;
-    protected JSONArray mCurrJsonArray;
+    protected JSONArray mCurrJsonArray = null;
+    protected boolean mIsHttpRunning = false;
 
     protected ImageButton mAddConnectionButton;
-    protected TextView mParentFolderTextView;
+    protected ImageButton mToParentButton;
+    protected ProgressBar mHttpProgressBar;
+
     protected static ListView mConnectionsList;
     protected NgwConnectionsListAdapter mConnectionsAdapter;
     protected AdapterView.OnItemClickListener mConnectionOnClickListener;
@@ -80,7 +83,9 @@ public class NgwConnectionsDialog extends DialogFragment {
         mConnectionOnClickListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: ProgressBar on
+                mHttpProgressBar.setVisibility(View.VISIBLE);
+                mIsHttpRunning = true;
+
                 mCurrConn = mNgwConnections.get(position);
                 mNgwJsonWorker.loadNgwRootJsonArrayString(mCurrConn);
             }
@@ -100,6 +105,9 @@ public class NgwConnectionsDialog extends DialogFragment {
         mNgwJsonWorker.setJsonArrayLoadedListener(new NgwJsonWorker.JsonArrayLoadedListener() {
             @Override
             public void onJsonArrayLoaded(final JSONArray jsonArray) {
+                mHttpProgressBar.setVisibility(View.INVISIBLE);
+                mIsHttpRunning = false;
+
                 mCurrJsonArray = jsonArray;
                 setJsonView();
             }
@@ -126,7 +134,10 @@ public class NgwConnectionsDialog extends DialogFragment {
             }
         });
 
-        mParentFolderTextView = (TextView) view.findViewById(R.id.tv_parent);
+        mToParentButton = (ImageButton) view.findViewById(R.id.btn_to_parent);
+
+        mHttpProgressBar = (ProgressBar) view.findViewById(R.id.http_progress_bar);
+        mHttpProgressBar.setVisibility(mIsHttpRunning ? View.VISIBLE : View.INVISIBLE);
 
         mConnectionsList = (ListView) view.findViewById(R.id.ngw_connections_list);
 
@@ -143,7 +154,7 @@ public class NgwConnectionsDialog extends DialogFragment {
         getDialog().setTitle(mMainActivity.getString(R.string.ngw_connections));
 
         mAddConnectionButton.setVisibility(View.VISIBLE);
-        mParentFolderTextView.setVisibility(View.GONE);
+        mToParentButton.setVisibility(View.GONE);
 
         mConnectionsList.setAdapter(mConnectionsAdapter);
         mConnectionsList.setOnItemClickListener(mConnectionOnClickListener);
@@ -155,17 +166,20 @@ public class NgwConnectionsDialog extends DialogFragment {
         getDialog().setTitle(mMainActivity.getString(R.string.ngw_layers));
 
         mAddConnectionButton.setVisibility(View.GONE);
-        mParentFolderTextView.setVisibility(View.VISIBLE);
+        mToParentButton.setVisibility(View.VISIBLE);
 
-        mConnectionsList.setAdapter(new NgwJsonArrayAdapter(mMainActivity, mCurrJsonArray));
+        NgwJsonArrayAdapter jsonArrayAdapter = new NgwJsonArrayAdapter(mMainActivity, mCurrJsonArray);
+        jsonArrayAdapter.getFilter().filter(null);
+        mConnectionsList.setAdapter(jsonArrayAdapter);
+
         mConnectionsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                // TODO: ProgressBar on
+                mHttpProgressBar.setVisibility(View.VISIBLE);
+                mIsHttpRunning = true;
 
                 try {
-                    JSONObject resource = mCurrJsonArray.getJSONObject(position).getJSONObject(Constants.JSON_RESOURCE_KEY);
+                    JSONObject resource = mCurrJsonArray.getJSONObject((int) id).getJSONObject(Constants.JSON_RESOURCE_KEY);
                     int resourceId = resource.getInt(Constants.JSON_ID_KEY);
                     mNgwJsonWorker.loadNgwJsonArrayString(mCurrConn, resourceId);
                 } catch (JSONException e) {
@@ -175,38 +189,34 @@ public class NgwConnectionsDialog extends DialogFragment {
         });
         mConnectionsList.setOnItemLongClickListener(null);
 
-        mParentFolderTextView.setOnClickListener(new View.OnClickListener() {
+        mToParentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 try {
                     JSONObject resource = mCurrJsonArray.getJSONObject(0).getJSONObject(Constants.JSON_RESOURCE_KEY);
-                    JSONObject jsonParent = null;
 
                     try {
-                        jsonParent = resource.getJSONObject(Constants.JSON_PARENT_KEY);
-                    } catch (JSONException e) {
-                        //e.printStackTrace();
-                    }
+                        JSONObject jsonParent = resource.getJSONObject(Constants.JSON_PARENT_KEY);
 
-                    if (jsonParent != null) {
-                        jsonParent = jsonParent.getJSONObject(Constants.JSON_PARENT_KEY);
+                        try {
+                            mHttpProgressBar.setVisibility(View.VISIBLE);
+                            mIsHttpRunning = true;
 
-                        if (jsonParent != null) {
-                            Integer parentId = null;
+                            jsonParent = jsonParent.getJSONObject(Constants.JSON_PARENT_KEY);
+
                             try {
-                                parentId = jsonParent.getInt(Constants.JSON_ID_KEY);
-                            } catch (JSONException e) {
-                                //e.printStackTrace();
-                            }
-
-                            if (parentId != null) {
+                                Integer parentId = jsonParent.getInt(Constants.JSON_ID_KEY);
                                 mNgwJsonWorker.loadNgwJsonArrayString(mCurrConn, parentId);
-                            } else {
+                            } catch (JSONException e) {
                                 mNgwJsonWorker.loadNgwRootJsonArrayString(mCurrConn);
                             }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
 
-                    } else {
+                    } catch (JSONException e) {
                         mCurrJsonArray = null;
                         setConnectionView();
                     }
@@ -214,18 +224,25 @@ public class NgwConnectionsDialog extends DialogFragment {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
             }
         });
-
-        // TODO: ProgressBar off
     }
 
 
     public static class NgwAddConnectionDialog extends DialogFragment {
 
-        // TODO: field verifications
-        // TODO: dialog design
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+        }
+
+        @Override
+        public void onDestroyView() {
+            if (getDialog() != null && getRetainInstance())
+                getDialog().setOnDismissListener(null);
+            super.onDestroyView();
+        }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

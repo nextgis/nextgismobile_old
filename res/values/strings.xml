@@ -220,4 +220,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <string name="layer_url">URL</string>
     <string name="layer_type">Type</string>
 
+    <string name="ngw_connection_name">Connection Name:</string>
+    <string name="ngw_connection_url">URL:</string>
+    <string name="ngw_connection_login">Login:</string>
+    <string name="ngw_connection_password">Password:</string>
+
 </resources>

@@ -70,7 +70,7 @@ public class NgwConnectionsListAdapter extends BaseAdapter {
 
         // TODO: design (icons)
 
-        TextView tvConnectionName = (TextView) convertView.findViewById(R.id.tv_connection_name);
+        TextView tvConnectionName = (TextView) convertView.findViewById(R.id.tv_item_text);
         tvConnectionName.setText(mNgwConnections.get(position).getName());
 
         return convertView;

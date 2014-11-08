@@ -23,6 +23,7 @@ package com.nextgis.mobile.datasource;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
+import com.nextgis.mobile.util.Constants;
 import com.nextgis.mobile.util.FileUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -167,6 +168,36 @@ public class NgwJsonWorker {
         }
 
         return false;
+    }
+
+    public static Integer ngwClsToType(String typeString) {
+        if (typeString.equals(Constants.JSON_RESOURCE_GROUP_VALUE)) {
+            return Constants.NGWTYPE_RESOURCE_GROUP;
+        } else if (typeString.equals(Constants.JSON_POSTGIS_LAYER_VALUE)) {
+            return Constants.NGWTYPE_POSTGIS_LAYER;
+        } else if (typeString.equals(Constants.JSON_WMSSERVER_SERVICE_VALUE)) {
+            return Constants.NGWTYPE_WMSSERVER_SERVICE;
+        } else if (typeString.equals(Constants.JSON_BASELAYERS_VALUE)) {
+            return Constants.NGWTYPE_BASELAYERS;
+        } else if (typeString.equals(Constants.JSON_POSTGIS_CONNECTION_VALUE)) {
+            return Constants.NGWTYPE_POSTGIS_CONNECTION;
+        } else if (typeString.equals(Constants.JSON_WEBMAP_VALUE)) {
+            return Constants.NGWTYPE_WEBMAP;
+        } else if (typeString.equals(Constants.JSON_WFSSERVER_SERVICE_VALUE)) {
+            return Constants.NGWTYPE_WFSSERVER_SERVICE;
+        } else if (typeString.equals(Constants.JSON_VECTOR_LAYER_VALUE)) {
+            return Constants.NGWTYPE_VECTOR_LAYER;
+        } else if (typeString.equals(Constants.JSON_RASTER_LAYER_VALUE)) {
+            return Constants.NGWTYPE_RASTER_LAYER;
+        } else if (typeString.equals(Constants.JSON_VECTOR_STYLE_VALUE)) {
+            return Constants.NGWTYPE_VECTOR_STYLE;
+        } else if (typeString.equals(Constants.JSON_RASTER_STYLE_VALUE)) {
+            return Constants.NGWTYPE_RASTER_STYLE;
+        } else if (typeString.equals(Constants.JSON_FILE_BUCKET_VALUE)) {
+            return Constants.NGWTYPE_FILE_BUCKET;
+        } else {
+            return Constants.NGWTYPE_UNKNOWN;
+        }
     }
 
 

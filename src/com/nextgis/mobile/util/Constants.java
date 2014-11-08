@@ -146,10 +146,41 @@ public interface Constants {
     public static final String JSON_GEOMETRY_TYPE_KEY = "geometry_type";
     public static final String JSON_NGW_CONNECTIONS_KEY = "ngw_connections";
 
-    public static final String JSON_ID_KEY = "id";
-    public static final String JSON_DISPLAY_NAME_KEY = "display_name";
     public static final String JSON_RESOURCE_KEY = "resource";
+    public static final String JSON_ID_KEY = "id";
     public static final String JSON_PARENT_KEY = "parent";
+    public static final String JSON_CLS_KEY = "cls";
+    public static final String JSON_DISPLAY_NAME_KEY = "display_name";
+
+    public static final String JSON_RESOURCE_GROUP_VALUE = "resource_group";
+    public static final String JSON_POSTGIS_LAYER_VALUE = "postgis_layer";
+    public static final String JSON_WMSSERVER_SERVICE_VALUE = "wmsserver_service";
+    public static final String JSON_BASELAYERS_VALUE = "baselayers";
+    public static final String JSON_POSTGIS_CONNECTION_VALUE = "postgis_connection";
+    public static final String JSON_WEBMAP_VALUE = "webmap";
+    public static final String JSON_WFSSERVER_SERVICE_VALUE = "wfsserver_service";
+    public static final String JSON_RASTER_LAYER_VALUE = "raster_layer";
+    public static final String JSON_VECTOR_LAYER_VALUE = "vector_layer";
+    public static final String JSON_VECTOR_STYLE_VALUE = "vector_style";
+    public static final String JSON_RASTER_STYLE_VALUE = "raster_style";
+    public static final String JSON_FILE_BUCKET_VALUE = "file_bucket";
+
+    /**
+     * NGW JSON types
+     */
+    public static final int NGWTYPE_RESOURCE_GROUP = 1;
+    public static final int NGWTYPE_POSTGIS_LAYER = 2;
+    public static final int NGWTYPE_WMSSERVER_SERVICE = 3;
+    public static final int NGWTYPE_BASELAYERS = 4;
+    public static final int NGWTYPE_POSTGIS_CONNECTION = 5;
+    public static final int NGWTYPE_WEBMAP = 6;
+    public static final int NGWTYPE_WFSSERVER_SERVICE = 7;
+    public static final int NGWTYPE_VECTOR_LAYER = 8;
+    public static final int NGWTYPE_RASTER_LAYER = 9;
+    public static final int NGWTYPE_VECTOR_STYLE = 10;
+    public static final int NGWTYPE_RASTER_STYLE = 11;
+    public static final int NGWTYPE_FILE_BUCKET = 12;
+    public static final int NGWTYPE_UNKNOWN = 1000;
 
     /**
      * Layer type

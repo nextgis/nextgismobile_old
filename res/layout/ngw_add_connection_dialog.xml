@@ -30,27 +30,31 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-
-        <Button
-            android:id="@+id/btn_ok"
-            android:text="OK"
-            android:layout_margin="5dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="15dp">
 
         <Button
             android:id="@+id/btn_cancel"
-            android:text="Cancel"
-            android:layout_margin="5dp"
+            android:text="@string/cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/btn_ok"
+            android:text="@string/ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"/>
 
     </LinearLayout>
 
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"
-                android:layout_height="fill_parent">
+                android:layout_height="fill_parent"
+                android:layout_margin="15dp">
 
         <LinearLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
@@ -60,7 +64,7 @@
 
             <TextView
                 android:id="@+id/tv_name"
-                android:text="Name:"
+                android:text="@string/ngw_connection_name"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
@@ -76,7 +80,7 @@
 
             <TextView
                 android:id="@+id/tv_url"
-                android:text="URL:"
+                android:text="@string/ngw_connection_url"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
@@ -92,7 +96,7 @@
 
             <TextView
                 android:id="@+id/tv_login"
-                android:text="Login:"
+                android:text="@string/ngw_connection_login"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
@@ -108,7 +112,7 @@
 
             <TextView
                 android:id="@+id/tv_password"
-                android:text="Password:"
+                android:text="@string/ngw_connection_password"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"

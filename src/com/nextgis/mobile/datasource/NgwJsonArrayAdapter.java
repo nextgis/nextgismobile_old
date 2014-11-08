@@ -25,6 +25,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.util.Constants;
@@ -32,9 +36,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class NgwJsonArrayAdapter extends BaseAdapter {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+public class NgwJsonArrayAdapter extends BaseAdapter implements Filterable {
 
     protected JSONArray mJSONArray;
+    protected List<NgwJsonAttribute> mFilteredAttributeList;
+    protected NgwJsonFilter mNgwJsonFilter;
 
     protected Context mContext;
     protected LayoutInflater mLayoutInflater;
@@ -46,26 +57,26 @@ public class NgwJsonArrayAdapter extends BaseAdapter {
         this.mJSONArray = jsonArray;
         this.mContext = context;
         this.mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        getFilter();
     }
 
     @Override
     public int getCount() {
-        return mJSONArray.length();
+        if (mFilteredAttributeList != null) {
+            return mFilteredAttributeList.size();
+        } else {
+            return 0;
+        }
     }
 
     @Override
     public Object getItem(int position) {
-        try {
-            return mJSONArray.getJSONObject(position);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
         return null;
     }
 
     @Override
     public long getItemId(int position) {
-        return position;
+        return mFilteredAttributeList.get(position).mJsonArrayIndex;
     }
 
     @Override
@@ -74,19 +85,125 @@ public class NgwJsonArrayAdapter extends BaseAdapter {
             convertView = mLayoutInflater.inflate(R.layout.ngw_connections_row, parent, false);
         }
 
-        // TODO: design (icons)
+        ImageView ivJsonIcon = (ImageView) convertView.findViewById(R.id.iv_item_icon);
+        TextView tvJsonName = (TextView) convertView.findViewById(R.id.tv_item_text);
+        CheckBox checkBox = (CheckBox) convertView.findViewById(R.id.check_box);
 
-        TextView tvJsonName = (TextView) convertView.findViewById(R.id.tv_connection_name);
-        String displayName = "-----";
+        NgwJsonAttribute attribute = mFilteredAttributeList.get(position);
 
-        try {
-            JSONObject resource = mJSONArray.getJSONObject(position).getJSONObject(Constants.JSON_RESOURCE_KEY);
-            displayName = resource.getString(Constants.JSON_DISPLAY_NAME_KEY);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        switch (attribute.mNgwJsonType) {
+
+            case Constants.NGWTYPE_RESOURCE_GROUP :
+                ivJsonIcon.setImageResource(R.drawable.folder);
+                checkBox.setVisibility(View.GONE);
+                break;
+            case Constants.NGWTYPE_VECTOR_LAYER :
+                ivJsonIcon.setImageResource(R.drawable.ngw);
+                checkBox.setVisibility(View.VISIBLE);
+                break;
+            case Constants.NGWTYPE_RASTER_LAYER :
+                ivJsonIcon.setImageResource(R.drawable.raster_bmp);
+                checkBox.setVisibility(View.VISIBLE);
+                break;
+            default:
+                ivJsonIcon.setImageResource(R.drawable.ic_action_cancel);
+                checkBox.setVisibility(View.GONE);
+                break;
         }
 
-        tvJsonName.setText(displayName);
+        tvJsonName.setText(attribute.mDisplayName);
         return convertView;
+    }
+
+    @Override
+    public Filter getFilter() {
+        if (mNgwJsonFilter == null) {
+            mNgwJsonFilter = new NgwJsonFilter();
+        }
+
+        return mNgwJsonFilter;
+    }
+
+    private class NgwJsonFilter extends Filter {
+
+        //Invoked in a worker thread to filter the data according to the constraint.
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            FilterResults results = new FilterResults();
+            List<NgwJsonAttribute> resultList = new ArrayList<NgwJsonAttribute>(mJSONArray.length());
+
+            for (int i = 0; i < mJSONArray.length(); ++i) {
+                NgwJsonAttribute attribute = new NgwJsonAttribute();
+
+                JSONObject resource = null;
+                try {
+                    resource = mJSONArray.getJSONObject(i).getJSONObject(Constants.JSON_RESOURCE_KEY);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    results.count = 0;
+                    results.values = null;
+                    return results;
+                }
+
+                try {
+                    attribute.mNgwJsonType =
+                            NgwJsonWorker.ngwClsToType(resource.getString(Constants.JSON_CLS_KEY));
+                } catch (JSONException e) {
+                    attribute.mNgwJsonType = Constants.NGWTYPE_UNKNOWN;
+                }
+
+                try {
+                    attribute.mDisplayName = resource.getString(Constants.JSON_DISPLAY_NAME_KEY);
+                } catch (JSONException e) {
+                    attribute.mDisplayName = "-----";
+                }
+
+                attribute.mJsonArrayIndex = i;
+
+                resultList.add(attribute);
+            }
+
+            Collections.sort(resultList, new Comparator<NgwJsonAttribute>() {
+                @Override
+                public int compare(NgwJsonAttribute lhs, NgwJsonAttribute rhs) {
+                    if (lhs.mNgwJsonType == Constants.NGWTYPE_RESOURCE_GROUP) {
+
+                        if (rhs.mNgwJsonType == Constants.NGWTYPE_RESOURCE_GROUP) {
+                            return lhs.mDisplayName.compareTo(rhs.mDisplayName);
+                        } else {
+                            return -1;
+                        }
+
+                    } else {
+
+                        if (rhs.mNgwJsonType == Constants.NGWTYPE_RESOURCE_GROUP) {
+                            return 1;
+                        } else {
+                            return lhs.mDisplayName.compareTo(rhs.mDisplayName);
+                        }
+                    }
+                }
+            });
+
+            results.count = resultList.size();
+            results.values = resultList;
+
+            return results;
+        }
+
+
+        //Invoked in the UI thread to publish the filtering results in the user interface.
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            mFilteredAttributeList = (List<NgwJsonAttribute>) results.values;
+            notifyDataSetChanged();
+        }
+    }
+
+    private class NgwJsonAttribute {
+        public Integer mJsonArrayIndex;
+        public Integer mNgwJsonType;
+        public String mDisplayName;
     }
 }
