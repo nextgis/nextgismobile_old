@@ -25,6 +25,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.NgwConnection;
@@ -68,10 +70,14 @@ public class NgwConnectionsListAdapter extends BaseAdapter {
             convertView = mLayoutInflater.inflate(R.layout.ngw_connections_row, parent, false);
         }
 
-        // TODO: design (icons)
+        ImageView ivJsonIcon = (ImageView) convertView.findViewById(R.id.iv_item_icon);
+        ivJsonIcon.setImageResource(R.drawable.folder_remote);
 
         TextView tvConnectionName = (TextView) convertView.findViewById(R.id.tv_item_text);
         tvConnectionName.setText(mNgwConnections.get(position).getName());
+
+        CheckBox checkBox = (CheckBox) convertView.findViewById(R.id.check_box);
+        checkBox.setVisibility(View.GONE);
 
         return convertView;
     }

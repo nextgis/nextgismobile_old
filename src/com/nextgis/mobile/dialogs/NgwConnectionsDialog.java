@@ -20,7 +20,11 @@
  ****************************************************************************/
 package com.nextgis.mobile.dialogs;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,10 +54,10 @@ import java.util.List;
 public class NgwConnectionsDialog extends DialogFragment {
 
     protected MainActivity mMainActivity;
-    protected MapBase mMap;
+    protected static MapBase mMap;
 
     protected NgwJsonWorker mNgwJsonWorker;
-    protected List<NgwConnection> mNgwConnections;
+    protected static List<NgwConnection> mNgwConnections;
     protected NgwConnection mCurrConn;
     protected JSONArray mCurrJsonArray = null;
     protected boolean mIsHttpRunning = false;
@@ -68,7 +72,6 @@ public class NgwConnectionsDialog extends DialogFragment {
     protected AdapterView.OnItemClickListener mConnectionOnClickListener;
     protected AdapterView.OnItemLongClickListener mConnectionOnLongClickListener;
 
-    // TODO: dialog design
     // TODO: network cashing
 
 
@@ -87,11 +90,8 @@ public class NgwConnectionsDialog extends DialogFragment {
         mConnectionOnClickListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                TODO: lock item
-//                mDialog.getWindow().addFlags(
-//                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-//                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-
+                mAddConnectionButton.setEnabled(false);
+                mConnectionsList.setEnabled(false);
 
                 mHttpProgressBar.setVisibility(View.VISIBLE);
                 mIsHttpRunning = true;
@@ -103,10 +103,8 @@ public class NgwConnectionsDialog extends DialogFragment {
         mConnectionOnLongClickListener = new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: message "Are you sure to delete connection mMap.getNgwConnections().get(position).getName() ?"
-                mNgwConnections.remove(position);
-                NgwJsonWorker.saveNgwConnections(mMap.getNgwConnections(), mMap.getMapPath());
-                ((BaseAdapter) mConnectionsList.getAdapter()).notifyDataSetChanged();
+                NgwDeleteConnectionDialog.newInstance(position)
+                        .show(getActivity().getSupportFragmentManager(), "NgwDeleteConnectionDialog");
                 return true;
             }
         };
@@ -115,7 +113,9 @@ public class NgwConnectionsDialog extends DialogFragment {
         mNgwJsonWorker.setJsonArrayLoadedListener(new NgwJsonWorker.JsonArrayLoadedListener() {
             @Override
             public void onJsonArrayLoaded(final JSONArray jsonArray) {
-                // TODO: unlock item
+                mAddConnectionButton.setEnabled(true);
+                mConnectionsList.setEnabled(true);
+
                 mHttpProgressBar.setVisibility(View.INVISIBLE);
                 mIsHttpRunning = false;
 
@@ -123,7 +123,6 @@ public class NgwConnectionsDialog extends DialogFragment {
 
                 try {
                     JSONObject jsonParentResource = new JSONObject();
-                    jsonParentResource.put(Constants.JSON_ID_KEY, null);
                     jsonParentResource.put(Constants.JSON_CLS_KEY, Constants.JSON_PARENT_RESOURCE_GROUP_VALUE);
                     jsonParentResource.put(Constants.JSON_DISPLAY_NAME_KEY, "..");
 
@@ -158,6 +157,7 @@ public class NgwConnectionsDialog extends DialogFragment {
         mButtonBar = (LinearLayout) view.findViewById(R.id.button_nar);
 
         mAddConnectionButton = (ImageButton) view.findViewById(R.id.btn_add_connection);
+        mAddConnectionButton.setEnabled(!mIsHttpRunning);
         mAddConnectionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -166,8 +166,8 @@ public class NgwConnectionsDialog extends DialogFragment {
             }
         });
 
-        // TODO: lock items
         mConnectionsList = (ListView) view.findViewById(R.id.ngw_connections_list);
+        mConnectionsList.setEnabled(!mIsHttpRunning);
 
         if (mCurrJsonArray == null) {
             setConnectionView();
@@ -214,7 +214,7 @@ public class NgwConnectionsDialog extends DialogFragment {
                             try {
                                 jsonParent = jsonParent.getJSONObject(Constants.JSON_PARENT_KEY);
 
-                                // TODO: lock item
+                                mConnectionsList.setEnabled(false);
                                 mHttpProgressBar.setVisibility(View.VISIBLE);
                                 mIsHttpRunning = true;
 
@@ -240,7 +240,7 @@ public class NgwConnectionsDialog extends DialogFragment {
                         try {
                             int resourceId = resource.getInt(Constants.JSON_ID_KEY);
 
-                            // TODO: lock item
+                            mConnectionsList.setEnabled(false);
                             mHttpProgressBar.setVisibility(View.VISIBLE);
                             mIsHttpRunning = true;
 
@@ -327,6 +327,57 @@ public class NgwConnectionsDialog extends DialogFragment {
             });
 
             return view;
+        }
+    }
+
+    public static class NgwDeleteConnectionDialog extends DialogFragment {
+
+        int mIndex;
+
+
+        static NgwDeleteConnectionDialog newInstance(int index) {
+            NgwDeleteConnectionDialog dialog = new NgwDeleteConnectionDialog();
+
+            // Supply index input as an argument.
+            Bundle args = new Bundle();
+            args.putInt("index", index);
+            dialog.setArguments(args);
+
+            return dialog;
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+            this.mIndex = getArguments().getInt("index");
+        }
+
+        @Override
+        public void onDestroyView() {
+            if (getDialog() != null && getRetainInstance())
+                getDialog().setOnDismissListener(null);
+            super.onDestroyView();
+        }
+
+        @Override
+        @NonNull
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.delete)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mNgwConnections.remove(mIndex);
+                            NgwJsonWorker.saveNgwConnections(mMap.getNgwConnections(), mMap.getMapPath());
+                            ((BaseAdapter) mConnectionsList.getAdapter()).notifyDataSetChanged();
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, null)
+                    .setMessage(String.format(getString(R.string.ngw_msg_delete_connection),
+                            mNgwConnections.get(mIndex).getName()));
+            return adb.create();
         }
     }
 }
