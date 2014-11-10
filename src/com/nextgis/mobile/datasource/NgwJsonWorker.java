@@ -195,6 +195,8 @@ public class NgwJsonWorker {
             return Constants.NGWTYPE_RASTER_STYLE;
         } else if (typeString.equals(Constants.JSON_FILE_BUCKET_VALUE)) {
             return Constants.NGWTYPE_FILE_BUCKET;
+        } else if (typeString.equals(Constants.JSON_PARENT_RESOURCE_GROUP_VALUE)) {
+            return Constants.NGWTYPE_PARENT_RESOURCE_GROUP;
         } else {
             return Constants.NGWTYPE_UNKNOWN;
         }

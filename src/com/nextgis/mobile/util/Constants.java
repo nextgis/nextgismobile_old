@@ -165,6 +165,8 @@ public interface Constants {
     public static final String JSON_RASTER_STYLE_VALUE = "raster_style";
     public static final String JSON_FILE_BUCKET_VALUE = "file_bucket";
 
+    public static final String JSON_PARENT_RESOURCE_GROUP_VALUE = "parent_resource_group";
+
     /**
      * NGW JSON types
      */
@@ -180,7 +182,10 @@ public interface Constants {
     public static final int NGWTYPE_VECTOR_STYLE = 10;
     public static final int NGWTYPE_RASTER_STYLE = 11;
     public static final int NGWTYPE_FILE_BUCKET = 12;
+
+    public static final int NGWTYPE_PARENT_RESOURCE_GROUP = 999;
     public static final int NGWTYPE_UNKNOWN = 1000;
+
 
     /**
      * Layer type

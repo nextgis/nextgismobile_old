@@ -91,17 +91,21 @@ public class NgwJsonArrayAdapter extends BaseAdapter implements Filterable {
 
         NgwJsonAttribute attribute = mFilteredAttributeList.get(position);
 
-        switch (attribute.mNgwJsonType) {
+        if (position == 0) {
+            ivJsonIcon.setImageResource(R.drawable.folder_up);
+            checkBox.setVisibility(View.GONE);
 
-            case Constants.NGWTYPE_RESOURCE_GROUP :
+        } else switch (attribute.mNgwJsonType) {
+
+            case Constants.NGWTYPE_RESOURCE_GROUP:
                 ivJsonIcon.setImageResource(R.drawable.folder);
                 checkBox.setVisibility(View.GONE);
                 break;
-            case Constants.NGWTYPE_VECTOR_LAYER :
+            case Constants.NGWTYPE_VECTOR_LAYER:
                 ivJsonIcon.setImageResource(R.drawable.ngw);
                 checkBox.setVisibility(View.VISIBLE);
                 break;
-            case Constants.NGWTYPE_RASTER_LAYER :
+            case Constants.NGWTYPE_RASTER_LAYER:
                 ivJsonIcon.setImageResource(R.drawable.raster_bmp);
                 checkBox.setVisibility(View.VISIBLE);
                 break;
@@ -166,7 +170,12 @@ public class NgwJsonArrayAdapter extends BaseAdapter implements Filterable {
             Collections.sort(resultList, new Comparator<NgwJsonAttribute>() {
                 @Override
                 public int compare(NgwJsonAttribute lhs, NgwJsonAttribute rhs) {
-                    if (lhs.mNgwJsonType == Constants.NGWTYPE_RESOURCE_GROUP) {
+                    if (lhs.mNgwJsonType == Constants.NGWTYPE_PARENT_RESOURCE_GROUP) {
+                        return -1;
+                    } else if (rhs.mNgwJsonType == Constants.NGWTYPE_PARENT_RESOURCE_GROUP) {
+                        return 1;
+
+                    } else if (lhs.mNgwJsonType == Constants.NGWTYPE_RESOURCE_GROUP) {
 
                         if (rhs.mNgwJsonType == Constants.NGWTYPE_RESOURCE_GROUP) {
                             return lhs.mDisplayName.compareTo(rhs.mDisplayName);
