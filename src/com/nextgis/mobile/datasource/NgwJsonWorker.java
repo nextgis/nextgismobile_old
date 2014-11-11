@@ -68,44 +68,8 @@ public class NgwJsonWorker {
         mJsonArrayLoadedListener = jsonArrayLoadedListener;
     }
 
-    public void loadNgwRootJsonObjectString(NgwConnection connection) {
-        NgwConnection resourceConnection = new NgwConnection(
-                connection.getName(),
-                connection.getUrl() + "/resource/-/child/0",
-                connection.getLogin(),
-                connection.getPassword());
-
-        new NgwConnectionRunner(false).execute(resourceConnection);
-    }
-
-    public void loadNgwRootJsonArrayString(NgwConnection connection) {
-        NgwConnection resourceConnection = new NgwConnection(
-                connection.getName(),
-                connection.getUrl() + "/resource/-/child/",
-                connection.getLogin(),
-                connection.getPassword());
-
-        new NgwConnectionRunner(true).execute(resourceConnection);
-    }
-
-    public void loadNgwJsonObjectString(NgwConnection connection, int parentId, int resourceId) {
-        NgwConnection resourceConnection = new NgwConnection(
-                connection.getName(),
-                connection.getUrl() + "/resource/" + parentId + "/child/" + resourceId,
-                connection.getLogin(),
-                connection.getPassword());
-
-        new NgwConnectionRunner(true).execute(resourceConnection);
-    }
-
-    public void loadNgwJsonArrayString(NgwConnection connection, int parentId) {
-        NgwConnection resourceConnection = new NgwConnection(
-                connection.getName(),
-                connection.getUrl() + "/resource/" + parentId + "/child/",
-                connection.getLogin(),
-                connection.getPassword());
-
-        new NgwConnectionRunner(true).execute(resourceConnection);
+    public void loadNgwJson(NgwConnection connection) {
+        new NgwConnectionRunner().execute(connection);
     }
 
     public static List<NgwConnection> loadNgwConnections(File path) {
@@ -207,7 +171,7 @@ public class NgwJsonWorker {
 
         try {
             DefaultHttpClient httpClient = new DefaultHttpClient();
-            HttpGet httpGet = new HttpGet(connection.getUrl());
+            HttpGet httpGet = new HttpGet(connection.getLoadUrl());
             httpGet.setHeader("Authorization", "Basic " + Base64.encodeToString(
                     (connection.getLogin() + ":" + connection.getPassword()).getBytes(),
                     Base64.NO_WRAP));
@@ -216,13 +180,13 @@ public class NgwJsonWorker {
             // Check to see if we got success
             final org.apache.http.StatusLine line = response.getStatusLine();
             if (line.getStatusCode() != 200) {
-                Log.w(TAG, "Problem downloading Resource: " + connection.getUrl() + " HTTP response: " + line);
+                Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl() + " HTTP response: " + line);
                 return null;
             }
 
             final HttpEntity entity = response.getEntity();
             if (entity == null) {
-                Log.w(TAG, "No content downloading Resource: " + connection.getUrl());
+                Log.w(TAG, "No content downloading Resource: " + connection.getLoadUrl());
                 return null;
             }
 
@@ -250,16 +214,13 @@ public class NgwJsonWorker {
 
 
     protected class NgwConnectionRunner extends AsyncTask<NgwConnection, Void, String> {
-        boolean isConnectionForJsonArray = false;
 
-        private NgwConnectionRunner(boolean typeConnection) {
-            super();
-            this.isConnectionForJsonArray = typeConnection;
-        }
+        protected NgwConnection mConnection;
 
         @Override
-        protected String doInBackground(NgwConnection... params) {
-            return getNgwResourceString(params[0]);
+        protected String doInBackground(NgwConnection... connections) {
+            mConnection = connections[0];
+            return getNgwResourceString(mConnection);
         }
 
         @Override
@@ -271,7 +232,7 @@ public class NgwJsonWorker {
             }
 
             try {
-                if (isConnectionForJsonArray) {
+                if (mConnection.isForJsonArray()) {
                     if (mJsonArrayLoadedListener != null) {
                         mJsonArrayLoadedListener.onJsonArrayLoaded(new JSONArray(result));
                     }

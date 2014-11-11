@@ -90,14 +90,10 @@ public class NgwConnectionsDialog extends DialogFragment {
         mConnectionOnClickListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mAddConnectionButton.setEnabled(false);
-                mConnectionsList.setEnabled(false);
-
-                mHttpProgressBar.setVisibility(View.VISIBLE);
-                mIsHttpRunning = true;
-
+                setHttpRunning(true);
                 mCurrConn = mNgwConnections.get(position);
-                mNgwJsonWorker.loadNgwRootJsonArrayString(mCurrConn);
+                mCurrConn.setLoadRootArray();
+                mNgwJsonWorker.loadNgwJson(mCurrConn);
             }
         };
         mConnectionOnLongClickListener = new AdapterView.OnItemLongClickListener() {
@@ -113,23 +109,29 @@ public class NgwConnectionsDialog extends DialogFragment {
         mNgwJsonWorker.setJsonArrayLoadedListener(new NgwJsonWorker.JsonArrayLoadedListener() {
             @Override
             public void onJsonArrayLoaded(final JSONArray jsonArray) {
-                mAddConnectionButton.setEnabled(true);
-                mConnectionsList.setEnabled(true);
-
-                mHttpProgressBar.setVisibility(View.INVISIBLE);
-                mIsHttpRunning = false;
-
+                setHttpRunning(false);
                 mCurrJsonArray = jsonArray;
 
                 try {
-                    JSONObject jsonParentResource = new JSONObject();
-                    jsonParentResource.put(Constants.JSON_CLS_KEY, Constants.JSON_PARENT_RESOURCE_GROUP_VALUE);
-                    jsonParentResource.put(Constants.JSON_DISPLAY_NAME_KEY, "..");
+                    JSONObject resource = new JSONObject();
+                    JSONObject object = new JSONObject();
+                    resource.put(Constants.JSON_RESOURCE_KEY, object);
 
-                    JSONObject jsonParent = new JSONObject();
-                    jsonParent.put(Constants.JSON_RESOURCE_KEY, jsonParentResource);
-                    mCurrJsonArray.put(jsonParent);
+                    object.put(Constants.JSON_CLS_KEY, Constants.JSON_PARENT_RESOURCE_GROUP_VALUE);
+                    object.put(Constants.JSON_DISPLAY_NAME_KEY, "..");
+
+                    JSONObject parent = new JSONObject();
+                    object.put(Constants.JSON_PARENT_KEY, parent);
+
+                    JSONObject parent2 = new JSONObject();
+                    parent.put(Constants.JSON_PARENT_KEY, parent2);
+
+                    parent2.put(Constants.JSON_ID_KEY, mCurrConn.getParentId());
+
+                    mCurrJsonArray.put(resource);
+
                 } catch (JSONException e) {
+                    // TODO: ngw json put error
                     e.printStackTrace();
                 }
 
@@ -150,14 +152,10 @@ public class NgwConnectionsDialog extends DialogFragment {
         View view = inflater.inflate(R.layout.ngw_connections_dialog, container);
 
         mDialogTitleText = (TextView) view.findViewById(R.id.dialog_title_text);
-
         mHttpProgressBar = (ProgressBar) view.findViewById(R.id.http_progress_bar);
-        mHttpProgressBar.setVisibility(mIsHttpRunning ? View.VISIBLE : View.INVISIBLE);
-
         mButtonBar = (LinearLayout) view.findViewById(R.id.button_nar);
 
         mAddConnectionButton = (ImageButton) view.findViewById(R.id.btn_add_connection);
-        mAddConnectionButton.setEnabled(!mIsHttpRunning);
         mAddConnectionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -167,7 +165,6 @@ public class NgwConnectionsDialog extends DialogFragment {
         });
 
         mConnectionsList = (ListView) view.findViewById(R.id.ngw_connections_list);
-        mConnectionsList.setEnabled(!mIsHttpRunning);
 
         if (mCurrJsonArray == null) {
             setConnectionView();
@@ -175,7 +172,15 @@ public class NgwConnectionsDialog extends DialogFragment {
             setJsonView();
         }
 
+        setHttpRunning(mIsHttpRunning);
         return view;
+    }
+
+    protected void setHttpRunning(boolean isRunning) {
+        mIsHttpRunning = isRunning;
+        mHttpProgressBar.setVisibility(mIsHttpRunning ? View.VISIBLE : View.INVISIBLE);
+        mAddConnectionButton.setEnabled(!mIsHttpRunning);
+        mConnectionsList.setEnabled(!mIsHttpRunning);
     }
 
     protected void setConnectionView() {
@@ -213,19 +218,34 @@ public class NgwConnectionsDialog extends DialogFragment {
 
                             try {
                                 jsonParent = jsonParent.getJSONObject(Constants.JSON_PARENT_KEY);
-
-                                mConnectionsList.setEnabled(false);
-                                mHttpProgressBar.setVisibility(View.VISIBLE);
-                                mIsHttpRunning = true;
+                                Integer parentId;
 
                                 try {
-                                    Integer parentId = jsonParent.getInt(Constants.JSON_ID_KEY);
-                                    mNgwJsonWorker.loadNgwJsonArrayString(mCurrConn, parentId);
+                                    parentId = jsonParent.getInt(Constants.JSON_ID_KEY);
                                 } catch (JSONException e) {
-                                    mNgwJsonWorker.loadNgwRootJsonArrayString(mCurrConn);
+                                    parentId = null;
+                                }
+
+                                String type = "";
+                                try {
+                                    type = resource.getString(Constants.JSON_CLS_KEY);
+                                } catch (JSONException e) {
+                                    // TODO: ngw json parser error
+                                    e.printStackTrace();
+                                }
+
+                                if (parentId == null && type.equals(Constants.JSON_PARENT_RESOURCE_GROUP_VALUE)) {
+                                    mCurrJsonArray = null;
+                                    setConnectionView();
+
+                                } else {
+                                    setHttpRunning(true);
+                                    mCurrConn.setLoadParentArray(parentId);
+                                    mNgwJsonWorker.loadNgwJson(mCurrConn);
                                 }
 
                             } catch (JSONException e) {
+                                // TODO: ngw json parser error
                                 e.printStackTrace();
                             }
 
@@ -239,23 +259,39 @@ public class NgwConnectionsDialog extends DialogFragment {
 
                         try {
                             int resourceId = resource.getInt(Constants.JSON_ID_KEY);
+                            Integer parentId = null;
 
-                            mConnectionsList.setEnabled(false);
-                            mHttpProgressBar.setVisibility(View.VISIBLE);
-                            mIsHttpRunning = true;
+                            try {
+                                JSONObject jsonParent = resource.getJSONObject(Constants.JSON_PARENT_KEY);
 
-                            mNgwJsonWorker.loadNgwJsonArrayString(mCurrConn, resourceId);
+                                try {
+                                    parentId = jsonParent.getInt(Constants.JSON_ID_KEY);
+                                } catch (JSONException e) {
+                                    // TODO: ngw json parser error
+                                    e.printStackTrace();
+                                }
+
+                            } catch (JSONException e) {
+                                parentId = null;
+                            }
+
+                            setHttpRunning(true);
+                            mCurrConn.setLoadResourceArray(parentId, resourceId);
+                            mNgwJsonWorker.loadNgwJson(mCurrConn);
 
                         } catch (JSONException e) {
+                            // TODO: ngw json parser error
                             e.printStackTrace();
                         }
                     }
 
                 } catch (JSONException e) {
+                    // TODO: ngw json parser error
                     e.printStackTrace();
                 }
             }
         });
+
         mConnectionsList.setOnItemLongClickListener(null);
     }
 
