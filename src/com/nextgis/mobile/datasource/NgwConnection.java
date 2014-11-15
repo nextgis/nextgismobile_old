@@ -20,12 +20,15 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
-public class NgwConnection {
+import java.util.Random;
+
+public class NgwConnection implements Comparable<NgwConnection> {
 
     public static final int LOAD_PARENT = 1;
     public static final int LOAD_RESOURCE = 2;
     public static final int LOAD_CHILDREN = 3;
 
+    protected Integer mId;
     protected String mName;
     protected String mUrl;
     protected String mLogin;
@@ -40,6 +43,16 @@ public class NgwConnection {
 
 
     public NgwConnection(String name, String url, String login, String password) {
+        Integer id = (new Random()).nextInt();
+        Init(id, name, url, login, password);
+    }
+
+    public NgwConnection(Integer id, String name, String url, String login, String password) {
+        Init(id, name, url, login, password);
+    }
+
+    protected void Init(Integer id, String name, String url, String login, String password) {
+        mId = id;
         mName = name;
         mUrl = url;
         mLogin = login;
@@ -50,7 +63,11 @@ public class NgwConnection {
 
         mThatLoad = LOAD_RESOURCE;
 
-        mRootNgwResource = new NgwResource();
+        mRootNgwResource = new NgwResource(this);
+    }
+
+    public Integer getId() {
+        return mId;
     }
 
     public String getName() {
@@ -152,5 +169,10 @@ public class NgwConnection {
             case LOAD_CHILDREN:
                 return false;
         }
+    }
+
+    @Override
+    public int compareTo(NgwConnection connection) {
+        return this.mId.compareTo(connection.mId);
     }
 }

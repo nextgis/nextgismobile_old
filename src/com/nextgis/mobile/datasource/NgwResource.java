@@ -28,8 +28,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.TreeSet;
 
-public class NgwResource extends ArrayList<NgwResource> {
+public class NgwResource extends ArrayList<NgwResource> implements Comparable<NgwResource> {
+    protected NgwConnection mConnection;
     protected NgwResource mParent;
     protected Integer mId;
     protected Integer mCls;
@@ -38,24 +40,30 @@ public class NgwResource extends ArrayList<NgwResource> {
     protected boolean mIsSelected;
 
 
-    public NgwResource() {
+    public NgwResource(NgwConnection connection) {
         super();
-
-        mParent = null;
-        mId = null;
-        mCls = null;
-        mDisplayName = null;
-        mIsSelected = false;
+        Init(connection, null, null, null, null);
     }
 
-    public NgwResource(NgwResource parent, Integer id, Integer cls, String displayName) {
+    public NgwResource(NgwConnection connection, NgwResource parent,
+                       Integer id, Integer cls, String displayName) {
         super();
+        Init(connection, parent, id, cls, displayName);
+    }
 
+    protected void Init(NgwConnection connection, NgwResource parent,
+                        Integer id, Integer cls, String displayName) {
+
+        mConnection = connection;
         mParent = parent;
         mId = id;
         mCls = cls;
         mDisplayName = displayName;
         mIsSelected = false;
+    }
+
+    public NgwConnection getConnection() {
+        return mConnection;
     }
 
     public NgwResource getParent() {
@@ -78,11 +86,15 @@ public class NgwResource extends ArrayList<NgwResource> {
         return mIsSelected;
     }
 
+    public void setSelected(boolean isSelected) {
+        mIsSelected = isSelected;
+    }
+
     public boolean isRoot() {
         return mParent == null && mId == null;
     }
 
-    public NgwResource getNgwResources(JSONArray jsonArray)
+    public NgwResource getNgwResources(JSONArray jsonArray, TreeSet<NgwResource> selectedResources)
             throws JSONException {
 
         this.clear();
@@ -110,7 +122,9 @@ public class NgwResource extends ArrayList<NgwResource> {
                 displayName = Constants.JSON_EMPTY_DISPLAY_NAME_VALUE;
             }
 
-            NgwResource ngwResource = new NgwResource(this, id, cls, displayName);
+            NgwResource ngwResource = new NgwResource(mConnection, this, id, cls, displayName);
+            ngwResource.setSelected(selectedResources.contains(ngwResource));
+
             this.add(ngwResource);
         }
 
@@ -147,5 +161,25 @@ public class NgwResource extends ArrayList<NgwResource> {
         });
 
         return this;
+    }
+
+    @Override
+    public int compareTo(NgwResource resource) {
+        int isConnEq = this.mConnection.compareTo(resource.mConnection);
+
+        if (isConnEq != 0) return isConnEq;
+
+        int isIdEq;
+
+        if (this.mId == null && resource.mId == null)
+            isIdEq = 0;
+        else if (this.mId == null/* && resource.mId != null*/)
+            isIdEq = -1;
+        else if (/*this.mId != null &&*/ resource.mId == null)
+            isIdEq = 1;
+        else /*if (this.mId != null && resource.mId != null)*/
+            isIdEq = this.mId.compareTo(resource.mId);
+
+        return isIdEq;
     }
 }

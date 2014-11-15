@@ -49,6 +49,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.List;
+import java.util.TreeSet;
 
 public class NgwConnectionsDialog extends DialogFragment {
 
@@ -61,6 +62,7 @@ public class NgwConnectionsDialog extends DialogFragment {
     protected boolean mIsHttpRunning;
 
     protected NgwResource mCurrNgwRes;
+    protected TreeSet<NgwResource> mSelectedResources;
 
     protected TextView mDialogTitleText;
     protected LinearLayout mButtonBar;
@@ -73,7 +75,7 @@ public class NgwConnectionsDialog extends DialogFragment {
     protected AdapterView.OnItemClickListener mConnectionOnClickListener;
     protected AdapterView.OnItemLongClickListener mConnectionOnLongClickListener;
 
-    // TODO: checking cashed items for updates
+    // TODO: checking cashed items for server updates
 
 
     @Override
@@ -88,6 +90,7 @@ public class NgwConnectionsDialog extends DialogFragment {
         mCurrNgwRes = null;
         mIsHttpRunning = false;
         mIsConnectionView = true;
+        mSelectedResources = new TreeSet<NgwResource>();
 
         mConnectionsAdapter = new NgwConnectionsListAdapter(mMainActivity, mNgwConnections);
         mConnectionOnClickListener = new AdapterView.OnItemClickListener() {
@@ -125,7 +128,7 @@ public class NgwConnectionsDialog extends DialogFragment {
                 mCurrNgwRes = mCurrConn.getCurrentNgwResource();
 
                 try {
-                    mCurrNgwRes.getNgwResources(jsonArray);
+                    mCurrNgwRes.getNgwResources(jsonArray, mSelectedResources);
                 } catch (JSONException e) {
                     // TODO: error to Log
                     e.printStackTrace();
@@ -133,6 +136,7 @@ public class NgwConnectionsDialog extends DialogFragment {
 
                 // Adding to position 0 (after sorting) of mResourceList
                 NgwResource ngwResource = new NgwResource(
+                        mCurrConn,
                         mCurrNgwRes.getParent(),
                         mCurrNgwRes.getId(),
                         Constants.NGWTYPE_PARENT_RESOURCE_GROUP,
@@ -202,15 +206,37 @@ public class NgwConnectionsDialog extends DialogFragment {
     }
 
     protected void setJsonView() {
-        // TODO: title as path
         mIsConnectionView = false;
-        mDialogTitleText.setText(mMainActivity.getString(R.string.ngw_layers));
+
+        String titleText = mCurrNgwRes.getDisplayName() == null
+                ? "" : "/" + mCurrNgwRes.getDisplayName();
+
+        NgwResource parent = mCurrNgwRes.getParent();
+        while (parent != null) {
+            titleText = (parent.getDisplayName() == null
+                    ? "" : "/" + parent.getDisplayName()) + titleText;
+            parent = parent.getParent();
+        }
+
+        titleText = "/" + mCurrConn.getName() + titleText;
+        mDialogTitleText.setText(titleText);
 
         mButtonBar.setVisibility(View.GONE);
         mAddConnectionButton.setVisibility(View.GONE);
 
         NgwJsonArrayAdapter jsonArrayAdapter =
                 new NgwJsonArrayAdapter(mMainActivity, mCurrNgwRes);
+
+        jsonArrayAdapter.setOnItemCheckedChangeListener(
+                new NgwJsonArrayAdapter.ItemCheckedChangeListener() {
+                    @Override
+                    public void onItemCheckedChange(NgwResource ngwResource, boolean isChecked) {
+                        ngwResource.setSelected(isChecked);
+
+                        if (isChecked) mSelectedResources.add(ngwResource);
+                        else mSelectedResources.remove(ngwResource);
+                    }
+                });
 
         mResourceList.setAdapter(jsonArrayAdapter);
 

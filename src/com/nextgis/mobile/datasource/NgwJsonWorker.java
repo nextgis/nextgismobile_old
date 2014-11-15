@@ -85,12 +85,13 @@ public class NgwJsonWorker {
 
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonConnection = jsonArray.getJSONObject(i);
+                Integer id = jsonConnection.getInt(JSON_ID_KEY);
                 String name = jsonConnection.getString(JSON_NAME_KEY);
                 String url = jsonConnection.getString(JSON_URL_KEY);
                 String login = jsonConnection.getString(JSON_LOGIN_KEY);
                 String password = jsonConnection.getString(JSON_PASSWORD_KEY);
 
-                NgwConnection connection = new NgwConnection(name, url, login, password);
+                NgwConnection connection = new NgwConnection(id, name, url, login, password);
                 ngwConnections.add(connection);
             }
 
@@ -111,12 +112,13 @@ public class NgwJsonWorker {
             JSONArray jsonConnectionArray = new JSONArray();
             rootObject.put(JSON_NGW_CONNECTIONS_KEY, jsonConnectionArray);
 
-            for (NgwConnection connection : ngwConnections) {
+            for (NgwConnection ngwConnection : ngwConnections) {
                 JSONObject jsonConnection = new JSONObject();
-                jsonConnection.put(JSON_NAME_KEY, connection.getName());
-                jsonConnection.put(JSON_URL_KEY, connection.getUrl());
-                jsonConnection.put(JSON_LOGIN_KEY, connection.getLogin());
-                jsonConnection.put(JSON_PASSWORD_KEY, connection.getPassword());
+                jsonConnection.put(JSON_ID_KEY, ngwConnection.getId());
+                jsonConnection.put(JSON_NAME_KEY, ngwConnection.getName());
+                jsonConnection.put(JSON_URL_KEY, ngwConnection.getUrl());
+                jsonConnection.put(JSON_LOGIN_KEY, ngwConnection.getLogin());
+                jsonConnection.put(JSON_PASSWORD_KEY, ngwConnection.getPassword());
 
                 jsonConnectionArray.put(jsonConnection);
             }

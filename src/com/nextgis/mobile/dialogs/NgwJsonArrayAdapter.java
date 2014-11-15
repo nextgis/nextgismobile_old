@@ -39,6 +39,18 @@ public class NgwJsonArrayAdapter extends BaseAdapter {
     protected Context mContext;
     protected LayoutInflater mLayoutInflater;
 
+
+    protected ItemCheckedChangeListener mItemCheckedChangeListener;
+
+    public interface ItemCheckedChangeListener {
+        void onItemCheckedChange(NgwResource ngwResource, boolean isChecked);
+    }
+
+    public void setOnItemCheckedChangeListener(ItemCheckedChangeListener itemCheckedChangeListener) {
+        mItemCheckedChangeListener = itemCheckedChangeListener;
+    }
+
+
     public NgwJsonArrayAdapter(Context context, NgwResource ngwResources) {
         super();
 
@@ -64,7 +76,7 @@ public class NgwJsonArrayAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = mLayoutInflater.inflate(R.layout.ngw_connections_row, parent, false);
         }
@@ -100,6 +112,17 @@ public class NgwJsonArrayAdapter extends BaseAdapter {
         }
 
         tvJsonName.setText(ngwResource.getDisplayName());
+
+        checkBox.setChecked(ngwResource.isSelected());
+        checkBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mItemCheckedChangeListener != null) {
+                    mItemCheckedChangeListener.onItemCheckedChange(
+                            mNgwResources.get(position), ((CheckBox) v).isChecked());
+                }
+            }
+        });
 
         return convertView;
     }
