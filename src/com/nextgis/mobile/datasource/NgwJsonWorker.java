@@ -59,7 +59,6 @@ public class NgwJsonWorker {
         void onJsonArrayLoaded(JSONArray jsonArray);
     }
 
-
     public void setJsonObjectLoadedListener(JsonObjectLoadedListener jsonObjectLoadedListener) {
         mJsonObjectLoadedListener = jsonObjectLoadedListener;
     }
@@ -67,6 +66,7 @@ public class NgwJsonWorker {
     public void setJsonArrayLoadedListener(JsonArrayLoadedListener jsonArrayLoadedListener) {
         mJsonArrayLoadedListener = jsonArrayLoadedListener;
     }
+
 
     public void loadNgwJson(NgwConnection connection) {
         new NgwConnectionRunner().execute(connection);

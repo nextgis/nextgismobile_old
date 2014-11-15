@@ -31,8 +31,9 @@ public class NgwConnection {
     protected String mLogin;
     protected String mPassword;
 
-    protected Integer mParentId;
-    protected Integer mResourceId;
+    protected NgwResource mRootNgwResource;
+    protected NgwResource mCurrentNgwResource;
+
     protected Integer mChildId;
 
     protected int mThatLoad;
@@ -43,10 +44,13 @@ public class NgwConnection {
         mUrl = url;
         mLogin = login;
         mPassword = password;
-        mParentId = null;
-        mResourceId = null;
+
+        mCurrentNgwResource = null;
         mChildId = 0;
+
         mThatLoad = LOAD_RESOURCE;
+
+        mRootNgwResource = new NgwResource(null);
     }
 
     public String getName() {
@@ -65,8 +69,12 @@ public class NgwConnection {
         return mPassword;
     }
 
-    public Integer getParentId() {
-        return mParentId;
+    public NgwResource getRootNgwResource() {
+        return mRootNgwResource;
+    }
+
+    public NgwResource getCurrentNgwResource() {
+        return mCurrentNgwResource;
     }
 
     public String getLoadUrl() {
@@ -82,41 +90,52 @@ public class NgwConnection {
     }
 
     public String getParentArrayUrl() {
-        return mUrl + "/resource/" + (mParentId == null ? "-" : mParentId) + "/child/";
+        return mUrl + "/resource/"
+                + (mCurrentNgwResource == null
+                || mCurrentNgwResource.mParent == null || mCurrentNgwResource.mParent.mId == null
+                ? "-"
+                : mCurrentNgwResource.mParent.mId)
+                + "/child/";
     }
 
     public String getResourceArrayUrl() {
-        return mUrl + "/resource/" + (mResourceId == null ? "-" : mResourceId) + "/child/";
+        return mUrl + "/resource/"
+                + (mCurrentNgwResource == null || mCurrentNgwResource.mId == null
+                ? "-"
+                : mCurrentNgwResource.mId)
+                + "/child/";
     }
 
     public String getChildObjectUrl() {
-        return mUrl + "/resource/" + (mResourceId == null ? "-" : mResourceId) + "/child/" + mChildId;
+        return mUrl + "/resource/"
+                + (mCurrentNgwResource == null || mCurrentNgwResource.mId == null
+                ? "-"
+                : mCurrentNgwResource.mId)
+                + "/child/" + mChildId;
     }
 
     public void setLoadRootArray() {
-        setLoadResourceArray(null, null);
+        setLoadResourceArray(mRootNgwResource);
     }
 
     public void setLoadRootObject() {
-        setLoadChildrenObject(null, null, 0);
+        setLoadChildrenObject(mRootNgwResource, 0);
     }
 
-    public void setLoadParentArray(Integer parentId) {
-        mParentId = parentId;
+    public void setLoadParentArray(NgwResource resource) {
+        mCurrentNgwResource = resource;
         mThatLoad = LOAD_PARENT;
     }
 
-    public void setLoadResourceArray(Integer parentId, Integer resourceId) {
-        mParentId = parentId;
-        mResourceId = resourceId;
+    public void setLoadResourceArray(NgwResource resource) {
+        mCurrentNgwResource = resource;
         mThatLoad = LOAD_RESOURCE;
     }
 
-    public void setLoadChildrenObject(Integer parentId, Integer resourceId, Integer childId) {
-        mParentId = parentId;
-        mResourceId = resourceId;
+    public void setLoadChildrenObject(NgwResource resource, Integer childId) {
+        mCurrentNgwResource = resource;
         mChildId = childId;
-        mThatLoad = LOAD_PARENT;
+        mThatLoad = LOAD_CHILDREN;
     }
 
     public boolean isForJsonArray() {
