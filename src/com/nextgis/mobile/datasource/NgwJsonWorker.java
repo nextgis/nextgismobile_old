@@ -134,32 +134,32 @@ public class NgwJsonWorker {
         return false;
     }
 
-    public static Integer ngwClsToType(String typeString) {
-        if (typeString.equals(Constants.JSON_RESOURCE_GROUP_VALUE)) {
+    public static Integer ngwClsToType(String cls) {
+        if (cls.equals(Constants.JSON_RESOURCE_GROUP_VALUE)) {
             return Constants.NGWTYPE_RESOURCE_GROUP;
-        } else if (typeString.equals(Constants.JSON_POSTGIS_LAYER_VALUE)) {
+        } else if (cls.equals(Constants.JSON_POSTGIS_LAYER_VALUE)) {
             return Constants.NGWTYPE_POSTGIS_LAYER;
-        } else if (typeString.equals(Constants.JSON_WMSSERVER_SERVICE_VALUE)) {
+        } else if (cls.equals(Constants.JSON_WMSSERVER_SERVICE_VALUE)) {
             return Constants.NGWTYPE_WMSSERVER_SERVICE;
-        } else if (typeString.equals(Constants.JSON_BASELAYERS_VALUE)) {
+        } else if (cls.equals(Constants.JSON_BASELAYERS_VALUE)) {
             return Constants.NGWTYPE_BASELAYERS;
-        } else if (typeString.equals(Constants.JSON_POSTGIS_CONNECTION_VALUE)) {
+        } else if (cls.equals(Constants.JSON_POSTGIS_CONNECTION_VALUE)) {
             return Constants.NGWTYPE_POSTGIS_CONNECTION;
-        } else if (typeString.equals(Constants.JSON_WEBMAP_VALUE)) {
+        } else if (cls.equals(Constants.JSON_WEBMAP_VALUE)) {
             return Constants.NGWTYPE_WEBMAP;
-        } else if (typeString.equals(Constants.JSON_WFSSERVER_SERVICE_VALUE)) {
+        } else if (cls.equals(Constants.JSON_WFSSERVER_SERVICE_VALUE)) {
             return Constants.NGWTYPE_WFSSERVER_SERVICE;
-        } else if (typeString.equals(Constants.JSON_VECTOR_LAYER_VALUE)) {
+        } else if (cls.equals(Constants.JSON_VECTOR_LAYER_VALUE)) {
             return Constants.NGWTYPE_VECTOR_LAYER;
-        } else if (typeString.equals(Constants.JSON_RASTER_LAYER_VALUE)) {
+        } else if (cls.equals(Constants.JSON_RASTER_LAYER_VALUE)) {
             return Constants.NGWTYPE_RASTER_LAYER;
-        } else if (typeString.equals(Constants.JSON_VECTOR_STYLE_VALUE)) {
+        } else if (cls.equals(Constants.JSON_VECTOR_STYLE_VALUE)) {
             return Constants.NGWTYPE_VECTOR_STYLE;
-        } else if (typeString.equals(Constants.JSON_RASTER_STYLE_VALUE)) {
+        } else if (cls.equals(Constants.JSON_RASTER_STYLE_VALUE)) {
             return Constants.NGWTYPE_RASTER_STYLE;
-        } else if (typeString.equals(Constants.JSON_FILE_BUCKET_VALUE)) {
+        } else if (cls.equals(Constants.JSON_FILE_BUCKET_VALUE)) {
             return Constants.NGWTYPE_FILE_BUCKET;
-        } else if (typeString.equals(Constants.JSON_PARENT_RESOURCE_GROUP_VALUE)) {
+        } else if (cls.equals(Constants.JSON_PARENT_RESOURCE_GROUP_VALUE)) {
             return Constants.NGWTYPE_PARENT_RESOURCE_GROUP;
         } else {
             return Constants.NGWTYPE_UNKNOWN;

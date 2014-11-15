@@ -50,7 +50,7 @@ public class NgwConnection {
 
         mThatLoad = LOAD_RESOURCE;
 
-        mRootNgwResource = new NgwResource(null);
+        mRootNgwResource = new NgwResource();
     }
 
     public String getName() {
@@ -92,25 +92,26 @@ public class NgwConnection {
     public String getParentArrayUrl() {
         return mUrl + "/resource/"
                 + (mCurrentNgwResource == null
-                || mCurrentNgwResource.mParent == null || mCurrentNgwResource.mParent.mId == null
+                || mCurrentNgwResource.getParent() == null
+                || mCurrentNgwResource.getParent().getId() == null
                 ? "-"
-                : mCurrentNgwResource.mParent.mId)
+                : mCurrentNgwResource.getParent().getId())
                 + "/child/";
     }
 
     public String getResourceArrayUrl() {
         return mUrl + "/resource/"
-                + (mCurrentNgwResource == null || mCurrentNgwResource.mId == null
+                + (mCurrentNgwResource == null || mCurrentNgwResource.getId() == null
                 ? "-"
-                : mCurrentNgwResource.mId)
+                : mCurrentNgwResource.getId())
                 + "/child/";
     }
 
     public String getChildObjectUrl() {
         return mUrl + "/resource/"
-                + (mCurrentNgwResource == null || mCurrentNgwResource.mId == null
+                + (mCurrentNgwResource == null || mCurrentNgwResource.getId() == null
                 ? "-"
-                : mCurrentNgwResource.mId)
+                : mCurrentNgwResource.getId())
                 + "/child/" + mChildId;
     }
 
@@ -124,11 +125,13 @@ public class NgwConnection {
 
     public void setLoadParentArray(NgwResource resource) {
         mCurrentNgwResource = resource;
+        mChildId = 0;
         mThatLoad = LOAD_PARENT;
     }
 
     public void setLoadResourceArray(NgwResource resource) {
         mCurrentNgwResource = resource;
+        mChildId = 0;
         mThatLoad = LOAD_RESOURCE;
     }
 

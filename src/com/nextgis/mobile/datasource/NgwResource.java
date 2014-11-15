@@ -30,21 +30,52 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class NgwResource extends ArrayList<NgwResource> {
-    public Integer mId;
-    public Integer mCls;
-    public String mDisplayName;
+    protected NgwResource mParent;
+    protected Integer mId;
+    protected Integer mCls;
+    protected String mDisplayName;
 
-    public NgwResource mParent;
+    protected boolean mIsSelected;
 
 
-    public NgwResource(NgwResource parent) {
+    public NgwResource() {
+        super();
+
+        mParent = null;
+        mId = null;
+        mCls = null;
+        mDisplayName = null;
+        mIsSelected = false;
+    }
+
+    public NgwResource(NgwResource parent, Integer id, Integer cls, String displayName) {
         super();
 
         mParent = parent;
+        mId = id;
+        mCls = cls;
+        mDisplayName = displayName;
+        mIsSelected = false;
+    }
 
-        if (parent == null) {
-            mId = null;
-        }
+    public NgwResource getParent() {
+        return mParent;
+    }
+
+    public Integer getId() {
+        return mId;
+    }
+
+    public Integer getCls() {
+        return mCls;
+    }
+
+    public String getDisplayName() {
+        return mDisplayName;
+    }
+
+    public boolean isSelected() {
+        return mIsSelected;
     }
 
     public boolean isRoot() {
@@ -55,29 +86,31 @@ public class NgwResource extends ArrayList<NgwResource> {
             throws JSONException {
 
         this.clear();
+        this.ensureCapacity(jsonArray.length());
 
         for (int i = 0; i < jsonArray.length(); ++i) {
             // if error with JSON_RESOURCE_KEY -- throw JSONException
             JSONObject jsonObject =
                     jsonArray.getJSONObject(i).getJSONObject(Constants.JSON_RESOURCE_KEY);
-            NgwResource ngwResource = new NgwResource(this);
 
             // if error with JSON_ID_KEY -- throw JSONException
-            ngwResource.mId = jsonObject.getInt(Constants.JSON_ID_KEY);
+            Integer id = jsonObject.getInt(Constants.JSON_ID_KEY);
 
+            Integer cls;
             try {
-                ngwResource.mCls =
-                        NgwJsonWorker.ngwClsToType(jsonObject.getString(Constants.JSON_CLS_KEY));
+                cls = NgwJsonWorker.ngwClsToType(jsonObject.getString(Constants.JSON_CLS_KEY));
             } catch (JSONException e) {
-                ngwResource.mCls = Constants.NGWTYPE_UNKNOWN;
+                cls = Constants.NGWTYPE_UNKNOWN;
             }
 
+            String displayName;
             try {
-                ngwResource.mDisplayName = jsonObject.getString(Constants.JSON_DISPLAY_NAME_KEY);
+                displayName = jsonObject.getString(Constants.JSON_DISPLAY_NAME_KEY);
             } catch (JSONException e) {
-                ngwResource.mDisplayName = Constants.JSON_EMPTY_DISPLAY_NAME_VALUE;
+                displayName = Constants.JSON_EMPTY_DISPLAY_NAME_VALUE;
             }
 
+            NgwResource ngwResource = new NgwResource(this, id, cls, displayName);
             this.add(ngwResource);
         }
 

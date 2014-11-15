@@ -18,7 +18,7 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-package com.nextgis.mobile.datasource;
+package com.nextgis.mobile.dialogs;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -29,6 +29,7 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.nextgis.mobile.R;
+import com.nextgis.mobile.datasource.NgwResource;
 import com.nextgis.mobile.util.Constants;
 
 public class NgwJsonArrayAdapter extends BaseAdapter {
@@ -72,13 +73,13 @@ public class NgwJsonArrayAdapter extends BaseAdapter {
         TextView tvJsonName = (TextView) convertView.findViewById(R.id.tv_item_text);
         CheckBox checkBox = (CheckBox) convertView.findViewById(R.id.check_box);
 
-        NgwResource attribute = mNgwResources.get(position);
+        NgwResource ngwResource = mNgwResources.get(position);
 
         if (position == 0) {
             ivJsonIcon.setImageResource(R.drawable.folder_up);
             checkBox.setVisibility(View.GONE);
 
-        } else switch (attribute.mCls) {
+        } else switch (ngwResource.getCls()) {
 
             case Constants.NGWTYPE_RESOURCE_GROUP:
                 ivJsonIcon.setImageResource(R.drawable.folder);
@@ -98,7 +99,7 @@ public class NgwJsonArrayAdapter extends BaseAdapter {
                 break;
         }
 
-        tvJsonName.setText(attribute.mDisplayName);
+        tvJsonName.setText(ngwResource.getDisplayName());
 
         return convertView;
     }

@@ -166,6 +166,7 @@ public interface Constants {
     public static final String JSON_FILE_BUCKET_VALUE = "file_bucket";
 
     public static final String JSON_PARENT_RESOURCE_GROUP_VALUE = "parent_resource_group";
+    public static final String JSON_PARENT_DISPLAY_NAME_VALUE = "..";
     public static final String JSON_EMPTY_DISPLAY_NAME_VALUE = "-----";
 
     /**

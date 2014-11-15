@@ -41,7 +41,6 @@ import android.widget.TextView;
 import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.NgwConnection;
-import com.nextgis.mobile.datasource.NgwJsonArrayAdapter;
 import com.nextgis.mobile.datasource.NgwJsonWorker;
 import com.nextgis.mobile.datasource.NgwResource;
 import com.nextgis.mobile.map.MapBase;
@@ -59,14 +58,15 @@ public class NgwConnectionsDialog extends DialogFragment {
     protected static List<NgwConnection> mNgwConnections;
     protected NgwConnection mCurrConn;
     protected NgwJsonWorker mNgwJsonWorker;
-    protected boolean mIsHttpRunning = false;
+    protected boolean mIsHttpRunning;
 
-    protected NgwResource mCurrNgwResource = null;
+    protected NgwResource mCurrNgwRes;
 
     protected TextView mDialogTitleText;
     protected LinearLayout mButtonBar;
     protected ImageButton mAddConnectionButton;
     protected ProgressBar mHttpProgressBar;
+    protected boolean mIsConnectionView;
 
     protected static ListView mResourceList;
     protected NgwConnectionsListAdapter mConnectionsAdapter;
@@ -85,17 +85,20 @@ public class NgwConnectionsDialog extends DialogFragment {
         mMainActivity = (MainActivity) getActivity();
         mMap = mMainActivity.getMap();
         mNgwConnections = mMap.getNgwConnections();
+        mCurrNgwRes = null;
+        mIsHttpRunning = false;
+        mIsConnectionView = true;
 
         mConnectionsAdapter = new NgwConnectionsListAdapter(mMainActivity, mNgwConnections);
         mConnectionOnClickListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 mCurrConn = mNgwConnections.get(position);
-                mCurrNgwResource = mCurrConn.getRootNgwResource();
+                mCurrNgwRes = mCurrConn.getRootNgwResource();
 
-                if (mCurrNgwResource.size() == 0) {
+                if (mCurrNgwRes.size() == 0) {
                     setHttpRunningView(true);
-                    mCurrConn.setLoadRootArray();
+                    mCurrConn.setLoadResourceArray(mCurrNgwRes);
                     mNgwJsonWorker.loadNgwJson(mCurrConn);
 
                 } else {
@@ -119,24 +122,24 @@ public class NgwConnectionsDialog extends DialogFragment {
             public void onJsonArrayLoaded(final JSONArray jsonArray) {
                 setHttpRunningView(false);
 
-                mCurrNgwResource = mCurrConn.getCurrentNgwResource();
+                mCurrNgwRes = mCurrConn.getCurrentNgwResource();
 
                 try {
-                    mCurrNgwResource.getNgwResources(jsonArray);
+                    mCurrNgwRes.getNgwResources(jsonArray);
                 } catch (JSONException e) {
                     // TODO: error to Log
                     e.printStackTrace();
                 }
 
                 // Adding to position 0 (after sorting) of mResourceList
-                NgwResource ngwResource = new NgwResource(mCurrNgwResource);
-                ngwResource.mId = mCurrNgwResource.mId;
-                ngwResource.mCls = Constants.NGWTYPE_PARENT_RESOURCE_GROUP;
-                ngwResource.mDisplayName = "..";
-                ngwResource.mParent = mCurrNgwResource.mParent;
+                NgwResource ngwResource = new NgwResource(
+                        mCurrNgwRes.getParent(),
+                        mCurrNgwRes.getId(),
+                        Constants.NGWTYPE_PARENT_RESOURCE_GROUP,
+                        Constants.JSON_PARENT_DISPLAY_NAME_VALUE);
 
-                mCurrNgwResource.add(ngwResource);
-                mCurrNgwResource.sort();
+                mCurrNgwRes.add(ngwResource);
+                mCurrNgwRes.sort();
 
                 setJsonView();
             }
@@ -169,7 +172,7 @@ public class NgwConnectionsDialog extends DialogFragment {
 
         mResourceList = (ListView) view.findViewById(R.id.ngw_connections_list);
 
-        if (mCurrNgwResource == null || mCurrNgwResource.isRoot()) {
+        if (mIsConnectionView) {
             setConnectionView();
         } else {
             setJsonView();
@@ -187,6 +190,7 @@ public class NgwConnectionsDialog extends DialogFragment {
     }
 
     protected void setConnectionView() {
+        mIsConnectionView = true;
         mDialogTitleText.setText(mMainActivity.getString(R.string.ngw_connections));
 
         mButtonBar.setVisibility(View.VISIBLE);
@@ -199,13 +203,14 @@ public class NgwConnectionsDialog extends DialogFragment {
 
     protected void setJsonView() {
         // TODO: title as path
+        mIsConnectionView = false;
         mDialogTitleText.setText(mMainActivity.getString(R.string.ngw_layers));
 
         mButtonBar.setVisibility(View.GONE);
         mAddConnectionButton.setVisibility(View.GONE);
 
         NgwJsonArrayAdapter jsonArrayAdapter =
-                new NgwJsonArrayAdapter(mMainActivity, mCurrNgwResource);
+                new NgwJsonArrayAdapter(mMainActivity, mCurrNgwRes);
 
         mResourceList.setAdapter(jsonArrayAdapter);
 
@@ -213,7 +218,7 @@ public class NgwConnectionsDialog extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                NgwResource ngwResource = mCurrNgwResource.get(position);
+                NgwResource ngwResource = mCurrNgwRes.get(position);
 
                 if (position == 0) {
 
@@ -221,7 +226,7 @@ public class NgwConnectionsDialog extends DialogFragment {
                         setConnectionView();
 
                     } else {
-                        mCurrNgwResource = mCurrNgwResource.mParent;
+                        mCurrNgwRes = mCurrNgwRes.getParent();
                         setJsonView();
                     }
 
@@ -232,7 +237,7 @@ public class NgwConnectionsDialog extends DialogFragment {
                         mNgwJsonWorker.loadNgwJson(mCurrConn);
 
                     } else {
-                        mCurrNgwResource = ngwResource;
+                        mCurrNgwRes = ngwResource;
                         setJsonView();
                     }
                 }
