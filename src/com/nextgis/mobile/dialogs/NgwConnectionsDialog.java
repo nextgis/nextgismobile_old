@@ -76,6 +76,7 @@ public class NgwConnectionsDialog extends DialogFragment {
     protected AdapterView.OnItemLongClickListener mConnectionOnLongClickListener;
 
     // TODO: checking cashed items for server updates
+    // TODO: http timeouts
 
 
     @Override
@@ -88,9 +89,9 @@ public class NgwConnectionsDialog extends DialogFragment {
         mMap = mMainActivity.getMap();
         mNgwConnections = mMap.getNgwConnections();
         mCurrNgwRes = null;
-        mIsHttpRunning = false;
-        mIsConnectionView = true;
         mSelectedResources = new TreeSet<NgwResource>();
+        mIsConnectionView = true;
+        mIsHttpRunning = false;
 
         mConnectionsAdapter = new NgwConnectionsListAdapter(mMainActivity, mNgwConnections);
         mConnectionOnClickListener = new AdapterView.OnItemClickListener() {
