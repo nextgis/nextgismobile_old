@@ -22,46 +22,42 @@ package com.nextgis.mobile.datasource;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.nextgis.mobile.util.GeoConstants.*;
 
-public class GeoLineString extends GeoGeometry {
+public class GeoGeometryCollection extends GeoGeometry {
 
-    protected List<GeoPoint> mPoints;
+    List<GeoGeometry> mGeometries;
 
-    public GeoLineString() {
-        mPoints = new ArrayList<GeoPoint>();
-    }
-
-    public List<GeoPoint> getPoints() {
-        return mPoints;
-    }
-
-    public void add(GeoPoint point) throws IllegalArgumentException {
-        if (point == null) {
-            throw new IllegalArgumentException("GeoLineString: point == null.");
+    public void add(GeoGeometry geometry) throws IllegalArgumentException {
+        if (geometry == null) {
+            throw new IllegalArgumentException("GeoGeometryCollection: geometry == null.");
         }
 
-        mPoints.add(point);
+        mGeometries.add(geometry);
     }
 
-    public GeoPoint remove(int index) {
-        return mPoints.remove(index);
+    public GeoGeometry remove(int index) {
+        return mGeometries.remove(index);
+    }
+
+    public GeoGeometry get(int index) {
+        return mGeometries.get(index);
     }
 
     @Override
     public int getType() {
-        return GTLineString;
+        return GTGeometryCollection;
     }
 
     @Override
     protected boolean rawProject(int toCrs) {
         boolean isOk = true;
-        for (GeoPoint point : mPoints) {
-            isOk = isOk && point.rawProject(toCrs);
+        for (GeoGeometry geometry : mGeometries) {
+            isOk = isOk && geometry.rawProject(toCrs);
         }
         return isOk;
     }
@@ -70,32 +66,42 @@ public class GeoLineString extends GeoGeometry {
     public GeoEnvelope getEnvelope() {
         GeoEnvelope envelope = new GeoEnvelope();
 
-        for (GeoPoint point : mPoints) {
-            envelope.merge(point.getEnvelope());
+        for (GeoGeometry geometry : mGeometries) {
+            envelope.merge(geometry.getEnvelope());
         }
 
         return envelope;
     }
 
     @Override
-    public void setCoordinatesFromJSON(JSONArray coordinates) throws JSONException {
-        if (coordinates.length() < 2) {
-            throw new JSONException("For type \"LineString\", the \"coordinates\" member must be an array of two or more positions.");
-        }
+    public JSONObject toJSON() throws JSONException {
+        if (getType() != GTGeometryCollection) return super.toJSON();
 
-        for (int i = 0; i < coordinates.length(); ++i) {
-            GeoPoint point = new GeoPoint();
-            point.setCoordinatesFromJSON(coordinates.getJSONArray(i));
-            add(point);
+        else {
+            JSONObject jsonOutObject = new JSONObject();
+            jsonOutObject.put(GEOJSON_TYPE, GEOJSON_TYPE_GeometryCollection);
+            JSONArray geometries = new JSONArray();
+            jsonOutObject.put(GEOJSON_GEOMETRIES, geometries);
+
+            for (GeoGeometry geometry : mGeometries) {
+                geometries.put(geometry.toJSON());
+            }
+
+            return jsonOutObject;
         }
     }
 
     @Override
-    public JSONArray coordinatesToJSON() throws JSONException {
+    public void setCoordinatesFromJSON(JSONArray coordinates) throws JSONException {
+        //if (getType() == GTGeometryCollection) return;
+    }
+
+    @Override
+    public JSONArray coordinatesToJSON() throws JSONException, ClassCastException {
         JSONArray coordinates = new JSONArray();
 
-        for (GeoPoint point : this.mPoints) {
-            coordinates.put(point.coordinatesToJSON());
+        for (GeoGeometry geometry : mGeometries) {
+            coordinates.put(geometry.coordinatesToJSON());
         }
 
         return coordinates;

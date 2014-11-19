@@ -22,10 +22,6 @@ package com.nextgis.mobile.datasource;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.nextgis.mobile.util.GeoConstants.*;
 
@@ -41,16 +37,12 @@ public class GeoPolygon extends GeoGeometry {
         return mOuterRing;
     }
 
-    public void add(double x, double y) {
-        mOuterRing.add(x, y);
+    public void add(GeoPoint point) {
+        mOuterRing.add(point);
     }
 
-    public void add(GeoRawPoint rpt) {
-        mOuterRing.add(rpt);
-    }
-
-    public void remove(int index) {
-        mOuterRing.remove(index);
+    public GeoPoint remove(int index) {
+        return mOuterRing.remove(index);
     }
 
     @Override
@@ -59,16 +51,8 @@ public class GeoPolygon extends GeoGeometry {
     }
 
     @Override
-    public boolean project(int crs) {
-        if (mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR
-                || mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84) {
-            boolean isOk = true;
-            for (GeoRawPoint point : mOuterRing.getPoints()) {
-                isOk = isOk && point.project(crs);
-            }
-            return isOk;
-        }
-        return false;
+    protected boolean rawProject(int toCrs) {
+        return mOuterRing.rawProject(toCrs);
     }
 
     @Override
@@ -77,21 +61,25 @@ public class GeoPolygon extends GeoGeometry {
     }
 
     @Override
-    public JSONObject toJSON() throws JSONException {
-        JSONObject jsonOutObject = new JSONObject();
-        jsonOutObject.put(GEOJSON_TYPE, GEOJSON_TYPE_Polygon);
-        JSONArray coordinates = new JSONArray();
-        jsonOutObject.put(GEOJSON_COORDINATES, coordinates);
-        JSONArray linearRingCoordinates = new JSONArray();
-        coordinates.put(linearRingCoordinates);
+    public void setCoordinatesFromJSON(JSONArray coordinates) throws JSONException {
+        JSONArray outerRingCoordinates = coordinates.getJSONArray(0);
 
-        for (GeoRawPoint point : mOuterRing.getPoints()) {
-            JSONArray pointCoordinates = new JSONArray();
-            pointCoordinates.put(point.mX);
-            pointCoordinates.put(point.mY);
-            linearRingCoordinates.put(pointCoordinates);
+        if (outerRingCoordinates.length() < 4) {
+            throw new JSONException("For type \"Polygon\", the \"coordinates\" member must be an array of LinearRing coordinate arrays. A LinearRing must be with 4 or more positions.");
         }
 
-        return jsonOutObject;
+        mOuterRing.setCoordinatesFromJSON(outerRingCoordinates);
+
+        if (!getOuterRing().isClosed()) {
+            throw new JSONException("For type \"Polygon\", the \"coordinates\" member must be an array of LinearRing coordinate arrays. The first and last positions of LinearRing must be equivalent (they represent equivalent points).");
+        }
+    }
+
+    @Override
+    public JSONArray coordinatesToJSON() throws JSONException {
+        JSONArray coordinates = new JSONArray();
+        coordinates.put(mOuterRing.coordinatesToJSON());
+
+        return coordinates;
     }
 }

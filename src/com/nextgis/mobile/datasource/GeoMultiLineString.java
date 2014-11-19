@@ -20,17 +20,37 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
-import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONException;
 
-public class GeoLinearRing extends GeoLineString {
-    public GeoLinearRing() {
-        super();
+import static com.nextgis.mobile.util.GeoConstants.*;
+
+public class GeoMultiLineString extends GeoGeometryCollection {
+
+    @Override
+    public void add(GeoGeometry geometry) throws ClassCastException {
+        if (!(geometry instanceof GeoLineString)) {
+            throw new ClassCastException("GeoMultiLineString: geometry is not GeoLineString type.");
+        }
+
+        super.add(geometry);
     }
 
-    public boolean isClosed() {
-        List<GeoPoint> points = getPoints();
-        GeoPoint first = points.get(0);
-        GeoPoint last = points.get(points.size() - 1);
-        return first.equals(last);
+    public void add(GeoLineString lineString) {
+        super.add(lineString);
+    }
+
+    @Override
+    public int getType() {
+        return GTMultiLineString;
+    }
+
+    @Override
+    public void setCoordinatesFromJSON(JSONArray coordinates) throws JSONException {
+        for (int i = 0; i < coordinates.length(); ++i) {
+            GeoLineString lineString = new GeoLineString();
+            lineString.setCoordinatesFromJSON(coordinates.getJSONArray(i));
+            add(lineString);
+        }
     }
 }

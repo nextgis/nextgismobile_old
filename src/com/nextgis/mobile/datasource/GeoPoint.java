@@ -22,80 +22,93 @@ package com.nextgis.mobile.datasource;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import static com.nextgis.mobile.util.GeoConstants.*;
 
-public class GeoPoint extends GeoGeometry{
+public class GeoPoint extends GeoGeometry {
 
-    protected GeoRawPoint mPoint;
+    protected double mX;
+    protected double mY;
 
-    public GeoPoint(){
-        mPoint = new GeoRawPoint();
+    public GeoPoint() {
+        mX = mY = 0.0;
     }
 
-    public GeoPoint(double x, double y){
-        mPoint = new GeoRawPoint(x, y);
+    public GeoPoint(double x, double y) {
+        this.mX = x;
+        this.mY = y;
     }
 
-    public GeoPoint(final GeoPoint pt){
-        mPoint = new GeoRawPoint(pt.getX(), pt.getY());
+    public GeoPoint(final GeoPoint point) {
+        this.mX = point.mX;
+        this.mY = point.mY;
     }
 
-    public GeoRawPoint getRawPoint() {
-        return mPoint;
+    public final double getX() {
+        return mX;
     }
 
-    public final double getX(){
-        return mPoint.mX;
+    public final double getY() {
+        return mY;
     }
 
-    public final double getY(){
-        return mPoint.mY;
+    public void setX(double x) {
+        mX = x;
     }
 
-    public void setX(double x){
-        mPoint.mX = x;
+    public void setY(double y) {
+        mY = y;
     }
 
-    public void setY(double y){
-        mPoint.mY = y;
-    }
-
-    public void setCoordinates(double x, double y){
-        mPoint.mX = x;
-        mPoint.mY = y;
+    public void setCoordinates(double x, double y) {
+        mX = x;
+        mY = y;
     }
 
     @Override
-    public final int getType(){
+    public void setCoordinatesFromJSON(JSONArray coordinates) throws JSONException {
+        mX = coordinates.getDouble(0);
+        mY = coordinates.getDouble(1);
+    }
+
+    @Override
+    public JSONArray coordinatesToJSON() throws JSONException {
+        JSONArray coordinates = new JSONArray();
+        coordinates.put(mX);
+        coordinates.put(mY);
+
+        return coordinates;
+    }
+
+    @Override
+    public final int getType() {
         return GTPoint;
     }
 
+    public boolean equals(GeoPoint point) {
+        return mX == point.mX && mY == point.mY;
+    }
+
     @Override
-    public boolean project(int crs) {
-        return (mCRS == CRS_WGS84 && crs == CRS_WEB_MERCATOR
-                || mCRS == CRS_WEB_MERCATOR && crs == CRS_WGS84)
-                && mPoint.project(crs);
+    protected boolean rawProject(int toCrs) {
+        switch (toCrs) {
+            case CRS_WEB_MERCATOR:
+                Geo.wgs84ToMercatorSphere(this);
+                return true;
+            case CRS_WGS84:
+                Geo.mercatorToWgs84Sphere(this);
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
     public GeoEnvelope getEnvelope() {
-        return new GeoEnvelope(mPoint.mX - .5, mPoint.mX + .5, mPoint.mY - .5, mPoint.mY + .5);
+        return new GeoEnvelope(mX, mX, mY, mY);
     }
 
-    @Override
-    public JSONObject toJSON() throws JSONException {
-        JSONObject oJSONOut = new JSONObject();
-        oJSONOut.put(GEOJSON_TYPE, GEOJSON_TYPE_Point);
-        JSONArray coordinates = new JSONArray();
-        oJSONOut.put(GEOJSON_COORDINATES, coordinates);
-        coordinates.put(mPoint.mX);
-        coordinates.put(mPoint.mY);
-        return oJSONOut;
-    }
-
-    public String toString(){
-        return "X: " + mPoint.mX + ", Y: " + mPoint.mY;
+    public String toString() {
+        return "X: " + mX + ", Y: " + mY;
     }
 }

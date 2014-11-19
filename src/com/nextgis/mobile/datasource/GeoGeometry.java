@@ -24,83 +24,145 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.List;
-
 import static com.nextgis.mobile.util.GeoConstants.*;
 
-public abstract class GeoGeometry{
+public abstract class GeoGeometry {
 
     protected int mCRS;
 
     public abstract int getType();
-    public abstract boolean project(int crs);
+
+    public static int typeFromJSON(String jsonType) {
+        if (jsonType.equals(GEOJSON_TYPE_Point)) {
+            return GTPoint;
+
+        } else if (jsonType.equals(GEOJSON_TYPE_LineString)) {
+            return GTLineString;
+
+        } else if (jsonType.equals(GEOJSON_TYPE_Polygon)) {
+            return GTPolygon;
+
+        } else if (jsonType.equals(GEOJSON_TYPE_MultiPoint)) {
+            return GTMultiPoint;
+
+        } else if (jsonType.equals(GEOJSON_TYPE_MultiLineString)) {
+            return GTMultiLineString;
+
+        } else if (jsonType.equals(GEOJSON_TYPE_MultiPolygon)) {
+            return GTMultiPolygon;
+
+        } else if (jsonType.equals(GEOJSON_TYPE_GeometryCollection)) {
+            return GTGeometryCollection;
+
+        } else return GTNone;
+    }
+
+    public String typeToJSON() {
+        switch (getType()) {
+            case GTPoint:
+                return GEOJSON_TYPE_Point;
+            case GTLineString:
+                return GEOJSON_TYPE_LineString;
+            case GTPolygon:
+                return GEOJSON_TYPE_Polygon;
+            case GTMultiPoint:
+                return GEOJSON_TYPE_MultiPoint;
+            case GTMultiLineString:
+                return GEOJSON_TYPE_MultiLineString;
+            case GTMultiPolygon:
+                return GEOJSON_TYPE_MultiPolygon;
+            case GTGeometryCollection:
+                return GEOJSON_TYPE_GeometryCollection;
+            case GTNone:
+            default:
+                return "";
+        }
+    }
+
+    public boolean project(int toCrs) {
+        return (mCRS == CRS_WGS84 && toCrs == CRS_WEB_MERCATOR
+                || mCRS == CRS_WEB_MERCATOR && toCrs == CRS_WGS84) && rawProject(toCrs);
+    }
+
+    protected abstract boolean rawProject(int toCrs);
+
     public abstract GeoEnvelope getEnvelope();
-    public void setCRS(int crs){
+
+    public void setCRS(int crs) {
         mCRS = crs;
     }
 
-    public static GeoGeometry fromJson(JSONObject jsonObject) throws JSONException{
+    public static GeoGeometry fromJson(JSONObject jsonObject) throws JSONException {
+        String jsonType = jsonObject.getString(GEOJSON_TYPE);
+        int type = typeFromJSON(jsonType);
+
         GeoGeometry output = null;
-        String sType = jsonObject.getString(GEOJSON_TYPE);
-        if(sType.equals(GEOJSON_TYPE_Point)){
-            JSONArray coordinates = jsonObject.getJSONArray(GEOJSON_COORDINATES);
-            double x = coordinates.getDouble(0);
-            double y = coordinates.getDouble(1);
-            output = new GeoPoint(x, y);
+        switch (type) {
+            case GTPoint:
+                output = new GeoPoint();
+                break;
+            case GTLineString:
+                output = new GeoLineString();
+                break;
+            case GTPolygon:
+                output = new GeoPolygon();
+                break;
+            case GTMultiPoint:
+                output = new GeoMultiPoint();
+                break;
+            case GTMultiLineString:
+                output = new GeoMultiLineString();
+                break;
+            case GTMultiPolygon:
+                output = new GeoMultiPolygon();
+                break;
+
+            case GTGeometryCollection:
+            case GTNone:
+            default:
+                break;
         }
-        else if(sType.equals(GEOJSON_TYPE_MultiPoint)){
 
+        switch (type) {
+            case GTPoint:
+            case GTLineString:
+            case GTPolygon:
+            case GTMultiPoint:
+            case GTMultiLineString:
+            case GTMultiPolygon:
+                JSONArray coordinates = jsonObject.getJSONArray(GEOJSON_COORDINATES);
+                output.setCoordinatesFromJSON(coordinates);
+                break;
+
+            case GTGeometryCollection:
+                GeoGeometryCollection geometryCollection = new GeoGeometryCollection();
+                JSONArray jsonGeometries = jsonObject.getJSONArray(GEOJSON_GEOMETRIES);
+
+                for (int i = 0; i < jsonGeometries.length(); ++i) {
+                    JSONObject jsonGeometry = jsonGeometries.getJSONObject(i);
+                    GeoGeometry geometry = GeoGeometry.fromJson(jsonGeometry);
+                    geometryCollection.add(geometry);
+                }
+
+                output = geometryCollection;
+                break;
+
+            case GTNone:
+            default:
+                break;
         }
-        else if(sType.equals(GEOJSON_TYPE_LineString)){
-            GeoLineString lineString = new GeoLineString();
-            JSONArray coordinates = jsonObject.getJSONArray(GEOJSON_COORDINATES);
 
-            if (coordinates.length() < 2) {
-                throw new JSONException("For type \"LineString\", the \"coordinates\" member must be an array of two or more positions.");
-            }
-
-            for (int i = 0; i < coordinates.length(); ++i) {
-                double x = coordinates.getJSONArray(i).getDouble(0);
-                double y = coordinates.getJSONArray(i).getDouble(1);
-                lineString.add(x, y);
-            }
-            output = lineString;
-        }
-        else if(sType.equals(GEOJSON_TYPE_MultiLineString)){
-
-        }
-        else if(sType.equals(GEOJSON_TYPE_Polygon)){
-            GeoPolygon polygon = new GeoPolygon();
-            JSONArray coordinates = jsonObject.getJSONArray(GEOJSON_COORDINATES);
-
-            if (coordinates.getJSONArray(0).length() < 4) {
-                throw new JSONException("For type \"Polygon\", the \"coordinates\" member must be an array of LinearRing coordinate arrays. A LinearRing must be with 4 or more positions.");
-            }
-
-            int i = 0;
-
-            for (; i < coordinates.getJSONArray(0).length(); ++i) {
-                double x = coordinates.getJSONArray(0).getJSONArray(i).getDouble(0);
-                double y = coordinates.getJSONArray(0).getJSONArray(i).getDouble(1);
-                polygon.add(x, y);
-            }
-
-            List<GeoRawPoint> points = polygon.getOuterRing().getPoints();
-
-            if (!points.get(0).equals(points.get(i))) {
-                throw new JSONException("For type \"Polygon\", the \"coordinates\" member must be an array of LinearRing coordinate arrays. The first and last positions of LinearRing must be equivalent (they represent equivalent points).");
-            }
-
-            output = polygon;
-        }
-        else if(sType.equals(GEOJSON_TYPE_MultiPolygon)){
-
-        }
-        else if(sType.equals(GEOJSON_TYPE_GeometryCollection)){
-
-        }
         return output;
     }
 
-    public abstract JSONObject toJSON() throws JSONException;
+    public JSONObject toJSON() throws JSONException {
+        JSONObject jsonOutObject = new JSONObject();
+        jsonOutObject.put(GEOJSON_TYPE, typeToJSON());
+        jsonOutObject.put(GEOJSON_COORDINATES, coordinatesToJSON());
+
+        return jsonOutObject;
+    }
+
+    public abstract void setCoordinatesFromJSON(JSONArray coordinates) throws JSONException;
+    public abstract JSONArray coordinatesToJSON() throws JSONException, ClassCastException;
 }

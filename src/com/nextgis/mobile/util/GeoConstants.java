@@ -49,7 +49,7 @@ public interface GeoConstants {
     public static final int GTPoint = 1;
     public static final int GTLineString = 2;
     public static final int GTPolygon = 3;
-    public static final int GTMultiIPoint = 4;
+    public static final int GTMultiPoint = 4;
     public static final int GTMultiLineString = 5;
     public static final int GTMultiPolygon = 6;
     public static final int GTGeometryCollection = 7;
@@ -67,6 +67,7 @@ public interface GeoConstants {
     public static final String GEOJSON_BBOX = "bbox";
     public static final String GEOJSON_TYPE_FEATURES = "features";
     public static final String GEOJSON_GEOMETRY = "geometry";
+    public static final String GEOJSON_GEOMETRIES = "geometries";
     public static final String GEOJSON_COORDINATES = "coordinates";
     public static final String GEOJSON_TYPE_Point = "Point";
     public static final String GEOJSON_TYPE_MultiPoint = "MultiPoint";

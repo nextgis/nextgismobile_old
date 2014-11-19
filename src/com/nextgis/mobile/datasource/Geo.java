@@ -20,6 +20,8 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
+import com.nextgis.mobile.util.GeoConstants;
+
 public class Geo {
 
     protected final static double mEarthMajorRadius = 6378137.0;
@@ -29,16 +31,16 @@ public class Geo {
     protected final static double mEccent = Math.sqrt(mES);
     protected final static double mCom = 0.5 * mEccent;
 
-    public static GeoPoint mercatorToWgs84SphereRet(final GeoPoint pt) {
+    public static GeoPoint mercatorToWgs84SphereRet(final GeoPoint point) {
         GeoPoint retPt = new GeoPoint();
-        retPt.setX(mercatorToWgs84SphereX(pt.getX()));
-        retPt.setY(mercatorToWgs84SphereY(pt.getY()));
+        retPt.mX = mercatorToWgs84SphereX(point.mX);
+        retPt.mY = mercatorToWgs84SphereY(point.mY);
         return retPt;
     }
 
-    public static void mercatorToWgs84Sphere(GeoRawPoint pt) {
-        pt.mX = mercatorToWgs84SphereX(pt.mX);
-        pt.mY = mercatorToWgs84SphereY(pt.mY);
+    public static void mercatorToWgs84Sphere(GeoPoint point) {
+        point.mX = mercatorToWgs84SphereX(point.mX);
+        point.mY = mercatorToWgs84SphereY(point.mY);
     }
 
     public static double mercatorToWgs84SphereX(final double x) {
@@ -49,16 +51,16 @@ public class Geo {
         return Math.toDegrees(2 * Math.atan(Math.exp(y / mEarthMajorRadius)) - Math.PI / 2);
     }
 
-    public static GeoPoint mercatorToWgs84EllipseRet(final GeoPoint pt) {
+    public static GeoPoint mercatorToWgs84EllipseRet(final GeoPoint point) {
         GeoPoint retPt = new GeoPoint();
-        retPt.setX(mercatorToWgs84EllipseX(pt.getX()));
-        retPt.setY(mercatorToWgs84EllipseY(pt.getY()));
+        retPt.mX = mercatorToWgs84EllipseX(point.mX);
+        retPt.mY = mercatorToWgs84EllipseY(point.mY);
         return retPt;
     }
 
-    public static void mercatorToWgs84Ellipse(GeoRawPoint pt) {
-        pt.mX = mercatorToWgs84EllipseX(pt.mX);
-        pt.mY = mercatorToWgs84EllipseY(pt.mY);
+    public static void mercatorToWgs84Ellipse(GeoPoint point) {
+        point.mX = mercatorToWgs84EllipseX(point.mX);
+        point.mY = mercatorToWgs84EllipseY(point.mY);
     }
 
     public static double mercatorToWgs84EllipseX(final double x) {
@@ -74,16 +76,16 @@ public class Geo {
         return 0 - mEarthMajorRadius * Math.log(ts);
     }
 
-    public static GeoPoint wgs84ToMercatorSphereRet(final GeoPoint pt) {
+    public static GeoPoint wgs84ToMercatorSphereRet(final GeoPoint point) {
         GeoPoint retPt = new GeoPoint();
-        retPt.setX(wgs84ToMercatorSphereX(pt.getX()));
-        retPt.setY(wgs84ToMercatorSphereY(pt.getY()));
+        retPt.mX = wgs84ToMercatorSphereX(point.mX);
+        retPt.mY = wgs84ToMercatorSphereY(point.mY);
         return retPt;
     }
 
-    public static void wgs84ToMercatorSphere(GeoRawPoint pt) {
-        pt.mX = wgs84ToMercatorSphereX(pt.mX);
-        pt.mY = wgs84ToMercatorSphereY(pt.mY);
+    public static void wgs84ToMercatorSphere(GeoPoint point) {
+        point.mX = wgs84ToMercatorSphereX(point.mX);
+        point.mY = wgs84ToMercatorSphereY(point.mY);
     }
 
     public static double wgs84ToMercatorSphereX(final double x) {
@@ -95,6 +97,8 @@ public class Geo {
     }
 
     public static boolean isGeometryTypeSame(final int type1, final int type2) {
-        return type1 == type2 || Math.abs(type1 - type2) == 3;
+        return type1 == type2
+                || (type1 <= GeoConstants.GTMultiPolygon
+                && type2 <= GeoConstants.GTMultiPolygon && Math.abs(type1 - type2) == 3);
     }
 }

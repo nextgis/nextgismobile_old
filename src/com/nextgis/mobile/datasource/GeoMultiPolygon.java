@@ -20,47 +20,37 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
-import static com.nextgis.mobile.util.GeoConstants.CRS_WEB_MERCATOR;
-import static com.nextgis.mobile.util.GeoConstants.CRS_WGS84;
+import org.json.JSONArray;
+import org.json.JSONException;
 
-public class GeoRawPoint {
+import static com.nextgis.mobile.util.GeoConstants.*;
 
-    public double mX;
-    public double mY;
+public class GeoMultiPolygon extends GeoGeometryCollection {
 
-    public GeoRawPoint() {
-        mX = mY = 0.0;
+    @Override
+    public void add(GeoGeometry geometry) throws ClassCastException {
+        if (!(geometry instanceof GeoPolygon)) {
+            throw new ClassCastException("GeoMultiPolygon: geometry is not GeoPolygon type.");
+        }
+
+        super.add(geometry);
     }
 
-    public GeoRawPoint(double x, double y) {
-        this.mX = x;
-        this.mY = y;
+    public void add(GeoPolygon lineString) {
+        super.add(lineString);
     }
 
-    public GeoRawPoint(GeoRawPoint rpt) {
-        this.mX = rpt.mX;
-        this.mY = rpt.mY;
+    @Override
+    public int getType() {
+        return GTMultiPolygon;
     }
 
-    public GeoRawPoint(GeoPoint gpt) {
-        this.mX = gpt.getX();
-        this.mY = gpt.getY();
-    }
-
-    public boolean equals(GeoRawPoint grp) {
-        return mX == grp.mX && mY == grp.mY;
-    }
-
-    public boolean project(int toCrs) {
-        switch (toCrs) {
-            case CRS_WEB_MERCATOR:
-                Geo.wgs84ToMercatorSphere(this);
-                return true;
-            case CRS_WGS84:
-                Geo.mercatorToWgs84Sphere(this);
-                return true;
-            default:
-                return false;
+    @Override
+    public void setCoordinatesFromJSON(JSONArray coordinates) throws JSONException {
+        for (int i = 0; i < coordinates.length(); ++i) {
+            GeoPolygon polygon = new GeoPolygon();
+            polygon.setCoordinatesFromJSON(coordinates.getJSONArray(i));
+            add(polygon);
         }
     }
 }

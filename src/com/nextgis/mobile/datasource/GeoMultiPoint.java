@@ -23,81 +23,34 @@ package com.nextgis.mobile.datasource;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static com.nextgis.mobile.util.GeoConstants.*;
 
-public class GeoLineString extends GeoGeometry {
+public class GeoMultiPoint extends GeoGeometryCollection {
 
-    protected List<GeoPoint> mPoints;
-
-    public GeoLineString() {
-        mPoints = new ArrayList<GeoPoint>();
-    }
-
-    public List<GeoPoint> getPoints() {
-        return mPoints;
-    }
-
-    public void add(GeoPoint point) throws IllegalArgumentException {
-        if (point == null) {
-            throw new IllegalArgumentException("GeoLineString: point == null.");
+    @Override
+    public void add(GeoGeometry geometry) throws ClassCastException {
+        if (!(geometry instanceof GeoPoint)) {
+            throw new ClassCastException("GeoMultiPoint: geometry is not GeoPoint type.");
         }
 
-        mPoints.add(point);
+        super.add(geometry);
     }
 
-    public GeoPoint remove(int index) {
-        return mPoints.remove(index);
+    public void add(GeoPoint point) {
+        super.add(point);
     }
 
     @Override
     public int getType() {
-        return GTLineString;
-    }
-
-    @Override
-    protected boolean rawProject(int toCrs) {
-        boolean isOk = true;
-        for (GeoPoint point : mPoints) {
-            isOk = isOk && point.rawProject(toCrs);
-        }
-        return isOk;
-    }
-
-    @Override
-    public GeoEnvelope getEnvelope() {
-        GeoEnvelope envelope = new GeoEnvelope();
-
-        for (GeoPoint point : mPoints) {
-            envelope.merge(point.getEnvelope());
-        }
-
-        return envelope;
+        return GTMultiPoint;
     }
 
     @Override
     public void setCoordinatesFromJSON(JSONArray coordinates) throws JSONException {
-        if (coordinates.length() < 2) {
-            throw new JSONException("For type \"LineString\", the \"coordinates\" member must be an array of two or more positions.");
-        }
-
         for (int i = 0; i < coordinates.length(); ++i) {
             GeoPoint point = new GeoPoint();
             point.setCoordinatesFromJSON(coordinates.getJSONArray(i));
             add(point);
         }
-    }
-
-    @Override
-    public JSONArray coordinatesToJSON() throws JSONException {
-        JSONArray coordinates = new JSONArray();
-
-        for (GeoPoint point : this.mPoints) {
-            coordinates.put(point.coordinatesToJSON());
-        }
-
-        return coordinates;
     }
 }
