@@ -199,7 +199,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
     /**
      * Create a LocalGeoJsonLayer from the GeoJson data submitted by geoJSONObject.
      */
-    protected void create(
+    public void create(
             final MapBase map, String layerName, JSONObject geoJSONObject,
             ProgressDialog progressDialog)
             throws JSONException, IOException {
@@ -250,6 +250,8 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         List<Feature> features = geoJSONFeaturesToFeatures(
                 geoJSONFeatures, isWGS84, map.getContext(), progressDialog);
 
+        progressDialog.hide();
+
         create(map, layerName, features);
     }
 
@@ -268,12 +270,8 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         List<Field> fields = feature.getFields();
 
         //create layer description file
-        JSONObject oJSONRoot = new JSONObject();
+        JSONObject oJSONRoot = createDetails();
         oJSONRoot.put(JSON_NAME_KEY, layerName);
-        oJSONRoot.put(JSON_VISIBILITY_KEY, true);
-        oJSONRoot.put(JSON_TYPE_KEY, getType());
-        oJSONRoot.put(JSON_MAXLEVEL_KEY, 50);
-        oJSONRoot.put(JSON_MINLEVEL_KEY, 0);
 
         //add geometry type
         oJSONRoot.put(JSON_GEOMETRY_TYPE_KEY, geometryType);
@@ -291,8 +289,8 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
 
         // store layer description to file
         File outputPath = map.cretateLayerStorage();
-        File file = new File(outputPath, LAYER_CONFIG);
         FileUtil.createDir(outputPath);
+        File file = new File(outputPath, LAYER_CONFIG);
         FileUtil.writeToFile(file, oJSONRoot.toString());
 
         //store GeoJson to file
@@ -308,6 +306,15 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
             msg.setData(bundle);
             map.getMapEventsHandler().sendMessage(msg);
         }
+    }
+
+    protected JSONObject createDetails() throws JSONException{
+        JSONObject rootConfig = new JSONObject();
+        rootConfig.put(JSON_VISIBILITY_KEY, true);
+        rootConfig.put(JSON_TYPE_KEY, getType());
+        rootConfig.put(JSON_MAXLEVEL_KEY, 50);
+        rootConfig.put(JSON_MINLEVEL_KEY, 0);
+        return rootConfig;
     }
 
     private List<Feature> geoJSONFeaturesToFeatures(
