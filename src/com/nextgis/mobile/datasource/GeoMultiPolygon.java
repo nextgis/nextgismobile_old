@@ -41,6 +41,11 @@ public class GeoMultiPolygon extends GeoGeometryCollection {
     }
 
     @Override
+    public GeoPolygon get(int index) {
+        return (GeoPolygon) mGeometries.get(index);
+    }
+
+    @Override
     public int getType() {
         return GTMultiPolygon;
     }

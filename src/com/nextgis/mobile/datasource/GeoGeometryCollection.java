@@ -54,6 +54,10 @@ public class GeoGeometryCollection extends GeoGeometry {
         return mGeometries.get(index);
     }
 
+    public int size() {
+        return mGeometries.size();
+    }
+
     @Override
     public int getType() {
         return GTGeometryCollection;

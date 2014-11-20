@@ -41,6 +41,11 @@ public class GeoMultiPoint extends GeoGeometryCollection {
     }
 
     @Override
+    public GeoPoint get(int index) {
+        return (GeoPoint) mGeometries.get(index);
+    }
+
+    @Override
     public int getType() {
         return GTMultiPoint;
     }

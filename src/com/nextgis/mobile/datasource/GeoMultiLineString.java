@@ -41,6 +41,11 @@ public class GeoMultiLineString extends GeoGeometryCollection {
     }
 
     @Override
+    public GeoLineString get(int index) {
+        return (GeoLineString) mGeometries.get(index);
+    }
+
+    @Override
     public int getType() {
         return GTMultiLineString;
     }
