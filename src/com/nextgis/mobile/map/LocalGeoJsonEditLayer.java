@@ -46,6 +46,7 @@ public class LocalGeoJsonEditLayer extends LocalGeoJsonLayer {
     public LocalGeoJsonEditLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
 
+        // TODO + GTMultiPoint
         if(mGeometryType == GTPoint) {
             EditMarkerStyle style =
                     new EditMarkerStyle(Color.BLUE, Color.BLACK, mPointSize, MarkerEditStyleCircle,

@@ -22,6 +22,7 @@ package com.nextgis.mobile.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -31,12 +32,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
@@ -44,29 +44,36 @@ import com.nextgis.mobile.datasource.NgwConnection;
 import com.nextgis.mobile.datasource.NgwJsonWorker;
 import com.nextgis.mobile.datasource.NgwResource;
 import com.nextgis.mobile.map.MapBase;
+import com.nextgis.mobile.map.RemoteGeoJsonLayer;
 import com.nextgis.mobile.util.Constants;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-public class NgwConnectionsDialog extends DialogFragment {
+public class NgwResourcesDialog extends DialogFragment {
 
     protected MainActivity mMainActivity;
     protected static MapBase mMap;
 
-    protected static List<NgwConnection> mNgwConnections;
+    protected List<NgwConnection> mNgwConnections;
     protected NgwConnection mCurrConn;
     protected NgwJsonWorker mNgwJsonWorker;
     protected boolean mIsHttpRunning;
 
     protected NgwResource mCurrNgwRes;
     protected TreeSet<NgwResource> mSelectedResources;
+    protected Iterator<NgwResource> mSelResIterator;
 
     protected TextView mDialogTitleText;
-    protected LinearLayout mButtonBar;
+    protected RelativeLayout mButtonBar;
     protected ImageButton mAddConnectionButton;
+    protected ImageButton mOkButton;
+    protected ImageButton mCancelButton;
     protected ProgressBar mHttpProgressBar;
     protected boolean mIsConnectionView;
 
@@ -77,6 +84,8 @@ public class NgwConnectionsDialog extends DialogFragment {
 
     // TODO: checking cashed items for server updates
     // TODO: http timeouts
+    // TODO: edit connections
+    // TODO: json with errors
 
 
     @Override
@@ -121,6 +130,7 @@ public class NgwConnectionsDialog extends DialogFragment {
         };
 
         mNgwJsonWorker = new NgwJsonWorker();
+
         mNgwJsonWorker.setJsonArrayLoadedListener(new NgwJsonWorker.JsonArrayLoadedListener() {
             @Override
             public void onJsonArrayLoaded(final JSONArray jsonArray) {
@@ -149,6 +159,39 @@ public class NgwConnectionsDialog extends DialogFragment {
                 setJsonView();
             }
         });
+
+        mNgwJsonWorker.setJsonObjectLoadedListener(new NgwJsonWorker.JsonObjectLoadedListener() {
+            @Override
+            public void onJsonObjectLoaded(JSONObject jsonObject) {
+                // TODO: ProgressDialog with Fragment for screen rotation
+                ProgressDialog progressDialog = new ProgressDialog(mMainActivity);
+                progressDialog.setMessage(
+                        mMainActivity.getString(R.string.message_loading_progress));
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                progressDialog.setCancelable(true);
+                progressDialog.show();
+
+                try {
+                    mCurrNgwRes = mCurrConn.getCurrentNgwResource();
+                    new RemoteGeoJsonLayer(mCurrConn).create(
+                            mMap, mCurrNgwRes.getDisplayName(), jsonObject, progressDialog);
+
+                    if (mSelResIterator.hasNext()) {
+                        NgwResource ngwResource = mSelResIterator.next();
+                        mCurrConn.setLoadGeoJsonObject(ngwResource);
+                        mNgwJsonWorker.loadNgwJson(mCurrConn);
+                    } else {
+                        setHttpRunningView(false);
+                        dismiss();
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
@@ -160,11 +203,11 @@ public class NgwConnectionsDialog extends DialogFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.ngw_connections_dialog, container);
+        View view = inflater.inflate(R.layout.ngw_resources_dialog, container);
 
         mDialogTitleText = (TextView) view.findViewById(R.id.dialog_title_text);
         mHttpProgressBar = (ProgressBar) view.findViewById(R.id.http_progress_bar);
-        mButtonBar = (LinearLayout) view.findViewById(R.id.button_nar);
+        mButtonBar = (RelativeLayout) view.findViewById(R.id.button_nar);
 
         mAddConnectionButton = (ImageButton) view.findViewById(R.id.btn_add_connection);
         mAddConnectionButton.setOnClickListener(new View.OnClickListener() {
@@ -175,7 +218,34 @@ public class NgwConnectionsDialog extends DialogFragment {
             }
         });
 
-        mResourceList = (ListView) view.findViewById(R.id.ngw_connections_list);
+        mOkButton = (ImageButton) view.findViewById(R.id.btn_ok_res);
+        mOkButton.setEnabled(!mSelectedResources.isEmpty());
+        mOkButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSelResIterator = mSelectedResources.iterator();
+
+                if (mSelResIterator.hasNext()) {
+                    setHttpRunningView(true);
+                    NgwResource ngwResource = mSelResIterator.next();
+                    mCurrConn.setLoadGeoJsonObject(ngwResource);
+                    mNgwJsonWorker.loadNgwJson(mCurrConn);
+
+                } else {
+                    dismiss();
+                }
+            }
+        });
+
+        mCancelButton = (ImageButton) view.findViewById(R.id.btn_cancel_res);
+        mCancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
+
+        mResourceList = (ListView) view.findViewById(R.id.ngw_resources_list);
 
         if (mIsConnectionView) {
             setConnectionView();
@@ -198,7 +268,6 @@ public class NgwConnectionsDialog extends DialogFragment {
         mIsConnectionView = true;
         mDialogTitleText.setText(mMainActivity.getString(R.string.ngw_connections));
 
-        mButtonBar.setVisibility(View.VISIBLE);
         mAddConnectionButton.setVisibility(View.VISIBLE);
 
         mResourceList.setAdapter(mConnectionsAdapter);
@@ -222,7 +291,6 @@ public class NgwConnectionsDialog extends DialogFragment {
         titleText = "/" + mCurrConn.getName() + titleText;
         mDialogTitleText.setText(titleText);
 
-        mButtonBar.setVisibility(View.GONE);
         mAddConnectionButton.setVisibility(View.GONE);
 
         NgwJsonArrayAdapter jsonArrayAdapter =
@@ -236,6 +304,8 @@ public class NgwConnectionsDialog extends DialogFragment {
 
                         if (isChecked) mSelectedResources.add(ngwResource);
                         else mSelectedResources.remove(ngwResource);
+
+                        mOkButton.setEnabled(!mSelectedResources.isEmpty());
                     }
                 });
 
@@ -306,7 +376,7 @@ public class NgwConnectionsDialog extends DialogFragment {
             final EditText edLogin = (EditText) view.findViewById(R.id.ed_login);
             final EditText edPassword = (EditText) view.findViewById(R.id.ed_password);
 
-            Button btnOk = (Button) view.findViewById(R.id.btn_ok);
+            ImageButton btnOk = (ImageButton) view.findViewById(R.id.btn_ok_add_conn);
             btnOk.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -335,7 +405,7 @@ public class NgwConnectionsDialog extends DialogFragment {
                 }
             });
 
-            Button btnCancel = (Button) view.findViewById(R.id.btn_cancel);
+            ImageButton btnCancel = (ImageButton) view.findViewById(R.id.btn_cancel_add_conn);
             btnCancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -352,7 +422,7 @@ public class NgwConnectionsDialog extends DialogFragment {
         int mIndex;
 
 
-        static NgwDeleteConnectionDialog newInstance(int index) {
+        public static NgwDeleteConnectionDialog newInstance(int index) {
             NgwDeleteConnectionDialog dialog = new NgwDeleteConnectionDialog();
 
             // Supply index input as an argument.
@@ -386,7 +456,7 @@ public class NgwConnectionsDialog extends DialogFragment {
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            mNgwConnections.remove(mIndex);
+                            mMap.getNgwConnections().remove(mIndex);
                             NgwJsonWorker.saveNgwConnections(
                                     mMap.getNgwConnections(), mMap.getMapPath());
                             ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
@@ -394,7 +464,7 @@ public class NgwConnectionsDialog extends DialogFragment {
                     })
                     .setNegativeButton(R.string.cancel, null)
                     .setMessage(String.format(getString(R.string.ngw_msg_delete_connection),
-                            mNgwConnections.get(mIndex).getName()));
+                            mMap.getNgwConnections().get(mIndex).getName()));
             return adb.create();
         }
     }

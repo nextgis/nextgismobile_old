@@ -67,7 +67,7 @@
         android:layout_height="2dp"
         android:background="#ff33b5e5"/>
 
-    <LinearLayout
+    <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/button_nar"
         android:orientation="horizontal"
@@ -75,20 +75,42 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:visibility="visible">
+        android:layout_marginRight="15dp">
 
         <ImageButton
             android:id="@+id/btn_add_connection"
             android:src="@drawable/ic_action_add"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="false"
+            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
             android:visibility="visible"/>
 
-    </LinearLayout>
+        <ImageButton
+            android:id="@+id/btn_cancel_res"
+            android:src="@drawable/ic_action_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/btn_ok_res"
+            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
+            android:visibility="visible"/>
+
+        <ImageButton
+            android:id="@+id/btn_ok_res"
+            android:src="@drawable/ic_action_accept"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:visibility="visible"/>
+
+    </RelativeLayout>
 
     <ListView
-        android:id="@+id/ngw_connections_list"
+        android:id="@+id/ngw_resources_list"
         android:scrollbars="vertical"
         android:smoothScrollbar="true"
         android:layout_width="fill_parent"

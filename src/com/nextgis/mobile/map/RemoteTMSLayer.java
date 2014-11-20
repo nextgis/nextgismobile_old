@@ -139,7 +139,7 @@ public class RemoteTMSLayer extends TMSLayer {
 
     @Override
     public int getType() {
-        return LAYERTYPE_TMS;
+        return LAYERTYPE_REMOTE_TMS;
     }
 
     public static void create(final MapBase map){
@@ -236,7 +236,7 @@ public class RemoteTMSLayer extends TMSLayer {
             oJSONRoot.put(JSON_NAME_KEY, layerName);
             oJSONRoot.put(JSON_URL_KEY, layerUrl);
             oJSONRoot.put(JSON_VISIBILITY_KEY, true);
-            oJSONRoot.put(JSON_TYPE_KEY, LAYERTYPE_TMS);
+            oJSONRoot.put(JSON_TYPE_KEY, LAYERTYPE_REMOTE_TMS);
             oJSONRoot.put(JSON_TMSTYPE_KEY, tmsType);
 
             //send message to handler to show error or add new layer

@@ -40,7 +40,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.nextgis.mobile.dialogs.NgwConnectionsDialog;
+import com.nextgis.mobile.dialogs.NgwResourcesDialog;
 import com.nextgis.mobile.map.MapViewEditable;
 import com.nextgis.mobile.services.TrackerService;
 import com.nextgis.mobile.services.TrackerService.TSBinder;
@@ -363,8 +363,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void onAddNgwLayers() {
-        NgwConnectionsDialog dialog = new NgwConnectionsDialog();
-        dialog.show(getSupportFragmentManager(), "NgwConnectionsDialog");
+        NgwResourcesDialog dialog = new NgwResourcesDialog();
+        dialog.show(getSupportFragmentManager(), "NgwResourcesDialog");
     }
 
     @Override

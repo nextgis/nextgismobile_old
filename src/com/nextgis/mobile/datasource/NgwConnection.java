@@ -20,13 +20,12 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
-import java.util.Random;
-
 public class NgwConnection implements Comparable<NgwConnection> {
 
     public static final int LOAD_PARENT = 1;
     public static final int LOAD_RESOURCE = 2;
     public static final int LOAD_CHILDREN = 3;
+    public static final int LOAD_GEOJSON = 4;
 
     protected String mName;
     protected String mUrl;
@@ -47,12 +46,11 @@ public class NgwConnection implements Comparable<NgwConnection> {
         mLogin = login;
         mPassword = password;
 
+        mRootNgwResource = new NgwResource(this);
         mCurrentNgwResource = null;
         mChildId = 0;
 
         mThatLoad = LOAD_RESOURCE;
-
-        mRootNgwResource = new NgwResource(this);
     }
 
     public String getName() {
@@ -88,6 +86,8 @@ public class NgwConnection implements Comparable<NgwConnection> {
                 return getResourceArrayUrl();
             case LOAD_CHILDREN:
                 return getChildObjectUrl();
+            case LOAD_GEOJSON:
+                return getGeoJsonUrl();
         }
     }
 
@@ -117,6 +117,14 @@ public class NgwConnection implements Comparable<NgwConnection> {
                 + "/child/" + mChildId;
     }
 
+    public String getGeoJsonUrl() {
+        return mUrl + "resource/"
+                + (mCurrentNgwResource == null || mCurrentNgwResource.getId() == null
+                ? "-"
+                : mCurrentNgwResource.getId())
+                + "/geojson/";
+    }
+
     public void setLoadRootArray() {
         setLoadResourceArray(mRootNgwResource);
     }
@@ -143,6 +151,12 @@ public class NgwConnection implements Comparable<NgwConnection> {
         mThatLoad = LOAD_CHILDREN;
     }
 
+    public void setLoadGeoJsonObject(NgwResource resource) {
+        mCurrentNgwResource = resource;
+        mChildId = 0;
+        mThatLoad = LOAD_GEOJSON;
+    }
+
     public boolean isForJsonArray() {
         switch (mThatLoad) {
 
@@ -152,6 +166,7 @@ public class NgwConnection implements Comparable<NgwConnection> {
                 return true;
 
             case LOAD_CHILDREN:
+            case LOAD_GEOJSON:
                 return false;
         }
     }

@@ -195,9 +195,10 @@ public interface Constants {
     public static final int LAYERTYPE_LOCAL_TMS = 1;
     public static final int LAYERTYPE_LOCAL_RASTER = 2;
     public static final int LAYERTYPE_LOCAL_GEOJSON = 3;
-    public static final int LAYERTYPE_TMS = 4;
+    public static final int LAYERTYPE_REMOTE_TMS = 4;
     public static final int LAYERTYPE_NGW = 5;
     public static final int LAYERTYPE_LOCAL_EDIT_GEOJSON = 6;
+    public static final int LAYERTYPE_REMOTE_GEOJSON = 7;
 
 
     /**

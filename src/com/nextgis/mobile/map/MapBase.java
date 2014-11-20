@@ -134,16 +134,12 @@ public class MapBase extends View {
         return mLayers;
     }
 
-    protected List<Layer> getLayersByType(int layerType) {
-        List<Layer> layerList = new ArrayList<Layer>();
-
+    protected void addToListLayersByType(List<Layer> toLayerList, int layerType) {
         for (Layer layer : mLayers) {
             if (layer.getType() == layerType) {
-                layerList.add(layer);
+                toLayerList.add(layer);
             }
         }
-
-        return layerList;
     }
 
     protected int getLayersCountByType(int layerType) {
@@ -163,9 +159,8 @@ public class MapBase extends View {
     }
 
     public List<NgwConnection> getNgwConnections() {
-        if (mNgwConnections == null) {
+        //if (mNgwConnections == null) -- bug with NgwResourcesDialog
             mNgwConnections = NgwJsonWorker.loadNgwConnections(mMapPath);
-        }
         return mNgwConnections;
     }
 
@@ -292,8 +287,11 @@ public class MapBase extends View {
                     break;
                 case LAYERTYPE_LOCAL_RASTER:
                     break;
-                case LAYERTYPE_TMS:
+                case LAYERTYPE_REMOTE_TMS:
                     layer = new RemoteTMSLayer(this, path, rootObject);
+                    break;
+                case LAYERTYPE_REMOTE_GEOJSON:
+                    layer = new RemoteGeoJsonLayer(this, path, rootObject);
                     break;
                 case LAYERTYPE_NGW:
                     break;

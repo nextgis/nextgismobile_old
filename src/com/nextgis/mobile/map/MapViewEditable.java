@@ -365,7 +365,9 @@ public class MapViewEditable extends MapView {
             return;
         }
 
-        List<Layer> geoJsonLayers = getLayersByType(LAYERTYPE_LOCAL_GEOJSON);
+        List<Layer> geoJsonLayers = new ArrayList<Layer>();
+        addToListLayersByType(geoJsonLayers, LAYERTYPE_LOCAL_GEOJSON);
+        addToListLayersByType(geoJsonLayers, LAYERTYPE_REMOTE_GEOJSON);
 
         switch (geoJsonLayers.size()) {
             case 0:

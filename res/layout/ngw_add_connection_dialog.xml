@@ -26,30 +26,35 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
-    <LinearLayout
+    <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
         android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="15dp">
+        android:layout_marginRight="15dp">
 
-        <Button
-            android:id="@+id/btn_cancel"
-            android:text="@string/cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <Button
-            android:id="@+id/btn_ok"
-            android:text="@string/ok"
+        <ImageButton
+            android:id="@+id/btn_cancel_add_conn"
+            android:src="@drawable/ic_action_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginStart="10dp"/>
+            android:layout_toLeftOf="@+id/btn_ok_add_conn"
+            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
+            android:visibility="visible"/>
 
-    </LinearLayout>
+        <ImageButton
+            android:id="@+id/btn_ok_add_conn"
+            android:src="@drawable/ic_action_accept"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:visibility="visible"/>
+
+    </RelativeLayout>
 
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"

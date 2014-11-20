@@ -66,7 +66,7 @@ public class LayersListAdapter extends BaseAdapter {
         final Layer layer = (Layer) getItem(i);
         switch (layer.getType()){
             case LAYERTYPE_LOCAL_TMS:
-            case LAYERTYPE_TMS:
+            case LAYERTYPE_REMOTE_TMS:
             default:
                 return getStandardLayerView(layer, view);
         }
