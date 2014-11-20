@@ -418,7 +418,7 @@ public class MapViewEditable extends MapView {
                     try {
                         List<Feature> features = new ArrayList<Feature>(1);
                         features.add(selectedFeature);
-                        LocalGeoJsonEditLayer.create(getSelf(), layer.getName(), features);
+                        new LocalGeoJsonEditLayer().create(getSelf(), layer.getName(), features);
 
                         mHandler.removeMessages(MSGTYPE_EDIT_DRAWING_DONE);
                         mDrawingState = DRAW_SATE_edit_drawing;

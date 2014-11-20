@@ -39,6 +39,10 @@ public class LocalGeoJsonEditLayer extends LocalGeoJsonLayer {
 
     protected Feature mEditFeature;
 
+
+    public LocalGeoJsonEditLayer() {
+    }
+
     public LocalGeoJsonEditLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
 
@@ -60,6 +64,11 @@ public class LocalGeoJsonEditLayer extends LocalGeoJsonLayer {
         return LAYERTYPE_LOCAL_EDIT_GEOJSON;
     }
 
+    @Override
+    protected int getMsgType() {
+        return MSGTYPE_EDIT_LAYER_ADDED;
+    }
+
     public String getEditableLayerName() {
         return mName.substring(5);
     }
@@ -67,10 +76,11 @@ public class LocalGeoJsonEditLayer extends LocalGeoJsonLayer {
     /**
      * Create a LocalGeoJsonLayerEditor from the GeoJson data submitted by features.
      */
-    public static void create(final MapBase map, String editLayerName, List<Feature> features)
+    @Override
+    public void create(final MapBase map, String editLayerName, List<Feature> features)
             throws JSONException, IOException {
 
-        create(map, "edit_" + editLayerName, features, LAYERTYPE_LOCAL_EDIT_GEOJSON, MSGTYPE_EDIT_LAYER_ADDED);
+        super.create(map, "edit_" + editLayerName, features);
     }
 
     public Feature getEditFeature() {

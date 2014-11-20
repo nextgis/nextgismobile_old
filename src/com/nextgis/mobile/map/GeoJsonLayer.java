@@ -47,6 +47,9 @@ public abstract class GeoJsonLayer extends Layer{
     protected GeoEnvelope mExtents;
     protected float mPointSize = 6;
 
+    protected GeoJsonLayer() {
+    }
+
     public GeoJsonLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
 

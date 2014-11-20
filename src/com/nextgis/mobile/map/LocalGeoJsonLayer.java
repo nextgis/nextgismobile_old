@@ -64,6 +64,9 @@ import java.util.List;
 
 public class LocalGeoJsonLayer extends GeoJsonLayer {
 
+    public LocalGeoJsonLayer() {
+    }
+
     public LocalGeoJsonLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
     }
@@ -78,7 +81,11 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         return LAYERTYPE_LOCAL_GEOJSON;
     }
 
-    public static void create(final MapBase map, Uri uri) {
+    protected int getMsgType() {
+        return MSGTYPE_LAYER_ADDED;
+    }
+
+    public void create(final MapBase map, Uri uri) {
         String sName = getFileNameByUri(map.getContext(), uri, "new layer.geojson");
         sName = (String) sName.subSequence(0, sName.length() - 8);
         showPropertiesDialog(map, true, sName, uri, null);
@@ -89,7 +96,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         showPropertiesDialog(mMap, false, mName, null, this);
     }
 
-    protected static void showPropertiesDialog(final MapBase map, final boolean bCreate, String layerName, final Uri uri, final LocalGeoJsonLayer layer) {
+    protected void showPropertiesDialog(final MapBase map, final boolean bCreate, String layerName, final Uri uri, final LocalGeoJsonLayer layer) {
         final LinearLayout linearLayout = new LinearLayout(map.getContext());
         final EditText input = new EditText(map.getContext());
         input.setText(layerName);
@@ -129,7 +136,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
     /**
      * Create a LocalGeoJsonLayer from the GeoJson data submitted by uri.
      */
-    protected static void create(final MapBase map, String layerName, Uri uri) {
+    protected void create(final MapBase map, String layerName, Uri uri) {
 
         String sErr = map.getContext().getString(R.string.error_occurred);
         ProgressDialog progressDialog = new ProgressDialog(map.getContext());
@@ -188,7 +195,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
     /**
      * Create a LocalGeoJsonLayer from the GeoJson data submitted by jsonString.
      */
-    protected static void create(
+    protected void create(
             final MapBase map, String layerName, String jsonString, ProgressDialog progressDialog)
             throws JSONException, IOException {
 
@@ -246,17 +253,8 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         create(map, layerName, features);
     }
 
-    /**
-     * Create a LocalGeoJsonLayer from the GeoJson data submitted by features.
-     */
-    public static void create(final MapBase map, String layerName, List<Feature> features)
-            throws JSONException, IOException {
-
-        create(map, layerName, features, LAYERTYPE_LOCAL_GEOJSON, MSGTYPE_LAYER_ADDED);
-    }
-
-    protected static void create(
-            final MapBase map, String layerName, List<Feature> features, int layerType, int msgType)
+    protected void create(
+            final MapBase map, String layerName, List<Feature> features)
             throws JSONException, IOException {
 
         GeoEnvelope extents = new GeoEnvelope();
@@ -273,7 +271,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         JSONObject oJSONRoot = new JSONObject();
         oJSONRoot.put(JSON_NAME_KEY, layerName);
         oJSONRoot.put(JSON_VISIBILITY_KEY, true);
-        oJSONRoot.put(JSON_TYPE_KEY, layerType);
+        oJSONRoot.put(JSON_TYPE_KEY, getType());
         oJSONRoot.put(JSON_MAXLEVEL_KEY, 50);
         oJSONRoot.put(JSON_MINLEVEL_KEY, 0);
 
@@ -303,7 +301,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         if (map.getMapEventsHandler() != null) {
             Bundle bundle = new Bundle();
             bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
-            bundle.putInt(BUNDLE_TYPE_KEY, msgType);
+            bundle.putInt(BUNDLE_TYPE_KEY, getMsgType());
             bundle.putSerializable(BUNDLE_PATH_KEY, outputPath);
 
             Message msg = new Message();
@@ -312,7 +310,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         }
     }
 
-    private static List<Feature> geoJSONFeaturesToFeatures(
+    private List<Feature> geoJSONFeaturesToFeatures(
             JSONArray geoJSONFeatures, boolean isWGS84, Context context,
             ProgressDialog progressDialog)
             throws JSONException {
