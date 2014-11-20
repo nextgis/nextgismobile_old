@@ -169,7 +169,11 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                     responseStrBuilder.append(inputStr);
                 }
 
-                create(map, layerName, responseStrBuilder.toString(), progressDialog);
+                progressDialog.setMessage(
+                        map.getContext().getString(R.string.message_opening_progress));
+
+                JSONObject geoJSONObject = new JSONObject(responseStrBuilder.toString());
+                create(map, layerName, geoJSONObject, progressDialog);
             }
 
         } catch (UnsupportedEncodingException e) {
@@ -193,16 +197,12 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
     }
 
     /**
-     * Create a LocalGeoJsonLayer from the GeoJson data submitted by jsonString.
+     * Create a LocalGeoJsonLayer from the GeoJson data submitted by geoJSONObject.
      */
     protected void create(
-            final MapBase map, String layerName, String jsonString, ProgressDialog progressDialog)
+            final MapBase map, String layerName, JSONObject geoJSONObject,
+            ProgressDialog progressDialog)
             throws JSONException, IOException {
-
-        progressDialog.setMessage(
-                map.getContext().getString(R.string.message_opening_progress));
-
-        JSONObject geoJSONObject = new JSONObject(jsonString);
 
         if (!geoJSONObject.has(GEOJSON_TYPE)) {
             progressDialog.hide();
