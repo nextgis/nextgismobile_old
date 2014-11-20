@@ -53,11 +53,14 @@ public abstract class GeoJsonLayer extends Layer{
     public GeoJsonLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
 
-        if(mGeometryType == GTPoint) {
-            SimpleMarkerStyle style =
-                    new SimpleMarkerStyle(Color.RED, Color.BLACK, mPointSize, MarkerStyleCircle);
-            style.setWidth(2);
-            mRenderer = new SimpleFeatureRenderer(this, style);
+        switch (mGeometryType) {
+            case GTPoint:
+            case GTMultiPoint:
+                SimpleMarkerStyle style =
+                        new SimpleMarkerStyle(Color.RED, Color.BLACK, mPointSize, MarkerStyleCircle);
+                style.setWidth(2);
+                mRenderer = new SimpleFeatureRenderer(this, style);
+                break;
         }
     }
 

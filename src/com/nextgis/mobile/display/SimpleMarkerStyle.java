@@ -3,7 +3,9 @@ package com.nextgis.mobile.display;
 import android.graphics.Paint;
 
 import com.nextgis.mobile.datasource.GeoGeometry;
+import com.nextgis.mobile.datasource.GeoMultiPoint;
 import com.nextgis.mobile.datasource.GeoPoint;
+import com.nextgis.mobile.util.GeoConstants;
 
 import static com.nextgis.mobile.util.DisplayConstants.*;
 
@@ -23,8 +25,25 @@ public class SimpleMarkerStyle extends Style{
 
     @Override
     public void onDraw(GeoGeometry geoGeometry, GISDisplay display) {
-        GeoPoint pt = (GeoPoint) geoGeometry;
+        switch (geoGeometry.getType()) {
+
+            case GeoConstants.GTPoint:
+                GeoPoint point = (GeoPoint) geoGeometry;
+                drawGeoPoint(point, display);
+                break;
+
+            case GeoConstants.GTMultiPoint:
+                GeoMultiPoint multiPoint = (GeoMultiPoint) geoGeometry;
+                for (int i = 0; i < multiPoint.size(); ++i) {
+                    drawGeoPoint(multiPoint.get(i), display);
+                }
+                break;
+        }
+    }
+
+    protected void drawGeoPoint(GeoPoint point, GISDisplay display) {
         switch (mType){
+
             case MarkerStylePoint:
                 Paint ptPaint = new Paint();
                 ptPaint.setColor(mColor);
@@ -32,23 +51,25 @@ public class SimpleMarkerStyle extends Style{
                 ptPaint.setStrokeCap(Paint.Cap.ROUND);
                 ptPaint.setAntiAlias(true);
 
-                display.drawPoint((float)pt.getX(), (float)pt.getY(), ptPaint);
+                display.drawPoint((float)point.getX(), (float)point.getY(), ptPaint);
                 break;
+
             case MarkerStyleCircle:
                 Paint fillCirclePaint = new Paint();
                 fillCirclePaint.setColor(mColor);
                 fillCirclePaint.setStrokeCap(Paint.Cap.ROUND);
 
-                display.drawCircle((float)pt.getX(), (float)pt.getY(), mSize, fillCirclePaint);
+                display.drawCircle((float)point.getX(), (float)point.getY(), mSize, fillCirclePaint);
 
                 Paint outCirclePaint = new Paint();
                 outCirclePaint.setColor(mOutColor);
                 outCirclePaint.setStrokeWidth((float) (mWidth / display.getScale()));
                 outCirclePaint.setStyle(Paint.Style.STROKE);
                 outCirclePaint.setAntiAlias(true);
-                display.drawCircle((float)pt.getX(), (float)pt.getY(), mSize, outCirclePaint);
 
+                display.drawCircle((float)point.getX(), (float)point.getY(), mSize, outCirclePaint);
                 break;
+
             case MarkerStyleDiamond:
                 break;
             case MarkerStyleCross:
