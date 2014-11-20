@@ -24,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.nextgis.mobile.util.GeoConstants.*;
@@ -31,6 +32,11 @@ import static com.nextgis.mobile.util.GeoConstants.*;
 public class GeoGeometryCollection extends GeoGeometry {
 
     List<GeoGeometry> mGeometries;
+
+
+    public GeoGeometryCollection() {
+        mGeometries = new ArrayList<GeoGeometry>();
+    }
 
     public void add(GeoGeometry geometry) throws IllegalArgumentException {
         if (geometry == null) {
