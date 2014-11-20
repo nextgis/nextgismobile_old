@@ -162,64 +162,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                     responseStrBuilder.append(inputStr);
                 }
 
-                progressDialog.setMessage(
-                        map.getContext().getString(R.string.message_opening_progress));
-
-                JSONObject geoJSONObject = new JSONObject(responseStrBuilder.toString());
-
-                if (!geoJSONObject.has(GEOJSON_TYPE)) {
-                    sErr += ": " + map.getContext().getString(R.string.error_geojson_unsupported);
-                    Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
-                    progressDialog.hide();
-                    return;
-                }
-
-                //check crs
-                boolean isWGS84 = true; //if no crs tag - WGS84 CRS
-
-                if (geoJSONObject.has(GEOJSON_CRS)) {
-                    JSONObject crsJSONObject = geoJSONObject.getJSONObject(GEOJSON_CRS);
-
-                    //the link is unsupported yet.
-                    if (!crsJSONObject.getString(GEOJSON_TYPE).equals(GEOJSON_NAME)) {
-                        sErr += ": " +
-                                map.getContext().getString(R.string.error_geojson_crs_unsupported);
-                        Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
-                        progressDialog.hide();
-                        return;
-                    }
-
-                    JSONObject crsPropertiesJSONObject =
-                            crsJSONObject.getJSONObject(GEOJSON_PROPERTIES);
-                    String crsName = crsPropertiesJSONObject.getString(GEOJSON_NAME);
-
-                    if (crsName.equals("urn:ogc:def:crs:OGC:1.3:CRS84")) { // WGS84
-                        isWGS84 = true;
-                    } else if (crsName.equals("urn:ogc:def:crs:EPSG::3857")) { //Web Mercator
-                        isWGS84 = false;
-                    } else {
-                        sErr += ": " +
-                                map.getContext().getString(R.string.error_geojson_crs_unsupported);
-                        Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
-                        progressDialog.hide();
-                        return;
-                    }
-                }
-
-                //load contents to memory and reproject if needed
-                JSONArray geoJSONFeatures = geoJSONObject.getJSONArray(GEOJSON_TYPE_FEATURES);
-
-                if (0 == geoJSONFeatures.length()) {
-                    sErr += ": " + map.getContext().getString(R.string.error_geojson_crs_unsupported);
-                    Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
-                    progressDialog.hide();
-                    return;
-                }
-
-                List<Feature> features = geoJSONFeaturesToFeatures(
-                        geoJSONFeatures, isWGS84, map.getContext(), progressDialog);
-
-                create(map, layerName, features);
+                create(map, layerName, responseStrBuilder.toString(), progressDialog);
             }
 
         } catch (UnsupportedEncodingException e) {
@@ -234,11 +177,73 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         } catch (JSONException e) {
             Log.d(TAG, "Exception: " + e.getLocalizedMessage());
             sErr += ": " + e.getLocalizedMessage();
+            Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
         }
 
         progressDialog.hide();
         //if we here something wrong occurred
         Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Create a LocalGeoJsonLayer from the GeoJson data submitted by jsonString.
+     */
+    protected static void create(
+            final MapBase map, String layerName, String jsonString, ProgressDialog progressDialog)
+            throws JSONException, IOException {
+
+        progressDialog.setMessage(
+                map.getContext().getString(R.string.message_opening_progress));
+
+        JSONObject geoJSONObject = new JSONObject(jsonString);
+
+        if (!geoJSONObject.has(GEOJSON_TYPE)) {
+            progressDialog.hide();
+            String error = map.getContext().getString(R.string.error_geojson_unsupported);
+            throw new JSONException(error);
+        }
+
+        //check crs
+        boolean isWGS84 = true; //if no crs tag - WGS84 CRS
+
+        if (geoJSONObject.has(GEOJSON_CRS)) {
+            JSONObject crsJSONObject = geoJSONObject.getJSONObject(GEOJSON_CRS);
+
+            //the link is unsupported yet.
+            if (!crsJSONObject.getString(GEOJSON_TYPE).equals(GEOJSON_NAME)) {
+                progressDialog.hide();
+                String error = map.getContext().getString(R.string.error_geojson_crs_unsupported);
+                throw new JSONException(error);
+            }
+
+            JSONObject crsPropertiesJSONObject =
+                    crsJSONObject.getJSONObject(GEOJSON_PROPERTIES);
+            String crsName = crsPropertiesJSONObject.getString(GEOJSON_NAME);
+
+            if (crsName.equals("urn:ogc:def:crs:OGC:1.3:CRS84")) { // WGS84
+                isWGS84 = true;
+            } else if (crsName.equals("urn:ogc:def:crs:EPSG::3857")) { //Web Mercator
+                isWGS84 = false;
+            } else {
+                progressDialog.hide();
+                String error = map.getContext().getString(R.string.error_geojson_crs_unsupported);
+                throw new JSONException(error);
+            }
+        }
+
+        //load contents to memory and reproject if needed
+        JSONArray geoJSONFeatures = geoJSONObject.getJSONArray(GEOJSON_TYPE_FEATURES);
+
+        if (0 == geoJSONFeatures.length()) {
+            progressDialog.hide();
+            String error = map.getContext().getString(R.string.error_geojson_crs_unsupported);
+            throw new JSONException(error);
+        }
+
+        List<Feature> features = geoJSONFeaturesToFeatures(
+                geoJSONFeatures, isWGS84, map.getContext(), progressDialog);
+
+        create(map, layerName, features);
     }
 
     /**
