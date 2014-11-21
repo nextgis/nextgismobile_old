@@ -206,7 +206,7 @@ public class NgwResourcesDialog extends DialogFragment {
                         progressDialog.show();
 
                         try {
-                            new NgwVectorLayer(mCurrConn).create(
+                            new NgwVectorLayer(mCurrConn.getId()).create(
                                     mMap, mCurrNgwRes.getDisplayName(), jsonObject, progressDialog);
 
                             if (mSelResIterator.hasNext()) {

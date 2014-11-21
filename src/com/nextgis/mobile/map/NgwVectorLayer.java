@@ -32,15 +32,11 @@ import static com.nextgis.mobile.util.Constants.*;
 
 public class NgwVectorLayer extends LocalGeoJsonLayer {
 
-    protected String mUrl;
-    protected String mLogin;
-    protected String mPassword;
+    protected Integer mConnectionId;
 
 
-    public NgwVectorLayer(NgwConnection connection) {
-        mUrl = connection.getUrl();
-        mLogin = connection.getLogin();
-        mPassword = connection.getPassword();
+    public NgwVectorLayer(Integer connectionId) {
+        mConnectionId = connectionId;
     }
 
     public NgwVectorLayer(MapBase map, File path, JSONObject config) {
@@ -62,9 +58,7 @@ public class NgwVectorLayer extends LocalGeoJsonLayer {
     protected void setDetails(JSONObject config) {
         super.setDetails(config);
         try {
-            mUrl = config.getString(JSON_URL_KEY);
-            mLogin = config.getString(JSON_LOGIN_KEY);
-            mPassword = config.getString(JSON_PASSWORD_KEY);
+            mConnectionId = config.getInt(JSON_CONNECTION_ID_KEY);
 
         } catch (JSONException e){
             reportError(e.getLocalizedMessage());
@@ -74,18 +68,14 @@ public class NgwVectorLayer extends LocalGeoJsonLayer {
     @Override
     protected JSONObject getDetails() throws JSONException {
         JSONObject rootConfig = super.getDetails();
-        rootConfig.put(JSON_URL_KEY, mUrl);
-        rootConfig.put(JSON_LOGIN_KEY, mLogin);
-        rootConfig.put(JSON_PASSWORD_KEY, mPassword);
+        rootConfig.put(JSON_CONNECTION_ID_KEY, mConnectionId);
         return rootConfig;
     }
 
     @Override
     protected JSONObject createDetails() throws JSONException{
         JSONObject rootConfig = super.createDetails();
-        rootConfig.put(JSON_URL_KEY, mUrl);
-        rootConfig.put(JSON_LOGIN_KEY, mLogin);
-        rootConfig.put(JSON_PASSWORD_KEY, mPassword);
+        rootConfig.put(JSON_CONNECTION_ID_KEY, mConnectionId);
         return rootConfig;
     }
 }

@@ -132,6 +132,7 @@ public interface Constants {
     public static final String JSON_PATH_KEY = "path";
     public static final String JSON_MAP_KEY = "map";
     public static final String JSON_URL_KEY = "url";
+    public static final String JSON_CONNECTION_ID_KEY = "connection_id";
     public static final String JSON_LOGIN_KEY = "login";
     public static final String JSON_PASSWORD_KEY = "password";
     public static final String JSON_BBOX_KEY = "bbox";

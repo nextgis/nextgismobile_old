@@ -64,6 +64,10 @@ public class NgwResource extends ArrayList<NgwResource> implements Comparable<Ng
         mIsSelected = false;
     }
 
+    public void setConnectionId(Integer connectionId) {
+        mConnectionId = connectionId;
+    }
+
     public Integer getConnectionId() {
         return mConnectionId;
     }
