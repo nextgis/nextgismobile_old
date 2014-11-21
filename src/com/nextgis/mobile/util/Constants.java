@@ -199,7 +199,8 @@ public interface Constants {
     public static final int LAYERTYPE_REMOTE_TMS = 4;
     public static final int LAYERTYPE_NGW = 5;
     public static final int LAYERTYPE_LOCAL_EDIT_GEOJSON = 6;
-    public static final int LAYERTYPE_REMOTE_GEOJSON = 7;
+    public static final int LAYERTYPE_NDW_VECTOR = 7;
+    public static final int LAYERTYPE_NDW_RASTER = 8;
 
 
     /**

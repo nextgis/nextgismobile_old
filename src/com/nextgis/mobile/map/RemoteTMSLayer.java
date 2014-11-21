@@ -74,13 +74,13 @@ public class RemoteTMSLayer extends TMSLayer {
         // in milliseconds which is the timeout for waiting for data.
         HttpConnectionParams.setSoTimeout(httpParameters, TIMEOUT_SOKET);
 
-        mHTTPClient = new  DefaultHttpClient(httpParameters);
+        mHTTPClient = new DefaultHttpClient(httpParameters);
         mHTTPClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, APP_USER_AGENT);
     }
 
     public RemoteTMSLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
-        mHTTPClient = new  DefaultHttpClient();
+        mHTTPClient = new DefaultHttpClient();
         mHTTPClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, APP_USER_AGENT);
     }
 
@@ -88,11 +88,13 @@ public class RemoteTMSLayer extends TMSLayer {
     public Bitmap getBitmap(TileItem tile) {
         // try to get tile from local cache
         File tilePath = new File(mPath, tile.toString("{z}/{x}/{y}.tile"));
-        if (tilePath.exists() && System.currentTimeMillis() - tilePath.lastModified() < DEFAULT_MAXIMUM_CACHED_FILE_AGE) {
+        if (tilePath.exists()
+                && System.currentTimeMillis() - tilePath.lastModified()
+                < DEFAULT_MAXIMUM_CACHED_FILE_AGE) {
             return BitmapFactory.decodeFile(tilePath.getAbsolutePath());
         }
 
-        if(!mMap.isNetworkAvaliable())
+        if (!mMap.isNetworkAvaliable())
             return null;
         // try to get tile from remote
         try {
@@ -104,7 +106,8 @@ public class RemoteTMSLayer extends TMSLayer {
             // Check to see if we got success
             final org.apache.http.StatusLine line = response.getStatusLine();
             if (line.getStatusCode() != 200) {
-                Log.w(TAG, "Problem downloading MapTile: " + tile.toString(mURL) + " HTTP response: " + line);
+                Log.w(TAG, "Problem downloading MapTile: " + tile.toString(mURL)
+                        + " HTTP response: " + line);
                 return null;
             }
 
@@ -142,9 +145,10 @@ public class RemoteTMSLayer extends TMSLayer {
         return LAYERTYPE_REMOTE_TMS;
     }
 
-    public static void create(final MapBase map){
+    public void create(final MapBase map) {
         String sName = "new TMS layer";
-        showPropertiesDialog(map, true, sName, "http://tile.openstreetmap.org/{z}/{x}/{y}.png", TMSTYPE_OSM, null);
+        showPropertiesDialog(map, true, sName, "http://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                TMSTYPE_OSM, null);
     }
 
     @Override
@@ -152,7 +156,9 @@ public class RemoteTMSLayer extends TMSLayer {
         showPropertiesDialog(mMap, false, mName, mURL, getTMSType(), this);
     }
 
-    protected static void showPropertiesDialog(final MapBase map, final boolean bCreate, String layerName, String layerUrl, int type, final RemoteTMSLayer layer){
+    protected void showPropertiesDialog(final MapBase map, final boolean bCreate, String layerName,
+                                        String layerUrl, int type, final RemoteTMSLayer layer) {
+
         final LinearLayout linearLayout = new LinearLayout(map.getContext());
         final EditText input = new EditText(map.getContext());
         input.setText(layerName);
@@ -169,7 +175,8 @@ public class RemoteTMSLayer extends TMSLayer {
         final TextView stLayerType = new TextView(map.getContext());
         stLayerType.setText(map.getContext().getString(R.string.layer_type) + ":");
 
-        final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(map.getContext(), android.R.layout.simple_spinner_item);
+        final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(
+                map.getContext(), android.R.layout.simple_spinner_item);
         final Spinner spinner = new Spinner(map.getContext());
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
@@ -178,10 +185,9 @@ public class RemoteTMSLayer extends TMSLayer {
         adapter.add(map.getContext().getString(R.string.tmstype_normal));
         adapter.add(map.getContext().getString(R.string.tmstype_ngw));
 
-        if(type == TMSTYPE_OSM){
+        if (type == TMSTYPE_OSM) {
             spinner.setSelection(0);
-        }
-        else{
+        } else {
             spinner.setSelection(1);
         }
 
@@ -194,8 +200,10 @@ public class RemoteTMSLayer extends TMSLayer {
         linearLayout.addView(spinner);
 
         new AlertDialog.Builder(map.getContext())
-                .setTitle(bCreate ? R.string.input_layer_properties : R.string.change_layer_properties)
-//                                    .setMessage(message)
+                .setTitle(bCreate
+                        ? R.string.input_layer_properties
+                        : R.string.change_layer_properties)
+//                .setMessage(message)
                 .setView(linearLayout)
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
@@ -212,66 +220,79 @@ public class RemoteTMSLayer extends TMSLayer {
                         }
 
                         if (bCreate) {
-                            create(map, input.getText().toString(), url.getText().toString(), tmsType);
+                            String sErr = map.getContext().getString(R.string.error_occurred);
+
+                            try {
+                                create(map, input.getText().toString(),
+                                        url.getText().toString(), tmsType);
+                                return;
+
+                            } catch (FileNotFoundException e) {
+                                Log.d(TAG, "Exception: " + e.getLocalizedMessage());
+                                sErr += ": " + e.getLocalizedMessage();
+                            } catch (JSONException e) {
+                                Log.d(TAG, "Exception: " + e.getLocalizedMessage());
+                                sErr += ": " + e.getLocalizedMessage();
+                            } catch (IOException e) {
+                                Log.d(TAG, "Exception: " + e.getLocalizedMessage());
+                                sErr += ": " + e.getLocalizedMessage();
+                            }
+
+                            //if we here something wrong occurred
+                            Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
+
                         } else {
                             layer.setName(input.getText().toString());
                             layer.setTMSType(tmsType);
                             map.onLayerChanged(layer);
                         }
                     }
-                }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // Do nothing.
-                Toast.makeText(map.getContext(), R.string.error_cancel_by_user, Toast.LENGTH_SHORT).show();
-            }
-        }).show();
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        // Do nothing.
+                        Toast.makeText(map.getContext(), R.string.error_cancel_by_user,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .show();
     }
 
-    protected static void create(final MapBase map, String layerName, String layerUrl, int tmsType) {
-        String sErr = map.getContext().getString(R.string.error_occurred);
-        try{
-            File outputPath = map.cretateLayerStorage();
-            //create layer description file
-            JSONObject oJSONRoot = new JSONObject();
-            oJSONRoot.put(JSON_NAME_KEY, layerName);
-            oJSONRoot.put(JSON_URL_KEY, layerUrl);
-            oJSONRoot.put(JSON_VISIBILITY_KEY, true);
-            oJSONRoot.put(JSON_TYPE_KEY, LAYERTYPE_REMOTE_TMS);
-            oJSONRoot.put(JSON_TMSTYPE_KEY, tmsType);
+    protected void create(final MapBase map, String layerName, String layerUrl, int tmsType)
+            throws JSONException, IOException {
 
-            //send message to handler to show error or add new layer
+        File outputPath = map.cretateLayerStorage();
 
-            File file = new File(outputPath, LAYER_CONFIG);
-            FileUtil.createDir(outputPath);
-            FileUtil.writeToFile(file, oJSONRoot.toString());
+        //create layer description file
+        JSONObject oJSONRoot = createDetails();
+        oJSONRoot.put(JSON_NAME_KEY, layerName);
+        oJSONRoot.put(JSON_URL_KEY, layerUrl);
+        oJSONRoot.put(JSON_VISIBILITY_KEY, true);
+        oJSONRoot.put(JSON_TYPE_KEY, getType());
+        oJSONRoot.put(JSON_TMSTYPE_KEY, tmsType);
 
-            if(map.getMapEventsHandler() != null){
-                Bundle bundle = new Bundle();
-                bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
-                bundle.putString(BUNDLE_MSG_KEY, map.getContext().getString(R.string.message_layer_added));
-                bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_LAYER_ADDED);
-                bundle.putSerializable(BUNDLE_PATH_KEY, outputPath);
+        File file = new File(outputPath, LAYER_CONFIG);
+        FileUtil.createDir(outputPath);
+        FileUtil.writeToFile(file, oJSONRoot.toString());
 
-                Message msg = new Message();
-                msg.setData(bundle);
-                map.getMapEventsHandler().sendMessage(msg);
-            }
-            return;
+        //send message to handler to show error or add new layer
+        if (map.getMapEventsHandler() != null) {
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(BUNDLE_HASERROR_KEY, false);
+            bundle.putString(BUNDLE_MSG_KEY,
+                    map.getContext().getString(R.string.message_layer_added));
+            bundle.putInt(BUNDLE_TYPE_KEY, MSGTYPE_LAYER_ADDED);
+            bundle.putSerializable(BUNDLE_PATH_KEY, outputPath);
 
-        } catch (FileNotFoundException e) {
-            Log.d(TAG, "Exception: " + e.getLocalizedMessage());
-            sErr += ": " + e.getLocalizedMessage();
-        }  catch (JSONException e) {
-            Log.d(TAG, "Exception: " + e.getLocalizedMessage());
-            sErr += ": " + e.getLocalizedMessage();
-        }  catch (IOException e)    {
-            Log.d(TAG, "Exception: " + e.getLocalizedMessage());
-            sErr += ": " + e.getLocalizedMessage();
+            Message msg = new Message();
+            msg.setData(bundle);
+            map.getMapEventsHandler().sendMessage(msg);
         }
-        //if we here something wrong occurred
-        Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
     }
 
+    protected JSONObject createDetails() throws JSONException {
+        return new JSONObject();
+    }
 
     @Override
     protected void setDetails(JSONObject config) {

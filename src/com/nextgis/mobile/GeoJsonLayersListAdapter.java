@@ -73,7 +73,7 @@ public class GeoJsonLayersListAdapter extends BaseAdapter implements Filterable 
         final Layer layer = (Layer) getItem(i);
         switch (layer.getType()){
             case LAYERTYPE_LOCAL_GEOJSON:
-            case LAYERTYPE_REMOTE_GEOJSON:
+            case LAYERTYPE_NDW_VECTOR:
             default:
                 return getStandardLayerView(layer, view);
         }
@@ -121,7 +121,7 @@ public class GeoJsonLayersListAdapter extends BaseAdapter implements Filterable 
             for (Layer layer : mLayerList) {
                 switch (layer.getType()) {
                     case LAYERTYPE_LOCAL_GEOJSON:
-                    case LAYERTYPE_REMOTE_GEOJSON:
+                    case LAYERTYPE_NDW_VECTOR:
                         filterList.add(layer);
                 }
             }

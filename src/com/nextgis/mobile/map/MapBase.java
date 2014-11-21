@@ -290,8 +290,11 @@ public class MapBase extends View {
                 case LAYERTYPE_REMOTE_TMS:
                     layer = new RemoteTMSLayer(this, path, rootObject);
                     break;
-                case LAYERTYPE_REMOTE_GEOJSON:
+                case LAYERTYPE_NDW_VECTOR:
                     layer = new NgwVectorLayer(this, path, rootObject);
+                    break;
+                case LAYERTYPE_NDW_RASTER:
+                    layer = new NgwRasterLayer(this, path, rootObject);
                     break;
                 case LAYERTYPE_NGW:
                     break;

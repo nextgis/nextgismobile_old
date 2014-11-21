@@ -20,8 +20,7 @@
  ****************************************************************************/
 package com.nextgis.mobile.map;
 
-import android.graphics.drawable.Drawable;
-import com.nextgis.mobile.R;
+import com.nextgis.mobile.util.Constants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,31 +28,32 @@ import java.io.File;
 
 import static com.nextgis.mobile.util.Constants.*;
 
-public class NgwVectorLayer extends LocalGeoJsonLayer {
+public class NgwRasterLayer extends RemoteTMSLayer {
 
     protected Integer mConnectionId;
 
 
-    public NgwVectorLayer(Integer connectionId) {
+    public NgwRasterLayer(Integer connectionId) {
+        super();
         mConnectionId = connectionId;
     }
 
-    public NgwVectorLayer(MapBase map, File path, JSONObject config) {
+    public NgwRasterLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
     }
 
     @Override
-    public Drawable getIcon() {
-        // TODO: change icon
-        return getContext().getResources().getDrawable(R.drawable.ic_local_json);
-    }
-
-    @Override
     public int getType() {
-        return LAYERTYPE_NDW_VECTOR;
+        return Constants.LAYERTYPE_NDW_RASTER;
     }
 
     @Override
+    protected JSONObject createDetails() throws JSONException{
+        JSONObject rootConfig = super.createDetails();
+        rootConfig.put(JSON_CONNECTION_ID_KEY, mConnectionId);
+        return rootConfig;
+    }
+
     protected void setDetails(JSONObject config) {
         super.setDetails(config);
         try {
@@ -67,13 +67,6 @@ public class NgwVectorLayer extends LocalGeoJsonLayer {
     @Override
     protected JSONObject getDetails() throws JSONException {
         JSONObject rootConfig = super.getDetails();
-        rootConfig.put(JSON_CONNECTION_ID_KEY, mConnectionId);
-        return rootConfig;
-    }
-
-    @Override
-    protected JSONObject createDetails() throws JSONException{
-        JSONObject rootConfig = super.createDetails();
         rootConfig.put(JSON_CONNECTION_ID_KEY, mConnectionId);
         return rootConfig;
     }

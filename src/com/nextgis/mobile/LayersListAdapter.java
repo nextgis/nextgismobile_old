@@ -66,7 +66,11 @@ public class LayersListAdapter extends BaseAdapter {
         final Layer layer = (Layer) getItem(i);
         switch (layer.getType()){
             case LAYERTYPE_LOCAL_TMS:
+            case LAYERTYPE_LOCAL_RASTER:
+            case LAYERTYPE_LOCAL_GEOJSON:
             case LAYERTYPE_REMOTE_TMS:
+            case LAYERTYPE_NDW_VECTOR:
+            case LAYERTYPE_NDW_RASTER:
             default:
                 return getStandardLayerView(layer, view);
         }

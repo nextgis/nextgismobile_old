@@ -271,6 +271,10 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
 
         //create layer description file
         JSONObject oJSONRoot = createDetails();
+        oJSONRoot.put(JSON_VISIBILITY_KEY, true);
+        oJSONRoot.put(JSON_TYPE_KEY, getType());
+        oJSONRoot.put(JSON_MAXLEVEL_KEY, 50);
+        oJSONRoot.put(JSON_MINLEVEL_KEY, 0);
         oJSONRoot.put(JSON_NAME_KEY, layerName);
 
         //add geometry type
@@ -309,12 +313,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
     }
 
     protected JSONObject createDetails() throws JSONException{
-        JSONObject rootConfig = new JSONObject();
-        rootConfig.put(JSON_VISIBILITY_KEY, true);
-        rootConfig.put(JSON_TYPE_KEY, getType());
-        rootConfig.put(JSON_MAXLEVEL_KEY, 50);
-        rootConfig.put(JSON_MINLEVEL_KEY, 0);
-        return rootConfig;
+        return new JSONObject();
     }
 
     private List<Feature> geoJSONFeaturesToFeatures(
