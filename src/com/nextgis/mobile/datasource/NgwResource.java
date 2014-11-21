@@ -28,10 +28,12 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.TreeSet;
+import java.util.Set;
 
 public class NgwResource extends ArrayList<NgwResource> implements Comparable<NgwResource> {
-    protected NgwConnection mConnection;
+
+    protected Integer mConnectionId;
+
     protected NgwResource mParent;
     protected Integer mId;
     protected Integer mCls;
@@ -40,21 +42,21 @@ public class NgwResource extends ArrayList<NgwResource> implements Comparable<Ng
     protected boolean mIsSelected;
 
 
-    public NgwResource(NgwConnection connection) {
+    public NgwResource(Integer connectionId) {
         super();
-        Init(connection, null, null, null, null);
+        Init(connectionId, null, null, null, null);
     }
 
-    public NgwResource(NgwConnection connection, NgwResource parent,
+    public NgwResource(Integer connectionId, NgwResource parent,
                        Integer id, Integer cls, String displayName) {
         super();
-        Init(connection, parent, id, cls, displayName);
+        Init(connectionId, parent, id, cls, displayName);
     }
 
-    protected void Init(NgwConnection connection, NgwResource parent,
+    protected void Init(Integer connectionId, NgwResource parent,
                         Integer id, Integer cls, String displayName) {
 
-        mConnection = connection;
+        mConnectionId = connectionId;
         mParent = parent;
         mId = id;
         mCls = cls;
@@ -62,8 +64,8 @@ public class NgwResource extends ArrayList<NgwResource> implements Comparable<Ng
         mIsSelected = false;
     }
 
-    public NgwConnection getConnection() {
-        return mConnection;
+    public Integer getConnectionId() {
+        return mConnectionId;
     }
 
     public NgwResource getParent() {
@@ -94,7 +96,8 @@ public class NgwResource extends ArrayList<NgwResource> implements Comparable<Ng
         return mParent == null && mId == null;
     }
 
-    public NgwResource getNgwResources(JSONArray jsonArray, TreeSet<NgwResource> selectedResources)
+    public void addNgwResourcesFromJSONArray(
+            JSONArray jsonArray, Set<NgwResource> selectedResources)
             throws JSONException {
 
         this.clear();
@@ -110,7 +113,7 @@ public class NgwResource extends ArrayList<NgwResource> implements Comparable<Ng
 
             Integer cls;
             try {
-                cls = NgwJsonWorker.ngwClsToType(jsonObject.getString(Constants.JSON_CLS_KEY));
+                cls = ngwClsToType(jsonObject.getString(Constants.JSON_CLS_KEY));
             } catch (JSONException e) {
                 cls = Constants.NGWTYPE_UNKNOWN;
             }
@@ -122,13 +125,11 @@ public class NgwResource extends ArrayList<NgwResource> implements Comparable<Ng
                 displayName = Constants.JSON_EMPTY_DISPLAY_NAME_VALUE;
             }
 
-            NgwResource ngwResource = new NgwResource(mConnection, this, id, cls, displayName);
+            NgwResource ngwResource = new NgwResource(mConnectionId, this, id, cls, displayName);
             ngwResource.setSelected(selectedResources.contains(ngwResource));
 
             this.add(ngwResource);
         }
-
-        return this;
     }
 
     public NgwResource sort() {
@@ -163,9 +164,41 @@ public class NgwResource extends ArrayList<NgwResource> implements Comparable<Ng
         return this;
     }
 
+    public Integer ngwClsToType(String cls) {
+        if (cls.equals(Constants.JSON_RESOURCE_GROUP_VALUE)) {
+            return Constants.NGWTYPE_RESOURCE_GROUP;
+        } else if (cls.equals(Constants.JSON_POSTGIS_LAYER_VALUE)) {
+            return Constants.NGWTYPE_POSTGIS_LAYER;
+        } else if (cls.equals(Constants.JSON_WMSSERVER_SERVICE_VALUE)) {
+            return Constants.NGWTYPE_WMSSERVER_SERVICE;
+        } else if (cls.equals(Constants.JSON_BASELAYERS_VALUE)) {
+            return Constants.NGWTYPE_BASELAYERS;
+        } else if (cls.equals(Constants.JSON_POSTGIS_CONNECTION_VALUE)) {
+            return Constants.NGWTYPE_POSTGIS_CONNECTION;
+        } else if (cls.equals(Constants.JSON_WEBMAP_VALUE)) {
+            return Constants.NGWTYPE_WEBMAP;
+        } else if (cls.equals(Constants.JSON_WFSSERVER_SERVICE_VALUE)) {
+            return Constants.NGWTYPE_WFSSERVER_SERVICE;
+        } else if (cls.equals(Constants.JSON_VECTOR_LAYER_VALUE)) {
+            return Constants.NGWTYPE_VECTOR_LAYER;
+        } else if (cls.equals(Constants.JSON_RASTER_LAYER_VALUE)) {
+            return Constants.NGWTYPE_RASTER_LAYER;
+        } else if (cls.equals(Constants.JSON_VECTOR_STYLE_VALUE)) {
+            return Constants.NGWTYPE_VECTOR_STYLE;
+        } else if (cls.equals(Constants.JSON_RASTER_STYLE_VALUE)) {
+            return Constants.NGWTYPE_RASTER_STYLE;
+        } else if (cls.equals(Constants.JSON_FILE_BUCKET_VALUE)) {
+            return Constants.NGWTYPE_FILE_BUCKET;
+        } else if (cls.equals(Constants.JSON_PARENT_RESOURCE_GROUP_VALUE)) {
+            return Constants.NGWTYPE_PARENT_RESOURCE_GROUP;
+        } else {
+            return Constants.NGWTYPE_UNKNOWN;
+        }
+    }
+
     @Override
     public int compareTo(NgwResource resource) {
-        int isConnEq = this.mConnection.compareTo(resource.mConnection);
+        int isConnEq = mConnectionId.compareTo(resource.mConnectionId);
 
         if (isConnEq != 0) return isConnEq;
 

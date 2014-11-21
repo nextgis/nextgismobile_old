@@ -30,20 +30,20 @@ import java.io.File;
 
 import static com.nextgis.mobile.util.Constants.*;
 
-public class RemoteGeoJsonLayer extends LocalGeoJsonLayer {
+public class NgwVectorLayer extends LocalGeoJsonLayer {
 
     protected String mUrl;
     protected String mLogin;
     protected String mPassword;
 
 
-    public RemoteGeoJsonLayer(NgwConnection connection) {
+    public NgwVectorLayer(NgwConnection connection) {
         mUrl = connection.getUrl();
         mLogin = connection.getLogin();
         mPassword = connection.getPassword();
     }
 
-    public RemoteGeoJsonLayer(MapBase map, File path, JSONObject config) {
+    public NgwVectorLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
     }
 

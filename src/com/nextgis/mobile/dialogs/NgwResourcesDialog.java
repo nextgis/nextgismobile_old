@@ -20,31 +20,27 @@
  ****************************************************************************/
 package com.nextgis.mobile.dialogs;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.NgwConnection;
-import com.nextgis.mobile.datasource.NgwJsonWorker;
+import com.nextgis.mobile.datasource.NgwConnectionWorker;
 import com.nextgis.mobile.datasource.NgwResource;
 import com.nextgis.mobile.map.MapBase;
-import com.nextgis.mobile.map.RemoteGeoJsonLayer;
+import com.nextgis.mobile.map.NgwVectorLayer;
 import com.nextgis.mobile.util.Constants;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,20 +49,22 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 public class NgwResourcesDialog extends DialogFragment {
 
     protected MainActivity mMainActivity;
-    protected static MapBase mMap;
+    protected MapBase mMap;
 
     protected List<NgwConnection> mNgwConnections;
     protected NgwConnection mCurrConn;
-    protected NgwJsonWorker mNgwJsonWorker;
+    protected NgwConnectionWorker mNgwConnWorker;
     protected boolean mIsHttpRunning;
 
+    protected NgwResourceRoots mNgwResRoots;
     protected NgwResource mCurrNgwRes;
-    protected TreeSet<NgwResource> mSelectedResources;
+    protected Set<NgwResource> mSelectedResources;
     protected Iterator<NgwResource> mSelResIterator;
 
     protected TextView mDialogTitleText;
@@ -77,7 +75,7 @@ public class NgwResourcesDialog extends DialogFragment {
     protected ProgressBar mHttpProgressBar;
     protected boolean mIsConnectionView;
 
-    protected static ListView mResourceList;
+    protected ListView mResourceList;
     protected NgwConnectionsListAdapter mConnectionsAdapter;
     protected AdapterView.OnItemClickListener mConnectionOnClickListener;
     protected AdapterView.OnItemLongClickListener mConnectionOnLongClickListener;
@@ -97,8 +95,16 @@ public class NgwResourcesDialog extends DialogFragment {
         mMainActivity = (MainActivity) getActivity();
         mMap = mMainActivity.getMap();
         mNgwConnections = mMap.getNgwConnections();
-        mCurrNgwRes = null;
+
+        mNgwResRoots = new NgwResourceRoots();
+        for (NgwConnection connection : mNgwConnections) {
+            mNgwResRoots.add(new NgwResource(connection.getId()));
+        }
+
+        // TODO: load mSelectedResources from previously loaded layers
         mSelectedResources = new TreeSet<NgwResource>();
+        mCurrNgwRes = null;
+
         mIsConnectionView = true;
         mIsHttpRunning = false;
 
@@ -107,12 +113,12 @@ public class NgwResourcesDialog extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 mCurrConn = mNgwConnections.get(position);
-                mCurrNgwRes = mCurrConn.getRootNgwResource();
+                mCurrNgwRes = mNgwResRoots.get(mCurrConn.getId());
 
                 if (mCurrNgwRes.size() == 0) {
                     setHttpRunningView(true);
                     mCurrConn.setLoadResourceArray(mCurrNgwRes);
-                    mNgwJsonWorker.loadNgwJson(mCurrConn);
+                    mNgwConnWorker.loadNgwJson(mCurrConn);
 
                 } else {
                     setJsonView();
@@ -123,31 +129,49 @@ public class NgwResourcesDialog extends DialogFragment {
         mConnectionOnLongClickListener = new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                NgwDeleteConnectionDialog.newInstance(position)
-                        .show(getActivity().getSupportFragmentManager(), "NgwDeleteConnectionDialog");
+                NgwDeleteConnectionDialog dialog = NgwDeleteConnectionDialog.newInstance(position);
+
+                dialog.setOnDeleteConnectionListener(
+                        new NgwDeleteConnectionDialog.OnDeleteConnectionListener() {
+                    @Override
+                    public void onDeleteConnection(int index) {
+                        mNgwResRoots.remove(mNgwConnections.get(index).getId());
+                        mNgwConnections.remove(index);
+                        NgwConnection.saveNgwConnections(mNgwConnections, mMap.getMapPath());
+                        ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
+                    }
+                });
+
+                dialog.show(getActivity().getSupportFragmentManager(), "NgwDeleteConnectionDialog");
                 return true;
             }
         };
 
-        mNgwJsonWorker = new NgwJsonWorker();
+        mNgwConnWorker = new NgwConnectionWorker();
 
-        mNgwJsonWorker.setJsonArrayLoadedListener(new NgwJsonWorker.JsonArrayLoadedListener() {
+        mNgwConnWorker.setJsonArrayLoadedListener(
+                new NgwConnectionWorker.JsonArrayLoadedListener() {
             @Override
             public void onJsonArrayLoaded(final JSONArray jsonArray) {
+                if (jsonArray == null) {
+                    // TODO: localization
+                    Toast.makeText(mMap.getContext(), "Connection ERROR", Toast.LENGTH_LONG).show();
+                    setHttpRunningView(false);
+                    return;
+                }
+
                 setHttpRunningView(false);
 
-                mCurrNgwRes = mCurrConn.getCurrentNgwResource();
-
                 try {
-                    mCurrNgwRes.getNgwResources(jsonArray, mSelectedResources);
+                    mCurrNgwRes.addNgwResourcesFromJSONArray(jsonArray, mSelectedResources);
                 } catch (JSONException e) {
                     // TODO: error to Log
                     e.printStackTrace();
                 }
 
-                // Adding to position 0 (after sorting) of mResourceList
+                // Adding link to parent ("..") to position 0 (after sorting) of mResourceList
                 NgwResource ngwResource = new NgwResource(
-                        mCurrConn,
+                        mCurrConn.getId(),
                         mCurrNgwRes.getParent(),
                         mCurrNgwRes.getId(),
                         Constants.NGWTYPE_PARENT_RESOURCE_GROUP,
@@ -160,38 +184,47 @@ public class NgwResourcesDialog extends DialogFragment {
             }
         });
 
-        mNgwJsonWorker.setJsonObjectLoadedListener(new NgwJsonWorker.JsonObjectLoadedListener() {
-            @Override
-            public void onJsonObjectLoaded(JSONObject jsonObject) {
-                // TODO: ProgressDialog with Fragment for screen rotation
-                ProgressDialog progressDialog = new ProgressDialog(mMainActivity);
-                progressDialog.setMessage(
-                        mMainActivity.getString(R.string.message_loading_progress));
-                progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                progressDialog.setCancelable(true);
-                progressDialog.show();
+        mNgwConnWorker.setJsonObjectLoadedListener(
+                new NgwConnectionWorker.JsonObjectLoadedListener() {
+                    @Override
+                    public void onJsonObjectLoaded(JSONObject jsonObject) {
+                        if (jsonObject == null) {
+                            // TODO: localization
+                            Toast.makeText(
+                                    mMap.getContext(), "Connection ERROR", Toast.LENGTH_LONG).show();
+                            setHttpRunningView(false);
+                            dismiss();
+                            return;
+                        }
 
-                try {
-                    mCurrNgwRes = mCurrConn.getCurrentNgwResource();
-                    new RemoteGeoJsonLayer(mCurrConn).create(
-                            mMap, mCurrNgwRes.getDisplayName(), jsonObject, progressDialog);
+                        // TODO: ProgressDialog with Fragment for screen rotation
+                        ProgressDialog progressDialog = new ProgressDialog(mMainActivity);
+                        progressDialog.setMessage(
+                                mMainActivity.getString(R.string.message_loading_progress));
+                        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                        progressDialog.setCancelable(true);
+                        progressDialog.show();
 
-                    if (mSelResIterator.hasNext()) {
-                        NgwResource ngwResource = mSelResIterator.next();
-                        mCurrConn.setLoadGeoJsonObject(ngwResource);
-                        mNgwJsonWorker.loadNgwJson(mCurrConn);
-                    } else {
-                        setHttpRunningView(false);
-                        dismiss();
+                        try {
+                            new NgwVectorLayer(mCurrConn).create(
+                                    mMap, mCurrNgwRes.getDisplayName(), jsonObject, progressDialog);
+
+                            if (mSelResIterator.hasNext()) {
+                                NgwResource ngwResource = mSelResIterator.next();
+                                mCurrConn.setLoadGeoJsonObject(ngwResource);
+                                mNgwConnWorker.loadNgwJson(mCurrConn);
+                            } else {
+                                setHttpRunningView(false);
+                                dismiss();
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+                });
     }
 
     @Override
@@ -214,6 +247,18 @@ public class NgwResourcesDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 NgwAddConnectionDialog dialog = new NgwAddConnectionDialog();
+
+                dialog.setOnAddConnectionListener(
+                        new NgwAddConnectionDialog.OnAddConnectionListener() {
+                    @Override
+                    public void onAddConnection(NgwConnection connection) {
+                        mNgwConnections.add(connection);
+                        NgwConnection.saveNgwConnections(mNgwConnections, mMap.getMapPath());
+                        mNgwResRoots.add(new NgwResource(connection.getId()));
+                        ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
+                    }
+                });
+
                 dialog.show(getActivity().getSupportFragmentManager(), "NgwAddConnectionDialog");
             }
         });
@@ -226,10 +271,11 @@ public class NgwResourcesDialog extends DialogFragment {
                 mSelResIterator = mSelectedResources.iterator();
 
                 if (mSelResIterator.hasNext()) {
+                    // TODO: lock dialog's buttons and list's items
+                    mCurrNgwRes = mSelResIterator.next();
                     setHttpRunningView(true);
-                    NgwResource ngwResource = mSelResIterator.next();
-                    mCurrConn.setLoadGeoJsonObject(ngwResource);
-                    mNgwJsonWorker.loadNgwJson(mCurrConn);
+                    mCurrConn.setLoadGeoJsonObject(mCurrNgwRes);
+                    mNgwConnWorker.loadNgwJson(mCurrConn);
 
                 } else {
                     dismiss();
@@ -320,6 +366,7 @@ public class NgwResourcesDialog extends DialogFragment {
                 if (position == 0) {
 
                     if (ngwResource.isRoot()) {
+                        mCurrNgwRes = ngwResource;
                         setConnectionView();
 
                     } else {
@@ -328,13 +375,14 @@ public class NgwResourcesDialog extends DialogFragment {
                     }
 
                 } else {
-                    if (ngwResource.size() == 0) {
+                    mCurrNgwRes = ngwResource;
+
+                    if (mCurrNgwRes.size() == 0) {
                         setHttpRunningView(true);
-                        mCurrConn.setLoadResourceArray(ngwResource);
-                        mNgwJsonWorker.loadNgwJson(mCurrConn);
+                        mCurrConn.setLoadResourceArray(mCurrNgwRes);
+                        mNgwConnWorker.loadNgwJson(mCurrConn);
 
                     } else {
-                        mCurrNgwRes = ngwResource;
                         setJsonView();
                     }
                 }
@@ -344,128 +392,33 @@ public class NgwResourcesDialog extends DialogFragment {
         mResourceList.setOnItemLongClickListener(null);
     }
 
+    protected class NgwResourceRoots {
+        private Set<NgwResource> mResourceRoots;
 
-    public static class NgwAddConnectionDialog extends DialogFragment {
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setRetainInstance(true);
+        public NgwResourceRoots() {
+            mResourceRoots = new TreeSet<NgwResource>();
         }
 
-        @Override
-        public void onDestroyView() {
-            if (getDialog() != null && getRetainInstance())
-                getDialog().setOnDismissListener(null);
-            super.onDestroyView();
+        public boolean add(NgwResource resource) {
+            return mResourceRoots.add(resource);
         }
 
-        @Override
-        public View onCreateView(
-                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-            final MainActivity mainActivity = (MainActivity) getActivity();
-            final MapBase map = mainActivity.getMap();
-            final List<NgwConnection> connections = map.getNgwConnections();
-
-            getDialog().setTitle(mainActivity.getString(R.string.add_ngw_connection));
-
-            View view = inflater.inflate(R.layout.ngw_add_connection_dialog, container);
-            final EditText edName = (EditText) view.findViewById(R.id.ed_name);
-            final EditText edUrl = (EditText) view.findViewById(R.id.ed_url);
-            final EditText edLogin = (EditText) view.findViewById(R.id.ed_login);
-            final EditText edPassword = (EditText) view.findViewById(R.id.ed_password);
-
-            ImageButton btnOk = (ImageButton) view.findViewById(R.id.btn_ok_add_conn);
-            btnOk.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String name = edName.getText().toString();
-                    String url = edUrl.getText().toString();
-
-                    if (name.length() == 0) {
-
-                        if (url.length() > 0) {
-                            name = url;
-                        } else {
-                            name = Constants.JSON_EMPTY_DISPLAY_NAME_VALUE;
-                        }
-                    }
-
-                    connections.add(new NgwConnection(
-                            name,
-                            url,
-                            edLogin.getText().toString(),
-                            edPassword.getText().toString()
-                    ));
-
-                    NgwJsonWorker.saveNgwConnections(map.getNgwConnections(), map.getMapPath());
-                    ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
-                    dismiss();
+        public boolean remove(int connectionId) {
+            for (NgwResource resourceRoot : mResourceRoots) {
+                if (resourceRoot.getConnectionId() == connectionId) {
+                    return mResourceRoots.remove(resourceRoot);
                 }
-            });
+            }
+            return false;
+        }
 
-            ImageButton btnCancel = (ImageButton) view.findViewById(R.id.btn_cancel_add_conn);
-            btnCancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dismiss();
+        public NgwResource get(int connectionId) {
+            for (NgwResource resourceRoot : mResourceRoots) {
+                if (resourceRoot.getConnectionId() == connectionId) {
+                    return resourceRoot;
                 }
-            });
-
-            return view;
-        }
-    }
-
-    public static class NgwDeleteConnectionDialog extends DialogFragment {
-
-        int mIndex;
-
-
-        public static NgwDeleteConnectionDialog newInstance(int index) {
-            NgwDeleteConnectionDialog dialog = new NgwDeleteConnectionDialog();
-
-            // Supply index input as an argument.
-            Bundle args = new Bundle();
-            args.putInt("index", index);
-            dialog.setArguments(args);
-
-            return dialog;
-        }
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setRetainInstance(true);
-            this.mIndex = getArguments().getInt("index");
-        }
-
-        @Override
-        public void onDestroyView() {
-            if (getDialog() != null && getRetainInstance())
-                getDialog().setOnDismissListener(null);
-            super.onDestroyView();
-        }
-
-        @Override
-        @NonNull
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
-                    .setTitle(R.string.delete)
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            mMap.getNgwConnections().remove(mIndex);
-                            NgwJsonWorker.saveNgwConnections(
-                                    mMap.getNgwConnections(), mMap.getMapPath());
-                            ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
-                        }
-                    })
-                    .setNegativeButton(R.string.cancel, null)
-                    .setMessage(String.format(getString(R.string.ngw_msg_delete_connection),
-                            mMap.getNgwConnections().get(mIndex).getName()));
-            return adb.create();
+            }
+            return null;
         }
     }
 }

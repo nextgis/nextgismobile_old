@@ -34,7 +34,6 @@ import android.widget.Toast;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.GeoPoint;
 import com.nextgis.mobile.datasource.NgwConnection;
-import com.nextgis.mobile.datasource.NgwJsonWorker;
 import com.nextgis.mobile.display.GISDisplay;
 import com.nextgis.mobile.util.FileUtil;
 import com.nextgis.mobile.util.NetworkUtil;
@@ -159,8 +158,9 @@ public class MapBase extends View {
     }
 
     public List<NgwConnection> getNgwConnections() {
-        //if (mNgwConnections == null) -- bug with NgwResourcesDialog
-            mNgwConnections = NgwJsonWorker.loadNgwConnections(mMapPath);
+        if (mNgwConnections == null) {
+            mNgwConnections = NgwConnection.loadNgwConnections(mMapPath);
+        }
         return mNgwConnections;
     }
 
@@ -291,7 +291,7 @@ public class MapBase extends View {
                     layer = new RemoteTMSLayer(this, path, rootObject);
                     break;
                 case LAYERTYPE_REMOTE_GEOJSON:
-                    layer = new RemoteGeoJsonLayer(this, path, rootObject);
+                    layer = new NgwVectorLayer(this, path, rootObject);
                     break;
                 case LAYERTYPE_NGW:
                     break;

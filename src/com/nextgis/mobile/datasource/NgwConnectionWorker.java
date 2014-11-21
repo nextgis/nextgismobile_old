@@ -45,7 +45,7 @@ import java.util.List;
 
 import static com.nextgis.mobile.util.Constants.*;
 
-public class NgwJsonWorker {
+public class NgwConnectionWorker {
 
     protected JsonObjectLoadedListener mJsonObjectLoadedListener;
     protected JsonArrayLoadedListener mJsonArrayLoadedListener;
@@ -65,105 +65,6 @@ public class NgwJsonWorker {
 
     public void setJsonArrayLoadedListener(JsonArrayLoadedListener jsonArrayLoadedListener) {
         mJsonArrayLoadedListener = jsonArrayLoadedListener;
-    }
-
-
-    public void loadNgwJson(NgwConnection connection) {
-        new NgwConnectionRunner().execute(connection);
-    }
-
-    public static List<NgwConnection> loadNgwConnections(File path) {
-        Log.d(TAG, "Load NGW connections");
-
-        List<NgwConnection> ngwConnections = new ArrayList<NgwConnection>();
-
-        try {
-            File configFile = new File(path, NGW_CONNECTIONS_JSON);
-            String jsonData = FileUtil.readFromFile(configFile);
-            JSONObject rootObject = new JSONObject(jsonData);
-            final JSONArray jsonArray = rootObject.getJSONArray(JSON_NGW_CONNECTIONS_KEY);
-
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonConnection = jsonArray.getJSONObject(i);
-                String name = jsonConnection.getString(JSON_NAME_KEY);
-                String url = jsonConnection.getString(JSON_URL_KEY);
-                String login = jsonConnection.getString(JSON_LOGIN_KEY);
-                String password = jsonConnection.getString(JSON_PASSWORD_KEY);
-
-                NgwConnection connection = new NgwConnection(name, url, login, password);
-                ngwConnections.add(connection);
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return ngwConnections;
-    }
-
-    public static boolean saveNgwConnections(List<NgwConnection> ngwConnections, File path) {
-        Log.d(TAG, "Save NGW connections");
-
-        try {
-            JSONObject rootObject = new JSONObject();
-            JSONArray jsonConnectionArray = new JSONArray();
-            rootObject.put(JSON_NGW_CONNECTIONS_KEY, jsonConnectionArray);
-
-            for (NgwConnection ngwConnection : ngwConnections) {
-                JSONObject jsonConnection = new JSONObject();
-                jsonConnection.put(JSON_NAME_KEY, ngwConnection.getName());
-                jsonConnection.put(JSON_URL_KEY, ngwConnection.getUrl());
-                jsonConnection.put(JSON_LOGIN_KEY, ngwConnection.getLogin());
-                jsonConnection.put(JSON_PASSWORD_KEY, ngwConnection.getPassword());
-
-                jsonConnectionArray.put(jsonConnection);
-            }
-
-            File configFile = new File(path, NGW_CONNECTIONS_JSON);
-            FileUtil.writeToFile(configFile, rootObject.toString());
-            return true;
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    public static Integer ngwClsToType(String cls) {
-        if (cls.equals(Constants.JSON_RESOURCE_GROUP_VALUE)) {
-            return Constants.NGWTYPE_RESOURCE_GROUP;
-        } else if (cls.equals(Constants.JSON_POSTGIS_LAYER_VALUE)) {
-            return Constants.NGWTYPE_POSTGIS_LAYER;
-        } else if (cls.equals(Constants.JSON_WMSSERVER_SERVICE_VALUE)) {
-            return Constants.NGWTYPE_WMSSERVER_SERVICE;
-        } else if (cls.equals(Constants.JSON_BASELAYERS_VALUE)) {
-            return Constants.NGWTYPE_BASELAYERS;
-        } else if (cls.equals(Constants.JSON_POSTGIS_CONNECTION_VALUE)) {
-            return Constants.NGWTYPE_POSTGIS_CONNECTION;
-        } else if (cls.equals(Constants.JSON_WEBMAP_VALUE)) {
-            return Constants.NGWTYPE_WEBMAP;
-        } else if (cls.equals(Constants.JSON_WFSSERVER_SERVICE_VALUE)) {
-            return Constants.NGWTYPE_WFSSERVER_SERVICE;
-        } else if (cls.equals(Constants.JSON_VECTOR_LAYER_VALUE)) {
-            return Constants.NGWTYPE_VECTOR_LAYER;
-        } else if (cls.equals(Constants.JSON_RASTER_LAYER_VALUE)) {
-            return Constants.NGWTYPE_RASTER_LAYER;
-        } else if (cls.equals(Constants.JSON_VECTOR_STYLE_VALUE)) {
-            return Constants.NGWTYPE_VECTOR_STYLE;
-        } else if (cls.equals(Constants.JSON_RASTER_STYLE_VALUE)) {
-            return Constants.NGWTYPE_RASTER_STYLE;
-        } else if (cls.equals(Constants.JSON_FILE_BUCKET_VALUE)) {
-            return Constants.NGWTYPE_FILE_BUCKET;
-        } else if (cls.equals(Constants.JSON_PARENT_RESOURCE_GROUP_VALUE)) {
-            return Constants.NGWTYPE_PARENT_RESOURCE_GROUP;
-        } else {
-            return Constants.NGWTYPE_UNKNOWN;
-        }
     }
 
 
@@ -202,14 +103,21 @@ public class NgwJsonWorker {
             return sb.toString();
 
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl()
+                    + ", error: " + e.getLocalizedMessage());
         } catch (ClientProtocolException e) {
-            e.printStackTrace();
+            Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl()
+                    + ", error: " + e.getLocalizedMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl()
+                    + ", error: " + e.getLocalizedMessage());
         }
 
         return null;
+    }
+
+    public void loadNgwJson(NgwConnection connection) {
+        new NgwConnectionRunner().execute(connection);
     }
 
 
@@ -227,19 +135,17 @@ public class NgwJsonWorker {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-            if (result == null) {
-                return;
-            }
-
             try {
                 if (mConnection.isForJsonArray()) {
                     if (mJsonArrayLoadedListener != null) {
-                        mJsonArrayLoadedListener.onJsonArrayLoaded(new JSONArray(result));
+                        mJsonArrayLoadedListener.onJsonArrayLoaded(
+                                result == null ? null : new JSONArray(result));
                     }
 
                 } else {
                     if (mJsonObjectLoadedListener != null) {
-                        mJsonObjectLoadedListener.onJsonObjectLoaded(new JSONObject(result));
+                        mJsonObjectLoadedListener.onJsonObjectLoaded(
+                                result == null ? null : new JSONObject(result));
                     }
                 }
 

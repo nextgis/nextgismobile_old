@@ -20,20 +20,36 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
-public class NgwConnection implements Comparable<NgwConnection> {
+import android.util.Log;
+import com.nextgis.mobile.util.FileUtil;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import static com.nextgis.mobile.util.Constants.*;
+import static com.nextgis.mobile.util.Constants.NGW_CONNECTIONS_JSON;
+
+public class NgwConnection {
 
     public static final int LOAD_PARENT = 1;
     public static final int LOAD_RESOURCE = 2;
     public static final int LOAD_CHILDREN = 3;
     public static final int LOAD_GEOJSON = 4;
 
+    protected int mId;
     protected String mName;
     protected String mUrl;
     protected String mLogin;
     protected String mPassword;
 
-    protected NgwResource mRootNgwResource;
-    protected NgwResource mCurrentNgwResource;
+    protected Integer mParentResourceId;
+    protected Integer mResourceId;
 
     protected Integer mChildId;
 
@@ -41,16 +57,33 @@ public class NgwConnection implements Comparable<NgwConnection> {
 
 
     public NgwConnection(String name, String url, String login, String password) {
+        Init(generateId(), name, url, login, password);
+    }
+
+    public NgwConnection(int id, String name, String url, String login, String password) {
+        Init(id, name, url, login, password);
+    }
+
+    public void Init(int id, String name, String url, String login, String password) {
+        mId = id;
         mName = name;
         mUrl = url;
         mLogin = login;
         mPassword = password;
 
-        mRootNgwResource = new NgwResource(this);
-        mCurrentNgwResource = null;
+        mParentResourceId = null;
+        mResourceId = null;
         mChildId = 0;
 
         mThatLoad = LOAD_RESOURCE;
+    }
+
+    public int getId() {
+        return mId;
+    }
+
+    public int generateId() {
+        return new Random().nextInt();
     }
 
     public String getName() {
@@ -69,12 +102,19 @@ public class NgwConnection implements Comparable<NgwConnection> {
         return mPassword;
     }
 
-    public NgwResource getRootNgwResource() {
-        return mRootNgwResource;
+    protected Integer getParentResourceIdFromResource(NgwResource resource) {
+        return resource == null
+                || resource.getParent() == null
+                || resource.getParent().getId() == null
+                ? null
+                : resource.getParent().getId();
     }
 
-    public NgwResource getCurrentNgwResource() {
-        return mCurrentNgwResource;
+    protected Integer getResourceIdFromResource(NgwResource resource) {
+        return resource == null
+                || resource.getId() == null
+                ? null
+                : resource.getId();
     }
 
     public String getLoadUrl() {
@@ -93,66 +133,52 @@ public class NgwConnection implements Comparable<NgwConnection> {
 
     public String getParentArrayUrl() {
         return mUrl + "resource/"
-                + (mCurrentNgwResource == null
-                || mCurrentNgwResource.getParent() == null
-                || mCurrentNgwResource.getParent().getId() == null
-                ? "-"
-                : mCurrentNgwResource.getParent().getId())
+                + (mParentResourceId == null ? "-" : mParentResourceId)
                 + "/child/";
     }
 
     public String getResourceArrayUrl() {
         return mUrl + "resource/"
-                + (mCurrentNgwResource == null || mCurrentNgwResource.getId() == null
-                ? "-"
-                : mCurrentNgwResource.getId())
+                + (mResourceId == null ? "-" : mResourceId)
                 + "/child/";
     }
 
     public String getChildObjectUrl() {
         return mUrl + "resource/"
-                + (mCurrentNgwResource == null || mCurrentNgwResource.getId() == null
-                ? "-"
-                : mCurrentNgwResource.getId())
+                + (mResourceId == null ? "-" : mResourceId)
                 + "/child/" + mChildId;
     }
 
     public String getGeoJsonUrl() {
         return mUrl + "resource/"
-                + (mCurrentNgwResource == null || mCurrentNgwResource.getId() == null
-                ? "-"
-                : mCurrentNgwResource.getId())
+                + (mResourceId == null ? "-" : mResourceId)
                 + "/geojson/";
     }
 
-    public void setLoadRootArray() {
-        setLoadResourceArray(mRootNgwResource);
-    }
-
-    public void setLoadRootObject() {
-        setLoadChildrenObject(mRootNgwResource, 0);
-    }
-
     public void setLoadParentArray(NgwResource resource) {
-        mCurrentNgwResource = resource;
+        mParentResourceId = getParentResourceIdFromResource(resource);
+        mResourceId = getResourceIdFromResource(resource);
         mChildId = 0;
         mThatLoad = LOAD_PARENT;
     }
 
     public void setLoadResourceArray(NgwResource resource) {
-        mCurrentNgwResource = resource;
+        mParentResourceId = getParentResourceIdFromResource(resource);
+        mResourceId = getResourceIdFromResource(resource);
         mChildId = 0;
         mThatLoad = LOAD_RESOURCE;
     }
 
     public void setLoadChildrenObject(NgwResource resource, Integer childId) {
-        mCurrentNgwResource = resource;
+        mParentResourceId = getParentResourceIdFromResource(resource);
+        mResourceId = getResourceIdFromResource(resource);
         mChildId = childId;
         mThatLoad = LOAD_CHILDREN;
     }
 
     public void setLoadGeoJsonObject(NgwResource resource) {
-        mCurrentNgwResource = resource;
+        mParentResourceId = getParentResourceIdFromResource(resource);
+        mResourceId = getResourceIdFromResource(resource);
         mChildId = 0;
         mThatLoad = LOAD_GEOJSON;
     }
@@ -171,10 +197,67 @@ public class NgwConnection implements Comparable<NgwConnection> {
         }
     }
 
-    @Override
-    public int compareTo(NgwConnection connection) {
-        String left = mName + mUrl + mLogin;
-        String right = connection.mName + connection.mUrl + connection.mLogin;
-        return left.compareTo(right);
+    public static List<NgwConnection> loadNgwConnections(File path) {
+        Log.d(TAG, "Load NGW connections");
+
+        List<NgwConnection> ngwConnections = new ArrayList<NgwConnection>();
+
+        try {
+            File configFile = new File(path, NGW_CONNECTIONS_JSON);
+            String jsonData = FileUtil.readFromFile(configFile);
+            JSONObject rootObject = new JSONObject(jsonData);
+            final JSONArray jsonArray = rootObject.getJSONArray(JSON_NGW_CONNECTIONS_KEY);
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonConnection = jsonArray.getJSONObject(i);
+                int id = jsonConnection.getInt(JSON_ID_KEY);
+                String name = jsonConnection.getString(JSON_NAME_KEY);
+                String url = jsonConnection.getString(JSON_URL_KEY);
+                String login = jsonConnection.getString(JSON_LOGIN_KEY);
+                String password = jsonConnection.getString(JSON_PASSWORD_KEY);
+
+                NgwConnection connection = new NgwConnection(id, name, url, login, password);
+                ngwConnections.add(connection);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return ngwConnections;
+    }
+
+    public static boolean saveNgwConnections(List<NgwConnection> ngwConnections, File path) {
+        Log.d(TAG, "Save NGW connections");
+
+        try {
+            JSONObject rootObject = new JSONObject();
+            JSONArray jsonConnectionArray = new JSONArray();
+            rootObject.put(JSON_NGW_CONNECTIONS_KEY, jsonConnectionArray);
+
+            for (NgwConnection ngwConnection : ngwConnections) {
+                JSONObject jsonConnection = new JSONObject();
+                jsonConnection.put(JSON_ID_KEY, ngwConnection.getId());
+                jsonConnection.put(JSON_NAME_KEY, ngwConnection.getName());
+                jsonConnection.put(JSON_URL_KEY, ngwConnection.getUrl());
+                jsonConnection.put(JSON_LOGIN_KEY, ngwConnection.getLogin());
+                jsonConnection.put(JSON_PASSWORD_KEY, ngwConnection.getPassword());
+
+                jsonConnectionArray.put(jsonConnection);
+            }
+
+            File configFile = new File(path, NGW_CONNECTIONS_JSON);
+            FileUtil.writeToFile(configFile, rootObject.toString());
+            return true;
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }
