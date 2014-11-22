@@ -32,14 +32,25 @@ import static com.nextgis.mobile.util.Constants.*;
 public class NgwVectorLayer extends LocalGeoJsonLayer {
 
     protected Integer mConnectionId;
+    protected Integer mResourceId;
 
 
-    public NgwVectorLayer(Integer connectionId) {
+    public NgwVectorLayer(Integer connectionId, Integer resourceId) {
+        super();
         mConnectionId = connectionId;
+        mResourceId = resourceId;
     }
 
     public NgwVectorLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
+    }
+
+    public Integer getConnectionId() {
+        return mConnectionId;
+    }
+
+    public Integer getResourceId() {
+        return mResourceId;
     }
 
     @Override

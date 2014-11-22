@@ -23,25 +23,23 @@ package com.nextgis.mobile.datasource;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
-import com.nextgis.mobile.util.Constants;
-import com.nextgis.mobile.util.FileUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.nextgis.mobile.util.Constants.*;
 
@@ -71,7 +69,14 @@ public class NgwConnectionWorker {
     protected String getNgwResourceString(NgwConnection connection) {
 
         try {
-            DefaultHttpClient httpClient = new DefaultHttpClient();
+            HttpParams httpParameters = new BasicHttpParams();
+            // Sets the timeout until a connection is established.
+            HttpConnectionParams.setConnectionTimeout(httpParameters, TIMEOUT_CONNECTION);
+            // Set the default socket timeout (SO_TIMEOUT)
+            // in milliseconds which is the timeout for waiting for data.
+            HttpConnectionParams.setSoTimeout(httpParameters, TIMEOUT_SOKET);
+
+            DefaultHttpClient httpClient = new DefaultHttpClient(httpParameters);
             HttpGet httpGet = new HttpGet(connection.getLoadUrl());
             httpGet.setHeader("Authorization", "Basic " + Base64.encodeToString(
                     (connection.getLogin() + ":" + connection.getPassword()).getBytes(),

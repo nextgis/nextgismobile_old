@@ -23,6 +23,7 @@ package com.nextgis.mobile.dialogs;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,8 +41,10 @@ import com.nextgis.mobile.datasource.NgwConnection;
 import com.nextgis.mobile.datasource.NgwConnectionWorker;
 import com.nextgis.mobile.datasource.NgwResource;
 import com.nextgis.mobile.map.MapBase;
+import com.nextgis.mobile.map.NgwRasterLayer;
 import com.nextgis.mobile.map.NgwVectorLayer;
 import com.nextgis.mobile.util.Constants;
+import com.nextgis.mobile.util.GeoConstants;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -80,10 +83,7 @@ public class NgwResourcesDialog extends DialogFragment {
     protected AdapterView.OnItemClickListener mConnectionOnClickListener;
     protected AdapterView.OnItemLongClickListener mConnectionOnLongClickListener;
 
-    // TODO: checking cashed items for server updates
-    // TODO: http timeouts
     // TODO: edit connections
-    // TODO: json with errors
 
 
     @Override
@@ -101,7 +101,6 @@ public class NgwResourcesDialog extends DialogFragment {
             mNgwResRoots.add(new NgwResource(connection.getId()));
         }
 
-        // TODO: load mSelectedResources from previously loaded layers
         mSelectedResources = new TreeSet<NgwResource>();
         mCurrNgwRes = null;
 
@@ -133,14 +132,14 @@ public class NgwResourcesDialog extends DialogFragment {
 
                 dialog.setOnDeleteConnectionListener(
                         new NgwDeleteConnectionDialog.OnDeleteConnectionListener() {
-                    @Override
-                    public void onDeleteConnection(int index) {
-                        mNgwResRoots.remove(mNgwConnections.get(index).getId());
-                        mNgwConnections.remove(index);
-                        NgwConnection.saveNgwConnections(mNgwConnections, mMap.getMapPath());
-                        ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
-                    }
-                });
+                            @Override
+                            public void onDeleteConnection(int index) {
+                                mNgwResRoots.remove(mNgwConnections.get(index).getId());
+                                mNgwConnections.remove(index);
+                                NgwConnection.saveNgwConnections(mNgwConnections, mMap.getMapPath());
+                                ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
+                            }
+                        });
 
                 dialog.show(getActivity().getSupportFragmentManager(), "NgwDeleteConnectionDialog");
                 return true;
@@ -151,38 +150,39 @@ public class NgwResourcesDialog extends DialogFragment {
 
         mNgwConnWorker.setJsonArrayLoadedListener(
                 new NgwConnectionWorker.JsonArrayLoadedListener() {
-            @Override
-            public void onJsonArrayLoaded(final JSONArray jsonArray) {
-                if (jsonArray == null) {
-                    // TODO: localization
-                    Toast.makeText(mMap.getContext(), "Connection ERROR", Toast.LENGTH_LONG).show();
-                    setHttpRunningView(false);
-                    return;
-                }
+                    @Override
+                    public void onJsonArrayLoaded(final JSONArray jsonArray) {
+                        if (jsonArray == null) {
+                            // TODO: localization
+                            Toast.makeText(mMap.getContext(), "Connection ERROR",
+                                    Toast.LENGTH_LONG).show();
+                            setHttpRunningView(false);
+                            return;
+                        }
 
-                setHttpRunningView(false);
+                        setHttpRunningView(false);
 
-                try {
-                    mCurrNgwRes.addNgwResourcesFromJSONArray(jsonArray, mSelectedResources);
-                } catch (JSONException e) {
-                    // TODO: error to Log
-                    e.printStackTrace();
-                }
+                        try {
+                            mCurrNgwRes.addNgwResourcesFromJSONArray(jsonArray, mSelectedResources);
+                        } catch (JSONException e) {
+                            // TODO: error to Log
+                            e.printStackTrace();
+                        }
 
-                // Adding link to parent ("..") to position 0 (after sorting) of mResourceList
-                NgwResource ngwResource = new NgwResource(
-                        mCurrConn.getId(),
-                        mCurrNgwRes.getParent(),
-                        mCurrNgwRes.getId(),
-                        Constants.NGWTYPE_PARENT_RESOURCE_GROUP,
-                        Constants.JSON_PARENT_DISPLAY_NAME_VALUE);
+                        // Adding link to parent ("..") to position 0 (after sorting) of mResourceList
+                        NgwResource ngwResource = new NgwResource(
+                                mCurrConn.getId(),
+                                mCurrNgwRes.getParent(),
+                                mCurrNgwRes.getId(),
+                                Constants.NGWTYPE_PARENT_RESOURCE_GROUP,
+                                Constants.JSON_PARENT_DISPLAY_NAME_VALUE);
 
-                mCurrNgwRes.add(ngwResource);
-                mCurrNgwRes.sort();
+                        mCurrNgwRes.add(ngwResource);
+                        mCurrNgwRes.sort();
 
-                setJsonView();
-            }
-        });
+                        setJsonView();
+                    }
+                });
 
         mNgwConnWorker.setJsonObjectLoadedListener(
                 new NgwConnectionWorker.JsonObjectLoadedListener() {
@@ -206,22 +206,37 @@ public class NgwResourcesDialog extends DialogFragment {
                         progressDialog.show();
 
                         try {
-                            new NgwVectorLayer(mCurrConn.getId()).create(
-                                    mMap, mCurrNgwRes.getDisplayName(), jsonObject, progressDialog);
+                            switch (mCurrNgwRes.getCls()) {
+                                case Constants.NGWTYPE_VECTOR_LAYER:
+                                    new NgwVectorLayer(mCurrConn.getId(), mCurrNgwRes.getId())
+                                            .create(mMap, mCurrNgwRes.getDisplayName(),
+                                                    jsonObject, progressDialog);
+                                    break;
 
-                            if (mSelResIterator.hasNext()) {
-                                NgwResource ngwResource = mSelResIterator.next();
-                                mCurrConn.setLoadGeoJsonObject(ngwResource);
-                                mNgwConnWorker.loadNgwJson(mCurrConn);
-                            } else {
-                                setHttpRunningView(false);
-                                dismiss();
+                                case Constants.NGWTYPE_RASTER_LAYER:
+                                    break;
                             }
 
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            String error = "Error in " + mCurrNgwRes.getDisplayName()
+                                    + "\n" + e.getLocalizedMessage();
+                            Log.w(Constants.TAG, error);
+                            Toast.makeText(mMainActivity, error, Toast.LENGTH_LONG).show();
+
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            String error = "Error in " + mCurrNgwRes.getDisplayName()
+                                    + "\n" + e.getLocalizedMessage();
+                            Log.w(Constants.TAG, error);
+                            Toast.makeText(mMainActivity, error, Toast.LENGTH_LONG).show();
+                        }
+
+                        if (mSelResIterator.hasNext()) {
+                            mCurrNgwRes = mSelResIterator.next();
+                            mCurrConn.setLoadGeoJsonObject(mCurrNgwRes);
+                            mNgwConnWorker.loadNgwJson(mCurrConn);
+                        } else {
+                            setHttpRunningView(false);
+                            dismiss();
                         }
                     }
                 });
@@ -250,14 +265,14 @@ public class NgwResourcesDialog extends DialogFragment {
 
                 dialog.setOnAddConnectionListener(
                         new NgwAddConnectionDialog.OnAddConnectionListener() {
-                    @Override
-                    public void onAddConnection(NgwConnection connection) {
-                        mNgwConnections.add(connection);
-                        NgwConnection.saveNgwConnections(mNgwConnections, mMap.getMapPath());
-                        mNgwResRoots.add(new NgwResource(connection.getId()));
-                        ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
-                    }
-                });
+                            @Override
+                            public void onAddConnection(NgwConnection connection) {
+                                mNgwConnections.add(connection);
+                                NgwConnection.saveNgwConnections(mNgwConnections, mMap.getMapPath());
+                                mNgwResRoots.add(new NgwResource(connection.getId()));
+                                ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
+                            }
+                        });
 
                 dialog.show(getActivity().getSupportFragmentManager(), "NgwAddConnectionDialog");
             }
@@ -270,15 +285,54 @@ public class NgwResourcesDialog extends DialogFragment {
             public void onClick(View v) {
                 mSelResIterator = mSelectedResources.iterator();
 
-                if (mSelResIterator.hasNext()) {
-                    // TODO: lock dialog's buttons and list's items
-                    mCurrNgwRes = mSelResIterator.next();
-                    setHttpRunningView(true);
-                    mCurrConn.setLoadGeoJsonObject(mCurrNgwRes);
-                    mNgwConnWorker.loadNgwJson(mCurrConn);
-
-                } else {
+                if (!mSelResIterator.hasNext()) {
                     dismiss();
+                }
+
+                while (mSelResIterator.hasNext()) {
+                    // TODO: lock dialog's buttons and list's items
+
+                    mCurrNgwRes = mSelResIterator.next();
+
+                    switch (mCurrNgwRes.getCls()) {
+                        case Constants.NGWTYPE_VECTOR_LAYER:
+                            continue;
+
+                        case Constants.NGWTYPE_RASTER_LAYER:
+                            try {
+                                new NgwRasterLayer(mCurrConn.getId(), mCurrNgwRes.getId())
+                                        .create(mMap, mCurrNgwRes.getDisplayName(),
+                                                mCurrConn.getUrl()
+                                                        + "resource/" + mCurrNgwRes.getId()
+                                                        + "/tms?z={z}&x={x}&y={y}",
+                                                GeoConstants.TMSTYPE_NORMAL);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+                    }
+                }
+
+                mSelResIterator = mSelectedResources.iterator();
+
+                while (mSelResIterator.hasNext()) {
+                    // TODO: lock dialog's buttons and list's items
+
+                    mCurrNgwRes = mSelResIterator.next();
+
+                    switch (mCurrNgwRes.getCls()) {
+                        case Constants.NGWTYPE_VECTOR_LAYER:
+                            setHttpRunningView(true);
+                            mCurrConn.setLoadGeoJsonObject(mCurrNgwRes);
+                            mNgwConnWorker.loadNgwJson(mCurrConn);
+                            break;
+
+                        case Constants.NGWTYPE_RASTER_LAYER:
+                            continue;
+                    }
+                    break;
                 }
             }
         });

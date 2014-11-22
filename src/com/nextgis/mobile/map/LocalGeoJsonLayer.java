@@ -65,6 +65,7 @@ import java.util.List;
 public class LocalGeoJsonLayer extends GeoJsonLayer {
 
     public LocalGeoJsonLayer() {
+        super();
     }
 
     public LocalGeoJsonLayer(MapBase map, File path, JSONObject config) {

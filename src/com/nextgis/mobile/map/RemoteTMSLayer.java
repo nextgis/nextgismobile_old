@@ -84,6 +84,10 @@ public class RemoteTMSLayer extends TMSLayer {
         mHTTPClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, APP_USER_AGENT);
     }
 
+    protected HttpGet getHttpGet(String uri) {
+        return new HttpGet(uri);
+    }
+
     @Override
     public Bitmap getBitmap(TileItem tile) {
         // try to get tile from local cache
@@ -99,7 +103,7 @@ public class RemoteTMSLayer extends TMSLayer {
         // try to get tile from remote
         try {
 
-            final HttpUriRequest head = new HttpGet(tile.toString(mURL));
+            final HttpUriRequest head = getHttpGet(tile.toString(mURL));
             final HttpResponse response;
             response = mHTTPClient.execute(head);
 
@@ -258,7 +262,7 @@ public class RemoteTMSLayer extends TMSLayer {
                 .show();
     }
 
-    protected void create(final MapBase map, String layerName, String layerUrl, int tmsType)
+    public void create(final MapBase map, String layerName, String layerUrl, int tmsType)
             throws JSONException, IOException {
 
         File outputPath = map.cretateLayerStorage();

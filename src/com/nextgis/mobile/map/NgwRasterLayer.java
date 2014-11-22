@@ -20,7 +20,10 @@
  ****************************************************************************/
 package com.nextgis.mobile.map;
 
+import android.util.Base64;
+import com.nextgis.mobile.datasource.NgwConnection;
 import com.nextgis.mobile.util.Constants;
+import org.apache.http.client.methods.HttpGet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,20 +34,50 @@ import static com.nextgis.mobile.util.Constants.*;
 public class NgwRasterLayer extends RemoteTMSLayer {
 
     protected Integer mConnectionId;
+    protected Integer mResourceId;
 
 
-    public NgwRasterLayer(Integer connectionId) {
+    public NgwRasterLayer(Integer connectionId, Integer resourceId) {
         super();
         mConnectionId = connectionId;
+        mResourceId = resourceId;
     }
 
     public NgwRasterLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
     }
 
+    public Integer getConnectionId() {
+        return mConnectionId;
+    }
+
+    public Integer getResourceId() {
+        return mResourceId;
+    }
+
     @Override
     public int getType() {
         return Constants.LAYERTYPE_NDW_RASTER;
+    }
+
+    @Override
+    protected HttpGet getHttpGet(String uri) {
+        NgwConnection connection;
+        try {
+            connection = mMap.getNgwConnections().get(mConnectionId);
+        } catch (IndexOutOfBoundsException e) {
+            connection = null;
+        }
+
+        HttpGet httpGet = new HttpGet(uri);
+
+        if (connection != null) {
+            httpGet.setHeader("Authorization", "Basic " + Base64.encodeToString(
+                    (connection.getLogin() + ":" + connection.getPassword()).getBytes(),
+                    Base64.NO_WRAP));
+        }
+
+        return httpGet;
     }
 
     @Override
