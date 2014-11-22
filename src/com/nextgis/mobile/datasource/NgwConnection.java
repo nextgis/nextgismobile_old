@@ -155,6 +155,10 @@ public class NgwConnection {
                 + "/geojson/";
     }
 
+    public String getTmsUrl(Integer resourceId) {
+        return mUrl + "resource/" + resourceId + "/tms?z={z}&x={x}&y={y}";
+    }
+
     public void setLoadParentArray(NgwResource resource) {
         mParentResourceId = getParentResourceIdFromResource(resource);
         mResourceId = getResourceIdFromResource(resource);

@@ -161,8 +161,6 @@ public class NgwResourcesDialog extends DialogFragment {
                             return;
                         }
 
-                        setHttpRunningView(false);
-
                         try {
                             mCurrNgwRes.addNgwResourcesFromJSONArray(jsonArray, mSelectedResources);
                         } catch (JSONException e) {
@@ -170,18 +168,60 @@ public class NgwResourcesDialog extends DialogFragment {
                             e.printStackTrace();
                         }
 
-                        // Adding link to parent ("..") to position 0 (after sorting) of mResourceList
-                        NgwResource ngwResource = new NgwResource(
-                                mCurrConn.getId(),
-                                mCurrNgwRes.getParent(),
-                                mCurrNgwRes.getId(),
-                                Constants.NGWTYPE_PARENT_RESOURCE_GROUP,
-                                Constants.JSON_PARENT_DISPLAY_NAME_VALUE);
+                        Integer cls = mCurrNgwRes.getCls();
+                        if (cls == null) cls = Constants.NGWTYPE_RESOURCE_GROUP;
 
-                        mCurrNgwRes.add(ngwResource);
-                        mCurrNgwRes.sort();
+                        switch (cls) {
+                            case Constants.NGWTYPE_RESOURCE_GROUP:
+                                // Adding link to parent ("..")
+                                // to position 0 (after sorting) of mResourceList
+                                NgwResource ngwResource = new NgwResource(
+                                        mCurrConn.getId(),
+                                        mCurrNgwRes.getParent(),
+                                        mCurrNgwRes.getId(),
+                                        Constants.NGWTYPE_PARENT_RESOURCE_GROUP,
+                                        Constants.JSON_PARENT_DISPLAY_NAME_VALUE);
 
-                        setJsonView();
+                                mCurrNgwRes.add(ngwResource);
+                                mCurrNgwRes.sort();
+
+                                setHttpRunningView(false);
+                                setJsonView();
+                                break;
+
+                            case Constants.NGWTYPE_RASTER_LAYER:
+                                if (mCurrNgwRes.size() > 0) {
+                                    String displayName = mCurrNgwRes.getDisplayName();
+                                    mCurrNgwRes = mCurrNgwRes.get(0);
+
+                                    try {
+                                        new NgwRasterLayer(mCurrConn.getId(), mCurrNgwRes.getId())
+                                                .create(mMap, displayName,
+                                                        mCurrConn.getTmsUrl(mCurrNgwRes.getId()),
+                                                        GeoConstants.TMSTYPE_OSM);
+
+                                    } catch (JSONException e) {
+                                        String error = "Error in " + mCurrNgwRes.getDisplayName()
+                                                + "\n" + e.getLocalizedMessage();
+                                        Log.w(Constants.TAG, error);
+                                        Toast.makeText(mMainActivity, error, Toast.LENGTH_LONG).show();
+
+                                    } catch (IOException e) {
+                                        String error = "Error in " + mCurrNgwRes.getDisplayName()
+                                                + "\n" + e.getLocalizedMessage();
+                                        Log.w(Constants.TAG, error);
+                                        Toast.makeText(mMainActivity, error, Toast.LENGTH_LONG).show();
+                                    }
+                                }
+
+                                if (mSelResIterator.hasNext()) {
+                                    loadNextSelectedResource();
+                                } else {
+                                    dismiss();
+                                }
+
+                                break;
+                        }
                     }
                 });
 
@@ -215,6 +255,8 @@ public class NgwResourcesDialog extends DialogFragment {
 
                                 case Constants.NGWTYPE_RASTER_LAYER:
                                     break;
+                                case Constants.NGWTYPE_RASTER_STYLE:
+                                    break;
                             }
 
                         } catch (JSONException e) {
@@ -231,9 +273,7 @@ public class NgwResourcesDialog extends DialogFragment {
                         }
 
                         if (mSelResIterator.hasNext()) {
-                            mCurrNgwRes = mSelResIterator.next();
-                            mCurrConn.setLoadGeoJsonObject(mCurrNgwRes);
-                            mNgwConnWorker.loadNgwJson(mCurrConn);
+                            loadNextSelectedResource();
                         } else {
                             dismiss();
                         }
@@ -284,55 +324,12 @@ public class NgwResourcesDialog extends DialogFragment {
             public void onClick(View v) {
                 mSelResIterator = mSelectedResources.iterator();
 
-                if (!mSelResIterator.hasNext()) {
+                if (mSelResIterator.hasNext()) {
+                    setLoadResourcesView(true);
+                    loadNextSelectedResource();
+                } else {
                     dismiss();
                 }
-
-                setLoadResourcesView(true);
-
-                while (mSelResIterator.hasNext()) {
-
-                    mCurrNgwRes = mSelResIterator.next();
-
-                    switch (mCurrNgwRes.getCls()) {
-                        case Constants.NGWTYPE_VECTOR_LAYER:
-                            continue;
-
-                        case Constants.NGWTYPE_RASTER_LAYER:
-                            try {
-                                new NgwRasterLayer(mCurrConn.getId(), mCurrNgwRes.getId())
-                                        .create(mMap, mCurrNgwRes.getDisplayName(),
-                                                mCurrConn.getUrl()
-                                                        + "resource/" + mCurrNgwRes.getId()
-                                                        + "/tms?z={z}&x={x}&y={y}",
-                                                GeoConstants.TMSTYPE_OSM);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            break;
-                    }
-                }
-
-                mSelResIterator = mSelectedResources.iterator();
-
-                while (mSelResIterator.hasNext()) {
-                    mCurrNgwRes = mSelResIterator.next();
-
-                    switch (mCurrNgwRes.getCls()) {
-                        case Constants.NGWTYPE_VECTOR_LAYER:
-                            mCurrConn.setLoadGeoJsonObject(mCurrNgwRes);
-                            mNgwConnWorker.loadNgwJson(mCurrConn);
-                            break;
-
-                        case Constants.NGWTYPE_RASTER_LAYER:
-                            continue;
-                    }
-                    break;
-                }
-
-                dismiss();
             }
         });
 
@@ -355,6 +352,24 @@ public class NgwResourcesDialog extends DialogFragment {
 
         setHttpRunningView(mIsHttpRunning);
         return view;
+    }
+
+    public void loadNextSelectedResource() {
+        mCurrNgwRes = mSelResIterator.next();
+        mCurrConn = mNgwConnections.getByConnectionId(mCurrNgwRes.getConnectionId());
+
+        switch (mCurrNgwRes.getCls()) {
+            case Constants.NGWTYPE_VECTOR_LAYER:
+                mCurrConn.setLoadGeoJsonObject(mCurrNgwRes);
+                mNgwConnWorker.loadNgwJson(mCurrConn);
+                break;
+
+            case Constants.NGWTYPE_RASTER_LAYER:
+                setHttpRunningView(true);
+                mCurrConn.setLoadResourceArray(mCurrNgwRes);
+                mNgwConnWorker.loadNgwJson(mCurrConn);
+                break;
+        }
     }
 
     protected void setHttpRunningView(boolean isRunning) {
