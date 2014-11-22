@@ -34,6 +34,7 @@ import android.widget.Toast;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.GeoPoint;
 import com.nextgis.mobile.datasource.NgwConnection;
+import com.nextgis.mobile.datasource.NgwConnectionList;
 import com.nextgis.mobile.display.GISDisplay;
 import com.nextgis.mobile.util.FileUtil;
 import com.nextgis.mobile.util.NetworkUtil;
@@ -48,6 +49,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -67,7 +69,7 @@ public class MapBase extends View {
     protected boolean mContinueDrawing;
     protected final BlockingQueue<Runnable> mDrawWorkQueue;
     protected ThreadPoolExecutor mDrawThreadPool;
-    protected List<NgwConnection> mNgwConnections;
+    protected NgwConnectionList mNgwConnections;
 
     protected static int mCPUTotalCount;
     protected NetworkUtil newtworkUtil;
@@ -157,7 +159,7 @@ public class MapBase extends View {
         return mMapPath;
     }
 
-    public List<NgwConnection> getNgwConnections() {
+    public NgwConnectionList getNgwConnections() {
         if (mNgwConnections == null) {
             mNgwConnections = NgwConnection.loadNgwConnections(mMapPath);
         }
@@ -565,7 +567,8 @@ public class MapBase extends View {
      */
     protected File cretateLayerStorage() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-        String layerDir = LAYER_PREFIX + sdf.format(new Date());
+        int randomInt = new Random().nextInt(9999);
+        String layerDir = LAYER_PREFIX + sdf.format(new Date()) + "_" + randomInt;
         return new File(mMapPath, layerDir);
     }
 

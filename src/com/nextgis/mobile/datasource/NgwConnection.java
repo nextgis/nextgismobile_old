@@ -197,10 +197,10 @@ public class NgwConnection {
         }
     }
 
-    public static List<NgwConnection> loadNgwConnections(File path) {
+    public static NgwConnectionList loadNgwConnections(File path) {
         Log.d(TAG, "Load NGW connections");
 
-        List<NgwConnection> ngwConnections = new ArrayList<NgwConnection>();
+        NgwConnectionList ngwConnections = new NgwConnectionList();
 
         try {
             File configFile = new File(path, NGW_CONNECTIONS_JSON);
@@ -229,7 +229,7 @@ public class NgwConnection {
         return ngwConnections;
     }
 
-    public static boolean saveNgwConnections(List<NgwConnection> ngwConnections, File path) {
+    public static boolean saveNgwConnections(NgwConnectionList ngwConnections, File path) {
         Log.d(TAG, "Save NGW connections");
 
         try {
@@ -237,7 +237,8 @@ public class NgwConnection {
             JSONArray jsonConnectionArray = new JSONArray();
             rootObject.put(JSON_NGW_CONNECTIONS_KEY, jsonConnectionArray);
 
-            for (NgwConnection ngwConnection : ngwConnections) {
+            for (int i = 0, ngwConnectionsSize = ngwConnections.size(); i < ngwConnectionsSize; i++) {
+                NgwConnection ngwConnection = ngwConnections.get(i);
                 JSONObject jsonConnection = new JSONObject();
                 jsonConnection.put(JSON_ID_KEY, ngwConnection.getId());
                 jsonConnection.put(JSON_NAME_KEY, ngwConnection.getName());

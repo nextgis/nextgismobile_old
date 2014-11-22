@@ -29,19 +29,19 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.nextgis.mobile.R;
-import com.nextgis.mobile.datasource.NgwConnection;
+import com.nextgis.mobile.datasource.NgwConnectionList;
 
 import java.util.List;
 
 public class NgwConnectionsListAdapter extends BaseAdapter {
 
-    protected List<NgwConnection> mNgwConnections;
+    protected NgwConnectionList mNgwConnections;
 
     protected Context mContext;
     protected LayoutInflater mLayoutInflater;
 
 
-    public NgwConnectionsListAdapter(Context context, List<NgwConnection> connections) {
+    public NgwConnectionsListAdapter(Context context, NgwConnectionList connections) {
         super();
 
         this.mNgwConnections = connections;

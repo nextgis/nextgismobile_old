@@ -47,6 +47,7 @@ public class NgwConnectionWorker {
 
     protected JsonObjectLoadedListener mJsonObjectLoadedListener;
     protected JsonArrayLoadedListener mJsonArrayLoadedListener;
+    protected NgwConnectionRunner mConnectionRunner;
 
 
     public interface JsonObjectLoadedListener {
@@ -66,69 +67,81 @@ public class NgwConnectionWorker {
     }
 
 
-    protected String getNgwResourceString(NgwConnection connection) {
-
-        try {
-            HttpParams httpParameters = new BasicHttpParams();
-            // Sets the timeout until a connection is established.
-            HttpConnectionParams.setConnectionTimeout(httpParameters, TIMEOUT_CONNECTION);
-            // Set the default socket timeout (SO_TIMEOUT)
-            // in milliseconds which is the timeout for waiting for data.
-            HttpConnectionParams.setSoTimeout(httpParameters, TIMEOUT_SOKET);
-
-            DefaultHttpClient httpClient = new DefaultHttpClient(httpParameters);
-            HttpGet httpGet = new HttpGet(connection.getLoadUrl());
-            httpGet.setHeader("Authorization", "Basic " + Base64.encodeToString(
-                    (connection.getLogin() + ":" + connection.getPassword()).getBytes(),
-                    Base64.NO_WRAP));
-            HttpResponse response = httpClient.execute(httpGet);
-
-            // Check to see if we got success
-            final org.apache.http.StatusLine line = response.getStatusLine();
-            if (line.getStatusCode() != 200) {
-                Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl() + " HTTP response: " + line);
-                return null;
-            }
-
-            final HttpEntity entity = response.getEntity();
-            if (entity == null) {
-                Log.w(TAG, "No content downloading Resource: " + connection.getLoadUrl());
-                return null;
-            }
-
-            InputStream inputStream = entity.getContent();
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"), 8);
-            StringBuilder sb = new StringBuilder();
-            String str = null;
-            while ((str = reader.readLine()) != null) {
-                sb.append(str).append("\n");
-            }
-            reader.close();
-            return sb.toString();
-
-        } catch (UnsupportedEncodingException e) {
-            Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl()
-                    + ", error: " + e.getLocalizedMessage());
-        } catch (ClientProtocolException e) {
-            Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl()
-                    + ", error: " + e.getLocalizedMessage());
-        } catch (IOException e) {
-            Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl()
-                    + ", error: " + e.getLocalizedMessage());
-        }
-
-        return null;
+    public void loadNgwJson(NgwConnection connection) {
+        mConnectionRunner = new NgwConnectionRunner();
+        mConnectionRunner.execute(connection);
     }
 
-    public void loadNgwJson(NgwConnection connection) {
-        new NgwConnectionRunner().execute(connection);
+    public boolean cancel() {
+        return mConnectionRunner != null && mConnectionRunner.cancel(false);
     }
 
 
     protected class NgwConnectionRunner extends AsyncTask<NgwConnection, Void, String> {
 
         protected NgwConnection mConnection;
+
+
+        protected String getNgwResourceString(NgwConnection connection) {
+
+            try {
+                HttpParams httpParameters = new BasicHttpParams();
+                // Sets the timeout until a connection is established.
+                HttpConnectionParams.setConnectionTimeout(httpParameters, TIMEOUT_CONNECTION);
+                // Set the default socket timeout (SO_TIMEOUT)
+                // in milliseconds which is the timeout for waiting for data.
+                HttpConnectionParams.setSoTimeout(httpParameters, TIMEOUT_SOKET);
+
+                DefaultHttpClient httpClient = new DefaultHttpClient(httpParameters);
+                HttpGet httpGet = new HttpGet(connection.getLoadUrl());
+                httpGet.setHeader("Authorization", "Basic " + Base64.encodeToString(
+                        (connection.getLogin() + ":" + connection.getPassword()).getBytes(),
+                        Base64.NO_WRAP));
+                HttpResponse response = httpClient.execute(httpGet);
+
+                if (isCancelled()) return null;
+
+                // Check to see if we got success
+                final org.apache.http.StatusLine line = response.getStatusLine();
+                if (line.getStatusCode() != 200) {
+                    Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl() + " HTTP response: " + line);
+                    return null;
+                }
+
+                final HttpEntity entity = response.getEntity();
+                if (entity == null) {
+                    Log.w(TAG, "No content downloading Resource: " + connection.getLoadUrl());
+                    return null;
+                }
+
+                InputStream inputStream = entity.getContent();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"), 8);
+                StringBuilder sb = new StringBuilder();
+                String str = null;
+                while ((str = reader.readLine()) != null) {
+                    if (isCancelled()) {
+                        reader.close();
+                        return null;
+                    }
+                    sb.append(str).append("\n");
+                }
+                reader.close();
+                return sb.toString();
+
+            } catch (UnsupportedEncodingException e) {
+                Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl()
+                        + ", error: " + e.getLocalizedMessage());
+            } catch (ClientProtocolException e) {
+                Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl()
+                        + ", error: " + e.getLocalizedMessage());
+            } catch (IOException e) {
+                Log.w(TAG, "Problem downloading Resource: " + connection.getLoadUrl()
+                        + ", error: " + e.getLocalizedMessage());
+            }
+
+            return null;
+        }
 
         @Override
         protected String doInBackground(NgwConnection... connections) {

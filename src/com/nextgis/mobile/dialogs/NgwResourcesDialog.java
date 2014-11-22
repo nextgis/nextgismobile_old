@@ -38,6 +38,7 @@ import android.widget.Toast;
 import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.NgwConnection;
+import com.nextgis.mobile.datasource.NgwConnectionList;
 import com.nextgis.mobile.datasource.NgwConnectionWorker;
 import com.nextgis.mobile.datasource.NgwResource;
 import com.nextgis.mobile.map.MapBase;
@@ -51,7 +52,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -60,7 +60,7 @@ public class NgwResourcesDialog extends DialogFragment {
     protected MainActivity mMainActivity;
     protected MapBase mMap;
 
-    protected List<NgwConnection> mNgwConnections;
+    protected NgwConnectionList mNgwConnections;
     protected NgwConnection mCurrConn;
     protected NgwConnectionWorker mNgwConnWorker;
     protected boolean mIsHttpRunning;
@@ -97,7 +97,8 @@ public class NgwResourcesDialog extends DialogFragment {
         mNgwConnections = mMap.getNgwConnections();
 
         mNgwResRoots = new NgwResourceRoots();
-        for (NgwConnection connection : mNgwConnections) {
+        for (int i = 0, connectionsSize = mNgwConnections.size(); i < connectionsSize; i++) {
+            NgwConnection connection = mNgwConnections.get(i);
             mNgwResRoots.add(new NgwResource(connection.getId()));
         }
 
@@ -192,7 +193,6 @@ public class NgwResourcesDialog extends DialogFragment {
                             // TODO: localization
                             Toast.makeText(
                                     mMap.getContext(), "Connection ERROR", Toast.LENGTH_LONG).show();
-                            setHttpRunningView(false);
                             dismiss();
                             return;
                         }
@@ -235,7 +235,6 @@ public class NgwResourcesDialog extends DialogFragment {
                             mCurrConn.setLoadGeoJsonObject(mCurrNgwRes);
                             mNgwConnWorker.loadNgwJson(mCurrConn);
                         } else {
-                            setHttpRunningView(false);
                             dismiss();
                         }
                     }
@@ -289,8 +288,9 @@ public class NgwResourcesDialog extends DialogFragment {
                     dismiss();
                 }
 
+                setLoadResourcesView(true);
+
                 while (mSelResIterator.hasNext()) {
-                    // TODO: lock dialog's buttons and list's items
 
                     mCurrNgwRes = mSelResIterator.next();
 
@@ -305,7 +305,7 @@ public class NgwResourcesDialog extends DialogFragment {
                                                 mCurrConn.getUrl()
                                                         + "resource/" + mCurrNgwRes.getId()
                                                         + "/tms?z={z}&x={x}&y={y}",
-                                                GeoConstants.TMSTYPE_NORMAL);
+                                                GeoConstants.TMSTYPE_OSM);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             } catch (IOException e) {
@@ -318,13 +318,10 @@ public class NgwResourcesDialog extends DialogFragment {
                 mSelResIterator = mSelectedResources.iterator();
 
                 while (mSelResIterator.hasNext()) {
-                    // TODO: lock dialog's buttons and list's items
-
                     mCurrNgwRes = mSelResIterator.next();
 
                     switch (mCurrNgwRes.getCls()) {
                         case Constants.NGWTYPE_VECTOR_LAYER:
-                            setHttpRunningView(true);
                             mCurrConn.setLoadGeoJsonObject(mCurrNgwRes);
                             mNgwConnWorker.loadNgwJson(mCurrConn);
                             break;
@@ -334,6 +331,8 @@ public class NgwResourcesDialog extends DialogFragment {
                     }
                     break;
                 }
+
+                dismiss();
             }
         });
 
@@ -341,6 +340,7 @@ public class NgwResourcesDialog extends DialogFragment {
         mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mNgwConnWorker.cancel();
                 dismiss();
             }
         });
@@ -361,7 +361,16 @@ public class NgwResourcesDialog extends DialogFragment {
         mIsHttpRunning = isRunning;
         mHttpProgressBar.setVisibility(mIsHttpRunning ? View.VISIBLE : View.INVISIBLE);
         mAddConnectionButton.setEnabled(!mIsHttpRunning);
+        mOkButton.setEnabled(!mIsHttpRunning);
         mResourceList.setEnabled(!mIsHttpRunning);
+    }
+
+    protected void setLoadResourcesView(boolean isRunning) {
+        mIsHttpRunning = isRunning;
+        mHttpProgressBar.setVisibility(mIsHttpRunning ? View.VISIBLE : View.INVISIBLE);
+        mAddConnectionButton.setEnabled(!mIsHttpRunning);
+        mOkButton.setEnabled(!mIsHttpRunning);
+        mResourceList.setVisibility(View.GONE);
     }
 
     protected void setConnectionView() {

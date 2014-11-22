@@ -64,7 +64,7 @@ public class NgwRasterLayer extends RemoteTMSLayer {
     protected HttpGet getHttpGet(String uri) {
         NgwConnection connection;
         try {
-            connection = mMap.getNgwConnections().get(mConnectionId);
+            connection = mMap.getNgwConnections().getByConnectionId(mConnectionId);
         } catch (IndexOutOfBoundsException e) {
             connection = null;
         }
