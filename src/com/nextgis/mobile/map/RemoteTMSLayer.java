@@ -95,11 +95,13 @@ public class RemoteTMSLayer extends TMSLayer {
         if (tilePath.exists()
                 && System.currentTimeMillis() - tilePath.lastModified()
                 < DEFAULT_MAXIMUM_CACHED_FILE_AGE) {
-            return BitmapFactory.decodeFile(tilePath.getAbsolutePath());
+
+            Bitmap bitmap = BitmapFactory.decodeFile(tilePath.getAbsolutePath());
+            if (bitmap != null) return bitmap;
         }
 
-        if (!mMap.isNetworkAvaliable())
-            return null;
+        if (!mMap.isNetworkAvaliable()) return null;
+
         // try to get tile from remote
         try {
 
