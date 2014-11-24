@@ -55,8 +55,7 @@ public class NgwVectorLayer extends LocalGeoJsonLayer {
 
     @Override
     public Drawable getIcon() {
-        // TODO: change icon
-        return getContext().getResources().getDrawable(R.drawable.ic_local_json);
+        return getContext().getResources().getDrawable(R.drawable.ngw);
     }
 
     @Override

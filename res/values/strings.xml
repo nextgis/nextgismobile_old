@@ -187,6 +187,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     <string name="ngw_connections">NGW Connections</string>
     <string name="add_ngw_connection">Add NGW Connection</string>
+    <string name="edit_ngw_connection">Edit NGW Connection</string>
     <string name="ngw_layers">NGW Layers</string>
 
     <string name="ok">Ok</string>
@@ -226,5 +227,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <string name="ngw_connection_password">Password:</string>
     <string name="ngw_msg_delete_connection">Are you sure to delete connection\n%1$s ?</string>
     <string name="delete">Delete</string>
+    <string name="delete_connection">Delete Connection</string>
+    <string name="edit_connection">Edit Connection</string>
 
 </resources>

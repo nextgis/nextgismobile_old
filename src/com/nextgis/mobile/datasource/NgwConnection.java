@@ -28,8 +28,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import static com.nextgis.mobile.util.Constants.*;
@@ -64,7 +62,7 @@ public class NgwConnection {
         Init(id, name, url, login, password);
     }
 
-    public void Init(int id, String name, String url, String login, String password) {
+    protected void Init(int id, String name, String url, String login, String password) {
         mId = id;
         mName = name;
         mUrl = url;
@@ -100,6 +98,22 @@ public class NgwConnection {
 
     public String getPassword() {
         return mPassword;
+    }
+
+    public void setName(String name) {
+        mName = name;
+    }
+
+    public void setUrl(String url) {
+        mUrl = url;
+    }
+
+    public void setLogin(String login) {
+        mLogin = login;
+    }
+
+    public void setPassword(String password) {
+        mPassword = password;
     }
 
     protected Integer getParentResourceIdFromResource(NgwResource resource) {

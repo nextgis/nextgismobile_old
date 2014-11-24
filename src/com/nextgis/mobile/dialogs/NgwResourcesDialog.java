@@ -24,7 +24,10 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -81,9 +84,6 @@ public class NgwResourcesDialog extends DialogFragment {
     protected ListView mResourceList;
     protected NgwConnectionsListAdapter mConnectionsAdapter;
     protected AdapterView.OnItemClickListener mConnectionOnClickListener;
-    protected AdapterView.OnItemLongClickListener mConnectionOnLongClickListener;
-
-    // TODO: edit connections
 
 
     @Override
@@ -124,26 +124,6 @@ public class NgwResourcesDialog extends DialogFragment {
                     setJsonView();
                 }
 
-            }
-        };
-        mConnectionOnLongClickListener = new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                NgwDeleteConnectionDialog dialog = NgwDeleteConnectionDialog.newInstance(position);
-
-                dialog.setOnDeleteConnectionListener(
-                        new NgwDeleteConnectionDialog.OnDeleteConnectionListener() {
-                            @Override
-                            public void onDeleteConnection(int index) {
-                                mNgwResRoots.remove(mNgwConnections.get(index).getId());
-                                mNgwConnections.remove(index);
-                                NgwConnection.saveNgwConnections(mNgwConnections, mMap.getMapPath());
-                                ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
-                            }
-                        });
-
-                dialog.show(getActivity().getSupportFragmentManager(), "NgwDeleteConnectionDialog");
-                return true;
             }
         };
 
@@ -354,6 +334,72 @@ public class NgwResourcesDialog extends DialogFragment {
         return view;
     }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.menu.ngw_connection_context_menu, menu);
+
+        MenuItem.OnMenuItemClickListener listener = new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                onContextItemSelected(item);
+                return true;
+            }
+        };
+
+        for (int i = 0, n = menu.size(); i < n; i++)
+            menu.getItem(i).setOnMenuItemClickListener(listener);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info =
+                (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+
+        switch (item.getItemId()) {
+            case R.id.menu_edit_connection:
+                NgwAddConnectionDialog editDialog = new NgwAddConnectionDialog();
+
+                editDialog.setOnEditConnectionListener(
+                        new NgwAddConnectionDialog.OnEditConnectionListener() {
+                            @Override
+                            public void onEditConnection(NgwConnection connection) {
+                                NgwConnection.saveNgwConnections(mNgwConnections, mMap.getMapPath());
+                                ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
+                            }
+                        },
+                        mMap.getNgwConnections().get((int) info.id));
+
+                editDialog.show(
+                        getActivity().getSupportFragmentManager(), "NgwEditConnectionDialog");
+                return true;
+
+            case R.id.menu_delete_connection:
+                NgwDeleteConnectionDialog deleteDialog =
+                        NgwDeleteConnectionDialog.newInstance((int) info.id);
+
+                deleteDialog.setOnDeleteConnectionListener(
+                        new NgwDeleteConnectionDialog.OnDeleteConnectionListener() {
+                            @Override
+                            public void onDeleteConnection(int index) {
+                                mNgwResRoots.remove(mNgwConnections.get(index).getId());
+                                mNgwConnections.remove(index);
+                                NgwConnection.saveNgwConnections(mNgwConnections, mMap.getMapPath());
+                                ((BaseAdapter) mResourceList.getAdapter()).notifyDataSetChanged();
+                            }
+                        });
+
+                deleteDialog.show(
+                        getActivity().getSupportFragmentManager(), "NgwDeleteConnectionDialog");
+                return true;
+
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
     public void loadNextSelectedResource() {
         mCurrNgwRes = mSelResIterator.next();
         mCurrConn = mNgwConnections.getByConnectionId(mCurrNgwRes.getConnectionId());
@@ -389,6 +435,8 @@ public class NgwResourcesDialog extends DialogFragment {
     }
 
     protected void setConnectionView() {
+        registerForContextMenu(mResourceList);
+
         mIsConnectionView = true;
         mDialogTitleText.setText(mMainActivity.getString(R.string.ngw_connections));
 
@@ -396,10 +444,11 @@ public class NgwResourcesDialog extends DialogFragment {
 
         mResourceList.setAdapter(mConnectionsAdapter);
         mResourceList.setOnItemClickListener(mConnectionOnClickListener);
-        mResourceList.setOnItemLongClickListener(mConnectionOnLongClickListener);
     }
 
     protected void setJsonView() {
+        unregisterForContextMenu(mResourceList);
+
         mIsConnectionView = false;
 
         String titleText = mCurrNgwRes.getDisplayName() == null
@@ -466,8 +515,6 @@ public class NgwResourcesDialog extends DialogFragment {
                 }
             }
         });
-
-        mResourceList.setOnItemLongClickListener(null);
     }
 
     protected class NgwResourceRoots {

@@ -33,14 +33,32 @@ import com.nextgis.mobile.util.Constants;
 
 public class NgwAddConnectionDialog extends DialogFragment {
 
+    protected boolean mIsEditConnectionView = false;
+    protected NgwConnection mNgwConnection;
     protected OnAddConnectionListener mOnAddConnectionListener;
+    protected OnEditConnectionListener mOnEditConnectionListener;
+
 
     public interface OnAddConnectionListener {
         void onAddConnection(NgwConnection connection);
     }
 
     public void setOnAddConnectionListener(OnAddConnectionListener onAddConnectionListener) {
+        mIsEditConnectionView = false;
         mOnAddConnectionListener = onAddConnectionListener;
+        mOnEditConnectionListener = null;
+    }
+
+    public interface OnEditConnectionListener {
+        void onEditConnection(NgwConnection connection);
+    }
+
+    public void setOnEditConnectionListener(OnEditConnectionListener onEditConnectionListener,
+                                            NgwConnection connection) {
+        mIsEditConnectionView = true;
+        mOnEditConnectionListener = onEditConnectionListener;
+        mNgwConnection = connection;
+        mOnAddConnectionListener = null;
     }
 
 
@@ -61,7 +79,8 @@ public class NgwAddConnectionDialog extends DialogFragment {
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        getDialog().setTitle(getActivity().getString(R.string.add_ngw_connection));
+        getDialog().setTitle(getActivity().getString(mIsEditConnectionView
+                ? R.string.edit_ngw_connection : R.string.add_ngw_connection));
 
         View view = inflater.inflate(R.layout.ngw_add_connection_dialog, container);
         final EditText edName = (EditText) view.findViewById(R.id.ed_name);
@@ -69,31 +88,44 @@ public class NgwAddConnectionDialog extends DialogFragment {
         final EditText edLogin = (EditText) view.findViewById(R.id.ed_login);
         final EditText edPassword = (EditText) view.findViewById(R.id.ed_password);
 
+        if (mIsEditConnectionView) {
+            edName.setText(mNgwConnection.getName());
+            edUrl.setText(mNgwConnection.getUrl());
+            edLogin.setText(mNgwConnection.getLogin());
+            edPassword.setText(mNgwConnection.getPassword());
+        }
+
         ImageButton btnOk = (ImageButton) view.findViewById(R.id.btn_ok_add_conn);
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String name = edName.getText().toString();
+                String url = edUrl.getText().toString();
+                String login = edLogin.getText().toString();
+                String password = edPassword.getText().toString();
+
+                if (name.length() == 0) {
+
+                    if (url.length() > 0) {
+                        name = url;
+                    } else {
+                        name = Constants.JSON_EMPTY_DISPLAY_NAME_VALUE;
+                    }
+                }
+
 
                 if (mOnAddConnectionListener != null) {
-                    String name = edName.getText().toString();
-                    String url = edUrl.getText().toString();
-
-                    if (name.length() == 0) {
-
-                        if (url.length() > 0) {
-                            name = url;
-                        } else {
-                            name = Constants.JSON_EMPTY_DISPLAY_NAME_VALUE;
-                        }
-                    }
-
-                    NgwConnection connection = new NgwConnection(
-                            name,
-                            url,
-                            edLogin.getText().toString(),
-                            edPassword.getText().toString());
-
+                    NgwConnection connection = new NgwConnection(name, url, login, password);
                     mOnAddConnectionListener.onAddConnection(connection);
+                }
+
+                if (mOnEditConnectionListener != null) {
+                    mNgwConnection.setName(name);
+                    mNgwConnection.setUrl(url);
+                    mNgwConnection.setLogin(login);
+                    mNgwConnection.setPassword(password);
+
+                    mOnEditConnectionListener.onEditConnection(mNgwConnection);
                 }
 
                 dismiss();
