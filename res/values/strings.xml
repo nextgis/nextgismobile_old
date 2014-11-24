@@ -230,4 +230,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <string name="delete_connection">Delete Connection</string>
     <string name="edit_connection">Edit Connection</string>
 
+    <string name="connection_error">Connection ERROR</string>
+
 </resources>

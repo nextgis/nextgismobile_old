@@ -134,8 +134,8 @@ public class NgwResourcesDialog extends DialogFragment {
                     @Override
                     public void onJsonArrayLoaded(final JSONArray jsonArray) {
                         if (jsonArray == null) {
-                            // TODO: localization
-                            Toast.makeText(mMap.getContext(), "Connection ERROR",
+                            Toast.makeText(mMap.getContext(),
+                                    mMainActivity.getString(R.string.connection_error),
                                     Toast.LENGTH_LONG).show();
                             setHttpRunningView(false);
                             return;
@@ -143,9 +143,12 @@ public class NgwResourcesDialog extends DialogFragment {
 
                         try {
                             mCurrNgwRes.addNgwResourcesFromJSONArray(jsonArray, mSelectedResources);
+
                         } catch (JSONException e) {
-                            // TODO: error to Log
-                            e.printStackTrace();
+                            String error = "Error by trying to add loaded resources to "
+                                    + mCurrNgwRes.getDisplayName() + "\n" + e.getLocalizedMessage();
+                            Log.w(Constants.TAG, error);
+                            Toast.makeText(mMainActivity, error, Toast.LENGTH_LONG).show();
                         }
 
                         Integer cls = mCurrNgwRes.getCls();
@@ -210,9 +213,9 @@ public class NgwResourcesDialog extends DialogFragment {
                     @Override
                     public void onJsonObjectLoaded(JSONObject jsonObject) {
                         if (jsonObject == null) {
-                            // TODO: localization
-                            Toast.makeText(
-                                    mMap.getContext(), "Connection ERROR", Toast.LENGTH_LONG).show();
+                            Toast.makeText(mMap.getContext(),
+                                    mMainActivity.getString(R.string.connection_error),
+                                    Toast.LENGTH_LONG).show();
                             dismiss();
                             return;
                         }
