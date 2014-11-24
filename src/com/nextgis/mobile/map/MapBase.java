@@ -280,6 +280,7 @@ public class MapBase extends View {
             JSONObject rootObject = new JSONObject(sData);
             int nType = rootObject.getInt(JSON_TYPE_KEY);
             Layer layer = null;
+
             switch (nType){
                 case LAYERTYPE_LOCAL_TMS:
                     layer = new LocalTMSLayer(this, path, rootObject);
@@ -306,6 +307,7 @@ public class MapBase extends View {
                 mLayers.add(layer);
                 onLayerAdded(layer);
             }
+
         } catch (IOException e){
             reportError(e.getLocalizedMessage());
         } catch (JSONException e){

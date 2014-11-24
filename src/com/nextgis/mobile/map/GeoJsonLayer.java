@@ -226,7 +226,7 @@ public abstract class GeoJsonLayer extends Layer{
         getFeatures();
 
         for (Feature feature : mFeatures) {
-            if (geoMapEnvelope.contains((GeoPoint) feature.getGeometry())) {
+            if (geoMapEnvelope.intersects(feature.getGeometry().getEnvelope())) {
                 return feature;
             }
         }

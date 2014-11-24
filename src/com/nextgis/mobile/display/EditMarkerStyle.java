@@ -27,7 +27,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.GeoGeometry;
+import com.nextgis.mobile.datasource.GeoMultiPoint;
 import com.nextgis.mobile.datasource.GeoPoint;
+import com.nextgis.mobile.util.GeoConstants;
 
 import static com.nextgis.mobile.util.DisplayConstants.*;
 
@@ -53,7 +55,21 @@ public class EditMarkerStyle extends SimpleMarkerStyle {
 
     @Override
     public void onDraw(GeoGeometry geoGeometry, GISDisplay display) {
-        GeoPoint geoPoint = (GeoPoint) geoGeometry;
+
+        GeoPoint geoPoint;
+
+        switch (geoGeometry.getType()) {
+            case GeoConstants.GTPoint:
+                geoPoint = (GeoPoint) geoGeometry;
+                break;
+            case GeoConstants.GTMultiPoint:
+                GeoMultiPoint geoMultiPoint = (GeoMultiPoint) geoGeometry;
+                geoPoint = geoMultiPoint.get(0); // TODO: make for all points
+                break;
+            default:
+                return;
+        }
+
         GeoPoint pt = display.mapToScreen(geoPoint);
 
         switch (mType){

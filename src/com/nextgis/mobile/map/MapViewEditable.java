@@ -37,9 +37,12 @@ import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.Feature;
 import com.nextgis.mobile.datasource.GeoEnvelope;
+import com.nextgis.mobile.datasource.GeoGeometry;
+import com.nextgis.mobile.datasource.GeoMultiPoint;
 import com.nextgis.mobile.datasource.GeoPoint;
 import com.nextgis.mobile.display.EditMarkerStyle;
 import com.nextgis.mobile.util.FileUtil;
+import com.nextgis.mobile.util.GeoConstants;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -299,7 +302,20 @@ public class MapViewEditable extends MapView {
                     new GeoPoint(event.getX() - mAnchorOffsetX, event.getY() - mAnchorOffsetY);
             GeoPoint geoPt = mDisplay.screenToMap(screenPt);
 
-            mEditLayer.getEditFeature().setGeometry(geoPt);
+            GeoGeometry editFeatureGeometry = mEditLayer.getEditFeature().getGeometry();
+
+            switch (editFeatureGeometry.getType()) {
+                case GeoConstants.GTPoint:
+                    GeoPoint point = (GeoPoint) editFeatureGeometry;
+                    point.setCoordinates(geoPt.getX(), geoPt.getY());
+                    break;
+
+                case GeoConstants.GTMultiPoint:
+                    GeoMultiPoint multiPoint = (GeoMultiPoint) editFeatureGeometry;
+                    // TODO: make for all points
+                    multiPoint.get(0).setCoordinates(geoPt.getX(), geoPt.getY());
+                    break;
+            }
 
             invalidate();
         }
@@ -367,8 +383,7 @@ public class MapViewEditable extends MapView {
 
         List<Layer> geoJsonLayers = new ArrayList<Layer>();
         addToListLayersByType(geoJsonLayers, LAYERTYPE_LOCAL_GEOJSON);
-        // TODO: for LAYERTYPE_NDW_VECTOR
-//        addToListLayersByType(geoJsonLayers, LAYERTYPE_NDW_VECTOR);
+        addToListLayersByType(geoJsonLayers, LAYERTYPE_NDW_VECTOR);
 
         switch (geoJsonLayers.size()) {
             case 0:
@@ -449,13 +464,7 @@ public class MapViewEditable extends MapView {
                 screenPoint.getY() - tolerancePX, screenPoint.getY() + tolerancePX);
         GeoEnvelope geoEnvelope = mDisplay.screenToMap(screenEnvelope);
 
-        Feature selectedFeature = layer.getSelectedFeature(geoEnvelope);
-
-        if (selectedFeature != null) {
-            return selectedFeature;
-        }
-
-        return null;
+        return layer.getSelectedFeature(geoEnvelope);
     }
 
     public boolean isEditModeActive() {

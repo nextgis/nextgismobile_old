@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.nextgis.mobile.util.DisplayConstants.*;
+import static com.nextgis.mobile.util.GeoConstants.GTMultiPoint;
 import static com.nextgis.mobile.util.GeoConstants.GTPoint;
 
 public class LocalGeoJsonEditLayer extends LocalGeoJsonLayer {
@@ -46,18 +47,23 @@ public class LocalGeoJsonEditLayer extends LocalGeoJsonLayer {
     public LocalGeoJsonEditLayer(MapBase map, File path, JSONObject config) {
         super(map, path, config);
 
-        // TODO + GTMultiPoint
-        if(mGeometryType == GTPoint) {
-            EditMarkerStyle style =
-                    new EditMarkerStyle(Color.BLUE, Color.BLACK, mPointSize, MarkerEditStyleCircle,
-                            getContext());
-            style.setWidth(2);
-            mRenderer = new EditFeatureRenderer(this, style);
-
-            if (mFeatures.size() > 0) { // TODO: it is hack
-                mEditFeature = mFeatures.get(0);
-            }
+        if (mFeatures.size() > 0) { // TODO: it is hack
+            mEditFeature = mFeatures.get(0);
         }
+
+        EditMarkerStyle style;
+
+        switch (mGeometryType) {
+            case GTPoint:
+            case GTMultiPoint:
+            default: // TODO: remove it
+                style = new EditMarkerStyle(Color.GREEN, Color.BLACK, mPointSize,
+                        MarkerEditStyleCircle, getContext());
+                style.setWidth(2);
+                break;
+        }
+
+        mRenderer = new EditFeatureRenderer(this, style);
     }
 
     @Override
