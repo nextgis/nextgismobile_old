@@ -104,6 +104,10 @@ public class NgwAddConnectionDialog extends DialogFragment {
                 String login = edLogin.getText().toString();
                 String password = edPassword.getText().toString();
 
+                if (!url.substring(url.length()-1).equals("/")) {
+                    url += "/";
+                }
+
                 if (name.length() == 0) {
 
                     if (url.length() > 0) {
