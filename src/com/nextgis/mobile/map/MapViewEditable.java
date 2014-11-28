@@ -120,7 +120,7 @@ public class MapViewEditable extends MapView {
                 saveMap();
 
                 if (isEditModeActive()) {
-                    switchEditMode();
+                    switchMenuView();
                 }
 
                 break;
@@ -240,7 +240,7 @@ public class MapViewEditable extends MapView {
         super.loadMap();
 
         if (isEditModeActive()) {
-            switchEditMode();
+            switchMenuView();
         }
     }
 
@@ -474,15 +474,15 @@ public class MapViewEditable extends MapView {
     public void onSaveEditLayer() {
         saveEditableLayer();
         deleteEditLayer();
-        switchEditMode();
+        switchMenuView();
     }
 
     public void onCancelEditLayer() {
         deleteEditLayer();
-        switchEditMode();
+        switchMenuView();
     }
 
-    public void switchEditMode() {
-        ((MainActivity) getContext()).supportInvalidateOptionsMenu();
+    protected void switchMenuView() {
+        ((MainActivity) getContext()).switchMenuView();
     }
 }

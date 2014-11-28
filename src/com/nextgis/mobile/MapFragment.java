@@ -54,7 +54,7 @@ public class MapFragment extends Fragment implements MapEventListener {
 
     protected final static int mMargings = 10;
 
-    protected Context mContext;
+    protected Context mAppContext;
 
     protected MapView mMap;
     protected ImageView mivZoomIn;
@@ -68,43 +68,42 @@ public class MapFragment extends Fragment implements MapEventListener {
     protected ChangeLocationListener mChangeLocationListener;
     protected GpsStatusListener mGpsStatusListener;
 
+    protected SharedPreferences mPrefs;
     protected boolean mIsInfoPaneShow;
 
 
     private final class ChangeLocationListener implements LocationListener {
 
         public void onLocationChanged(Location location) {
-
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-            int nFormat = prefs.getInt(Constants.KEY_PREF_COORD_FORMAT + "_int",
+            int nFormat = mPrefs.getInt(Constants.KEY_PREF_COORD_FORMAT + "_int",
                     Location.FORMAT_SECONDS);
             DecimalFormat df = new DecimalFormat("0.0");
 
             TextView latText = (TextView) mInfoPane.findViewById(R.id.lat_text);
             latText.setText(PositionFragment.formatLat(
-                    location.getLatitude(), nFormat, mContext.getResources()) +
-                    mContext.getResources().getText(R.string.coord_lat));
+                    location.getLatitude(), nFormat, mAppContext.getResources()) +
+                    mAppContext.getResources().getText(R.string.coord_lat));
 
             TextView lonText = (TextView) mInfoPane.findViewById(R.id.lon_text);
             lonText.setText(PositionFragment.formatLng(
-                    location.getLongitude(), nFormat, mContext.getResources()) +
-                    mContext.getResources().getText(R.string.coord_lon));
+                    location.getLongitude(), nFormat, mAppContext.getResources()) +
+                    mAppContext.getResources().getText(R.string.coord_lon));
 
             TextView speedText = (TextView) mInfoPane.findViewById(R.id.speed_text);
             double speed = location.getSpeed() * 3.6; //to km/h
             speedText.setText("" + df.format(speed) + " " +
-                    mContext.getString(R.string.info_speed_val));
+                    mAppContext.getString(R.string.info_speed_val));
 
             TextView heightText = (TextView) mInfoPane.findViewById(R.id.height_text);
             double height = location.getAltitude();
             heightText.setText("" + df.format(height) + " " +
-                    mContext.getString(R.string.info_height_val));
+                    mAppContext.getString(R.string.info_height_val));
 
             TextView accuracyText = (TextView) mInfoPane.findViewById(R.id.accuracy_text);
             float accuracy = location.getAccuracy();
-            accuracyText.setText(mContext.getString(R.string.info_accuracy) + " " +
+            accuracyText.setText(mAppContext.getString(R.string.info_accuracy) + " " +
                     df.format(accuracy) + " " +
-                    mContext.getString(R.string.info_accuracy_val));
+                    mAppContext.getString(R.string.info_accuracy_val));
         }
 
         public void onProviderDisabled(String arg0) {
@@ -139,27 +138,37 @@ public class MapFragment extends Fragment implements MapEventListener {
 
                 TextView satCountText = (TextView) mInfoPane.findViewById(R.id.sat_count_text);
                 satCountText.setText(satCount > 0
-                        ? mContext.getString(R.string.info_sat_count) + " " + satCount + " " +
-                        mContext.getString(R.string.info_sat_count_val)
+                        ? mAppContext.getString(R.string.info_sat_count) + " " + satCount + " " +
+                        mAppContext.getString(R.string.info_sat_count_val)
                         : "-");
             }
         }
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+
+        mAppContext = getActivity().getApplicationContext();
+
+        mLocationManager = (LocationManager) mAppContext.getSystemService(Context.LOCATION_SERVICE);
+        mChangeLocationListener = new ChangeLocationListener();
+        mGpsStatusListener = new GpsStatusListener();
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(mAppContext);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        mContext = getActivity().getApplicationContext();
-
-        if (mMap == null) {
-            MainActivity activity = (MainActivity) getActivity();
-            mMap = activity.getMap();
-            mMap.addListener(this);
-        }
+        MainActivity mainActivity = (MainActivity) getActivity();
+        mMap = mainActivity.getMap();
+        mMap.addListener(this);
 
         View view = inflater.inflate(R.layout.mapfragment, container, false);
         FrameLayout layout = (FrameLayout) view.findViewById(R.id.mapholder);
+
         //search relative view of map, if not found - add it
         if (mMap != null) {
             mMapRelativeLayout = (RelativeLayout) layout.findViewById(R.id.maprl);
@@ -172,14 +181,15 @@ public class MapFragment extends Fragment implements MapEventListener {
         }
 
         mInfoPane = inflater.inflate(R.layout.infopane, null, true);
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        mIsInfoPaneShow = prefs.getBoolean(Constants.PREFS_SHOW_INFO, false);
-
-        mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
-        mChangeLocationListener = new ChangeLocationListener();
-        mGpsStatusListener = new GpsStatusListener();
+        mIsInfoPaneShow = mPrefs.getBoolean(Constants.PREFS_SHOW_INFO, false);
 
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        mMapRelativeLayout.removeView(mMap);
+        super.onDestroyView();
     }
 
     protected void addMapButtons(RelativeLayout rl) {
@@ -324,15 +334,15 @@ public class MapFragment extends Fragment implements MapEventListener {
 
             int nHeight = 0;
 
-            if (mContext.getResources().getConfiguration().orientation !=
+            if (mAppContext.getResources().getConfiguration().orientation !=
                     Configuration.ORIENTATION_LANDSCAPE) {
 
                 TypedValue typeValue = new TypedValue();
 
-                mContext.getTheme().resolveAttribute(
+                mAppContext.getTheme().resolveAttribute(
                         android.R.attr.actionBarSize, typeValue, true);
                 nHeight = TypedValue.complexToDimensionPixelSize(
-                        typeValue.data, mContext.getResources().getDisplayMetrics());
+                        typeValue.data, mAppContext.getResources().getDisplayMetrics());
 
                 //getTheme().resolveAttribute(android.R.attr.actionBarSize, typeValue, true);
                 //nHeight = TypedValue.complexToDimensionPixelSize(
@@ -363,9 +373,8 @@ public class MapFragment extends Fragment implements MapEventListener {
     public void onResume() {
         super.onResume();
 
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mIsInfoPaneShow = mPrefs.getBoolean(Constants.PREFS_SHOW_INFO, false);
 
-        mIsInfoPaneShow = prefs.getBoolean(Constants.PREFS_SHOW_INFO, false);
         if (mIsInfoPaneShow) {
             showInfoPane(true);
         }
@@ -373,8 +382,7 @@ public class MapFragment extends Fragment implements MapEventListener {
 
     @Override
     public void onPause() {
-        SharedPreferences.Editor edit =
-                PreferenceManager.getDefaultSharedPreferences(mContext).edit();
+        SharedPreferences.Editor edit = mPrefs.edit();
 
         edit.putBoolean(Constants.PREFS_SHOW_INFO, mIsInfoPaneShow);
         edit.commit();
