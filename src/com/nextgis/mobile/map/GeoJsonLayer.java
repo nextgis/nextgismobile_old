@@ -42,7 +42,7 @@ import static com.nextgis.mobile.util.DisplayConstants.*;
 
 public abstract class GeoJsonLayer extends Layer{
     protected List<Feature> mFeatures;
-    protected List<Field> mFields;
+    protected List<FieldKey> mFieldKeys;
     protected int mGeometryType;
     protected GeoEnvelope mExtents;
     protected float mPointSize = 6;
@@ -107,7 +107,7 @@ public abstract class GeoJsonLayer extends Layer{
             GeoGeometry geometry = GeoGeometry.fromJson(jsonGeometry);
             geometry.setCRS(CRS_WEB_MERCATOR);
 
-            Feature feature = new Feature(mFields);
+            Feature feature = new Feature(mFieldKeys);
             feature.setGeometry(geometry);
             //TODO: add to RTree for fast spatial queries
 
@@ -118,7 +118,7 @@ public abstract class GeoJsonLayer extends Layer{
                 String key = iter.next();
                 Object value = jsonAttributes.get(key);
 
-                feature.setField(key, value);
+                feature.setFieldValue(key, value);
             }
 
             mFeatures.add(feature);
@@ -148,13 +148,13 @@ public abstract class GeoJsonLayer extends Layer{
             mExtents = new GeoEnvelope();
             mExtents.fromJSON(config.getJSONObject(JSON_BBOX_KEY));
             //add fields description
-            mFields = new ArrayList<Field>();
+            mFieldKeys = new ArrayList<FieldKey>();
             JSONArray oJSONFields = config.getJSONArray(JSON_FIELDS_KEY);
             for(int i = 0; i < oJSONFields.length(); i++){
                 JSONObject jsonField = oJSONFields.getJSONObject(i);
-                Field field = new Field();
-                field.fromJSON(jsonField);
-                mFields.add(field);
+                FieldKey fieldKey = new FieldKey();
+                fieldKey.fromJSON(jsonField);
+                mFieldKeys.add(fieldKey);
             }
             loadFeatures();
 
@@ -175,8 +175,8 @@ public abstract class GeoJsonLayer extends Layer{
         rootObject.put(JSON_BBOX_KEY, oJSONBBox);
         //add fields description
         JSONArray oJSONFields = new JSONArray();
-        for(Field field : mFields){
-            oJSONFields.put(field.toJSON());
+        for(FieldKey fieldKey : mFieldKeys){
+            oJSONFields.put(fieldKey.toJSON());
         }
         rootObject.put(JSON_FIELDS_KEY, oJSONFields);
         return rootObject;

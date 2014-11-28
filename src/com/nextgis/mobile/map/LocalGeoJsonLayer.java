@@ -40,7 +40,7 @@ import static com.nextgis.mobile.util.GeoConstants.*;
 
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.Feature;
-import com.nextgis.mobile.datasource.Field;
+import com.nextgis.mobile.datasource.FieldKey;
 import com.nextgis.mobile.datasource.Geo;
 import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.GeoGeometry;
@@ -256,6 +256,9 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
         create(map, layerName, features);
     }
 
+    /**
+     * Create a LocalGeoJsonLayer from the GeoJson data submitted by features.
+     */
     protected void create(
             final MapBase map, String layerName, List<Feature> features)
             throws JSONException, IOException {
@@ -268,7 +271,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
 
         Feature feature = features.get(0);
         int geometryType = feature.getGeometry().getType();
-        List<Field> fields = feature.getFields();
+        List<FieldKey> fieldKeys = feature.getFieldKeys();
 
         //create layer description file
         JSONObject oJSONRoot = createDetails();
@@ -287,8 +290,8 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
 
         //add fields description
         JSONArray oJSONFields = new JSONArray();
-        for (Field field : fields) {
-            oJSONFields.put(field.toJSON());
+        for (FieldKey fieldKey : fieldKeys) {
+            oJSONFields.put(fieldKey.toJSON());
         }
         oJSONRoot.put(JSON_FIELDS_KEY, oJSONFields);
 
@@ -323,7 +326,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
             throws JSONException {
 
         List<Feature> features = new ArrayList<Feature>();
-        List<Field> fields = new ArrayList<Field>();
+        List<FieldKey> fieldKeys = new ArrayList<FieldKey>();
         int geometryType = GTNone;
 
         progressDialog.setMessage(context.getString(R.string.message_loading_progress));
@@ -351,7 +354,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                 geometry.setCRS(CRS_WEB_MERCATOR);
             }
 
-            Feature feature = new Feature(fields);
+            Feature feature = new Feature(fieldKeys);
             feature.setGeometry(geometry);
             //TODO: add to RTree for fast spatial queries
 
@@ -377,20 +380,20 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                     //the some list - need to check it type FTIntegerList, FTRealList, FTStringList
                 }
 
-                int nField = -1;
-                for (int j = 0; j < fields.size(); j++) {
-                    if (fields.get(j).getFieldName().equals(key)) {
-                        nField = j;
+                int fieldIndex = -1;
+                for (int j = 0; j < fieldKeys.size(); j++) {
+                    if (fieldKeys.get(j).getFieldName().equals(key)) {
+                        fieldIndex = j;
                     }
                 }
 
-                if (nField == -1) { //add new field
-                    Field field = new Field(key, key, nType);
-                    nField = fields.size();
-                    fields.add(field);
+                if (fieldIndex == -1) { //add new field
+                    FieldKey fieldKey = new FieldKey(key, key, nType);
+                    fieldIndex = fieldKeys.size();
+                    fieldKeys.add(fieldKey);
                 }
 
-                feature.setField(nField, value);
+                feature.setFieldValue(fieldIndex, value);
             }
 
             features.add(feature);

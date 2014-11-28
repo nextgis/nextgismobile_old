@@ -485,4 +485,8 @@ public class MapViewEditable extends MapView {
     protected void switchMenuView() {
         ((MainActivity) getContext()).switchMenuView();
     }
+
+    public LocalGeoJsonEditLayer getEditLayer() {
+        return mEditLayer;
+    }
 }

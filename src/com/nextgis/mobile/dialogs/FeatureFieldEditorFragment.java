@@ -61,7 +61,8 @@ public class FeatureFieldEditorFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
-//        mEditFeature = getActivity();
+//        mEditFeature = ((MainActivity) getActivity()).getMap().getEditLayer().getEditFeature();
+//        mEditFeature.getFieldKeys();
 
         ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
         int actionBarHeight = actionBar.getHeight();

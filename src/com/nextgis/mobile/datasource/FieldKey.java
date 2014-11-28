@@ -25,16 +25,16 @@ import org.json.JSONObject;
 
 import static com.nextgis.mobile.util.Constants.*;
 
-public class Field implements JSONStore{
+public class FieldKey implements JSONStore{
     protected String mFieldName;
     protected String mFieldAlias;
     protected int mType;
 
-    public Field(){
+    public FieldKey(){
 
     }
 
-    public Field(String fieldName, String fieldAlias, int type) {
+    public FieldKey(String fieldName, String fieldAlias, int type) {
         mFieldName = fieldName;
         if(fieldAlias.length() == 0)
             mFieldAlias = mFieldName;

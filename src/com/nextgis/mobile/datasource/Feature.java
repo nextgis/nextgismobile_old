@@ -20,8 +20,6 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,17 +34,17 @@ public class Feature implements JSONStore {
 
     protected int mID = -1;
     protected GeoGeometry mGeometry;
-    protected List<Object> mFieldData;
-    protected List<Field> mFields;
+    protected List<Object> mFieldValues;
+    protected List<FieldKey> mFieldKeys;
 
-    public Feature(List<Field> fields) {
-        mFields = fields;
-        mFieldData = new ArrayList<Object>(mFields.size());
+    public Feature(List<FieldKey> fieldKeys) {
+        mFieldKeys = fieldKeys;
+        mFieldValues = new ArrayList<Object>(mFieldKeys.size());
     }
 
     public int getID() {
         if (mID == -1) {
-            Object field = getField(GEOJSON_ID);
+            Object field = getFieldValue(GEOJSON_ID);
 
             if (field != null) {
                 mID = (Integer) field;
@@ -64,46 +62,47 @@ public class Feature implements JSONStore {
         return mGeometry;
     }
 
-    public boolean setField(int index, Object value){
-        if(index < 0 || index >= mFields.size())
+    public boolean setFieldValue(int index, Object value){
+        if(index < 0 || index >= mFieldKeys.size())
             return false;
-        if(mFieldData.size() <= index){
-            for(int i = mFieldData.size(); i <= index; i++){
-                mFieldData.add(null);
+
+        if(mFieldValues.size() <= index){
+            for(int i = mFieldValues.size(); i <= index; i++){
+                mFieldValues.add(null);
             }
         }
 
-        mFieldData.set(index, value);
+        mFieldValues.set(index, value);
         return true;
     }
 
-    public boolean setField(String fieldName, Object value){
-        int index = getFieldIndex(fieldName);
-        return setField(index, value);
+    public boolean setFieldValue(String fieldName, Object value){
+        int index = getFieldValueIndex(fieldName);
+        return setFieldValue(index, value);
     }
 
-    public Object getField(int index) {
-        if (index < 0 || index >= mFields.size() || index >= mFieldData.size())
+    public Object getFieldValue(int index) {
+        if (index < 0 || index >= mFieldKeys.size() || index >= mFieldValues.size())
             return null;
 
-        return mFieldData.get(index);
+        return mFieldValues.get(index);
     }
 
-    public Object getField(String fieldName){
-        int index = getFieldIndex(fieldName);
-        return getField(index);
+    public Object getFieldValue(String fieldName){
+        int index = getFieldValueIndex(fieldName);
+        return getFieldValue(index);
     }
 
-    public int getFieldIndex(String fieldName){
-        for(int i = 0; i < mFields.size(); i++){
-            if(mFields.get(i).getFieldName().equals(fieldName))
+    public int getFieldValueIndex(String fieldName){
+        for(int i = 0; i < mFieldKeys.size(); i++){
+            if(mFieldKeys.get(i).getFieldName().equals(fieldName))
                 return i;
         }
         return NOT_FOUND;
     }
 
-    public List<Field> getFields() {
-        return mFields;
+    public List<FieldKey> getFieldKeys() {
+        return mFieldKeys;
     }
 
     @Override
@@ -113,10 +112,11 @@ public class Feature implements JSONStore {
         oJSONOut.put(GEOJSON_GEOMETRY, mGeometry.toJSON());
         JSONObject oJSONProp = new JSONObject();
 
-        for(int i = 0; i < mFieldData.size(); i++){
-            String key = mFields.get(i).getFieldName();
-            oJSONProp.put(key, mFieldData.get(i));
+        for(int i = 0; i < mFieldValues.size(); i++){
+            String key = mFieldKeys.get(i).getFieldName();
+            oJSONProp.put(key, mFieldValues.get(i));
         }
+
         oJSONOut.put(GEOJSON_PROPERTIES, oJSONProp);
         return oJSONOut;
     }
@@ -125,15 +125,17 @@ public class Feature implements JSONStore {
     public void fromJSON(JSONObject jsonObject) throws JSONException {
         if(!jsonObject.getString(GEOJSON_TYPE).equals(GEOJSON_TYPE_Feature))
             throw new JSONException("not valid geojson feature");
+
         JSONObject oJSONGeom = jsonObject.getJSONObject(GEOJSON_GEOMETRY);
         mGeometry = GeoGeometry.fromJson(oJSONGeom);
         JSONObject jsonAttributes = jsonObject.getJSONObject(GEOJSON_PROPERTIES);
+
         Iterator<String> iter = jsonAttributes.keys();
         while (iter.hasNext()) {
             String key = iter.next();
             Object value = jsonAttributes.get(key);
 
-            mFieldData.add(value);
+            mFieldValues.add(value);
         }
     }
 }
