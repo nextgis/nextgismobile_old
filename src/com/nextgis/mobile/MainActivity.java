@@ -40,7 +40,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.nextgis.mobile.dialogs.FeatureFieldEditorFragment;
+import com.nextgis.mobile.dialogs.FieldEditorFragment;
 import com.nextgis.mobile.dialogs.NgwResourcesDialog;
 import com.nextgis.mobile.map.MapViewEditable;
 import com.nextgis.mobile.services.TrackerService;
@@ -58,6 +58,7 @@ public class MainActivity extends ActionBarActivity {
     protected boolean mbGpxRecord;
     protected LayersFragment mLayersFragment;
     protected boolean warInfoPaneShowBeforeEditMode;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -220,7 +221,7 @@ public class MainActivity extends ActionBarActivity {
     protected int getEditState() {
         if (mMap == null) return EDIT_STATE_NONE;
 
-        FeatureFieldEditorFragment fieldEditor = (FeatureFieldEditorFragment)
+        FieldEditorFragment fieldEditor = (FieldEditorFragment)
                 getSupportFragmentManager().findFragmentByTag("FieldEditor");
 
         if (fieldEditor != null) return EDIT_STATE_FIELD_EDIT;
@@ -275,6 +276,12 @@ public class MainActivity extends ActionBarActivity {
                 return true;
             case R.id.menu_cancel:
                 mMap.onCancelEditLayer();
+                return true;
+            case R.id.menu_edit_fields_save:
+                onSaveEditFeatureAttributes();
+                return true;
+            case R.id.menu_edit_fields_cancel:
+                onCancelEditFeatureAttributes();
                 return true;
         }
 
@@ -403,11 +410,11 @@ public class MainActivity extends ActionBarActivity {
 
     public void onEditFeatureAttributes() {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        FeatureFieldEditorFragment fieldEditor = (FeatureFieldEditorFragment)
+        FieldEditorFragment fieldEditor = (FieldEditorFragment)
                 getSupportFragmentManager().findFragmentByTag("FieldEditor");
 
         if (fieldEditor == null) {
-            fieldEditor = new FeatureFieldEditorFragment();
+            fieldEditor = new FieldEditorFragment();
         }
 
         fragmentTransaction.replace(R.id.map, fieldEditor, "FieldEditor");
@@ -417,6 +424,24 @@ public class MainActivity extends ActionBarActivity {
 
         switchMenuView();
     }
+
+    public void onSaveEditFeatureAttributes() {
+        FieldEditorFragment fieldEditor = (FieldEditorFragment)
+                getSupportFragmentManager().findFragmentByTag("FieldEditor");
+
+        if (fieldEditor != null) {
+            fieldEditor.saveEditedFields();
+        }
+
+        getSupportFragmentManager().popBackStackImmediate();
+        switchMenuView();
+    }
+
+    public void onCancelEditFeatureAttributes() {
+        getSupportFragmentManager().popBackStackImmediate();
+        switchMenuView();
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -609,7 +634,7 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        FeatureFieldEditorFragment fieldEditor = (FeatureFieldEditorFragment)
+        FieldEditorFragment fieldEditor = (FieldEditorFragment)
                 getSupportFragmentManager().findFragmentByTag("FieldEditor");
         mIsFieldEditorVisible = fieldEditor != null && fieldEditor.isVisible();
 

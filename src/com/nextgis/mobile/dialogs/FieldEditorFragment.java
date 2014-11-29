@@ -20,6 +20,7 @@
  ****************************************************************************/
 package com.nextgis.mobile.dialogs;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -28,32 +29,25 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
+import android.widget.AdapterView;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
+import android.widget.ListView;
 import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.Feature;
+import com.nextgis.mobile.datasource.Field;
+import com.nextgis.mobile.map.LocalGeoJsonEditLayer;
 
-public class FeatureFieldEditorFragment extends Fragment {
+import java.util.List;
 
+public class FieldEditorFragment extends Fragment {
+
+    protected LocalGeoJsonEditLayer mEditLayer;
     protected Feature mEditFeature;
+    protected List<Field> mFields;
+
     protected int mMarginDP;
     protected int mMarginTop;
-
-
-    protected OnEditFieldsListener mOnEditFieldsListener;
-
-
-    public interface OnEditFieldsListener {
-        void onEditFields();
-    }
-
-    public void setOnEditFieldsListener(OnEditFieldsListener onEditFieldsListener) {
-        mOnEditFieldsListener = onEditFieldsListener;
-    }
 
 
     @Override
@@ -61,8 +55,9 @@ public class FeatureFieldEditorFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
-//        mEditFeature = ((MainActivity) getActivity()).getMap().getEditLayer().getEditFeature();
-//        mEditFeature.getFieldKeys();
+        mEditLayer = ((MainActivity) getActivity()).getMap().getEditLayer();
+        mEditFeature = mEditLayer.getEditFeature();
+        mFields = mEditFeature.getFields();
 
         ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
         int actionBarHeight = actionBar.getHeight();
@@ -71,45 +66,67 @@ public class FeatureFieldEditorFragment extends Fragment {
         mMarginTop = mMarginDP + actionBarHeight;
     }
 
-/*
-    @Override
-    public void onDestroyView() {
-        if (getDialog() != null && getRetainInstance())
-            getDialog().setOnDismissListener(null);
-        super.onDestroyView();
-    }
-*/
-
     @Nullable
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         MainActivity mainActivity = (MainActivity) getActivity();
-
         View view = inflater.inflate(R.layout.feature_field_editor, container, false);
+
+        int marginBottom = mMarginDP;
+        if (getActivity().getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_PORTRAIT) marginBottom = mMarginTop;
 
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-        // TODO: instead mMarginTop use 0 for bottom in horizontal mode
-        layoutParams.setMargins(mMarginDP, mMarginTop, mMarginDP, mMarginTop);
+        layoutParams.setMargins(mMarginDP, mMarginTop, mMarginDP, marginBottom);
 
-        ScrollView scrollView = (ScrollView) view.findViewById(R.id.field_editor_scroll);
-        scrollView.setLayoutParams(layoutParams);
+        FrameLayout frame = (FrameLayout) view.findViewById(R.id.field_editor_frame);
+        frame.setLayoutParams(layoutParams);
 
-        LinearLayout fieldEditorLayout = (LinearLayout) view.findViewById(R.id.field_editor);
+        ListView fieldListView = (ListView) view.findViewById(R.id.field_list_view);
+        final FieldListAdapter fieldListAdapter = new FieldListAdapter(mainActivity, mFields);
+        fieldListView.setAdapter(fieldListAdapter);
 
-        for (int i = 0; i < 20; ++i) {
-            final TextView fieldName = new TextView(mainActivity);
-            fieldName.setText("Name:");
+        fieldListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                final Field field = (Field) fieldListAdapter.getItem(position);
 
-            final EditText fieldValue = new EditText(mainActivity);
-            fieldValue.setText("Street Sea");
+                FieldEditorDialog editDialog = new FieldEditorDialog();
 
-            fieldEditorLayout.addView(fieldName);
-            fieldEditorLayout.addView(fieldValue);
-        }
+                editDialog.setOnEditFieldListener(
+                        new FieldEditorDialog.OnEditFieldListener() {
+                            @Override
+                            public void OnEditField(Object fieldValue) {
+                                if (fieldValue == null) return;
+
+                                field.setFieldValue(fieldValue);
+                                fieldListAdapter.notifyDataSetChanged();
+                            }
+                        },
+                        field);
+
+                editDialog.show(getActivity().getSupportFragmentManager(), "FieldEditorDialog");
+            }
+        });
 
         return view;
+    }
+
+    public void saveEditedFields() {
+        boolean isEdited = false;
+
+        for (Field field : mFields) {
+            if (field.isFieldValueEdited()) {
+                isEdited = true;
+                mEditFeature.setFieldValue(field.getFieldKey().getFieldName(), field.getFieldValue());
+            }
+        }
+
+        if (isEdited) {
+            mEditLayer.save();
+        }
     }
 }

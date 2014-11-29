@@ -185,7 +185,7 @@ public class MapViewEditable extends MapView {
                 Feature editableFeature = editableLayer.getFeatureById(editFeature.getID());
 
                 if (editableFeature != null) {
-                    editableFeature.setGeometry(editFeature.getGeometry());
+                    editableFeature.setParameters(editFeature);
                     editableLayer.save();
 
                     Toast.makeText(getContext(), getContext().getString(R.string.layer_is_saved),

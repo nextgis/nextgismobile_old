@@ -135,8 +135,7 @@ public class GeoJsonLayersListAdapter extends BaseAdapter implements Filterable 
         //Invoked in the UI thread to publish the filtering results in the user interface.
         @SuppressWarnings("unchecked")
         @Override
-        protected void publishResults(CharSequence constraint,
-                                      FilterResults results) {
+        protected void publishResults(CharSequence constraint, FilterResults results) {
             mFilteredLayerList = (List<Layer>) results.values;
             notifyDataSetChanged();
         }

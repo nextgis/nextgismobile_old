@@ -105,6 +105,24 @@ public class Feature implements JSONStore {
         return mFieldKeys;
     }
 
+    public List<Field> getFields() {
+        List<Field> fields = new ArrayList<Field>(mFieldKeys.size());
+
+        for (FieldKey fieldKey : mFieldKeys) {
+            Object fieldValue = getFieldValue(fieldKey.getFieldName());
+            Field field = new Field(fieldKey, fieldValue);
+            fields.add(field);
+        }
+
+        return fields;
+    }
+
+    public void setParameters(Feature feature) {
+        mGeometry = feature.mGeometry;
+        mFieldKeys = feature.mFieldKeys;
+        mFieldValues = feature.mFieldValues;
+    }
+
     @Override
     public JSONObject toJSON() throws JSONException {
         JSONObject oJSONOut = new JSONObject();

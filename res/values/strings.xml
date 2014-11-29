@@ -232,4 +232,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     <string name="connection_error">Connection ERROR</string>
 
+    <string name="feature_properties">Feature properties</string>
+    <string name="field_value_editing">Field value editing</string>
+    <string name="editing_is_not_possible">Editing is NOT possible!</string>
+
 </resources>
