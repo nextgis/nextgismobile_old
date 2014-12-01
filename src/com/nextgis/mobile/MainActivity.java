@@ -162,6 +162,7 @@ public class MainActivity extends ActionBarActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         if (!mLayersFragment.isDrawerOpen()) {
             getMenuInflater().inflate(R.menu.main, menu);
+            MenuItem changeAttribute = menu.findItem(R.id.menu_ef_change_attributes);
 
             switch (getEditState()) {
                 case EDIT_STATE_NONE:
@@ -180,6 +181,14 @@ public class MainActivity extends ActionBarActivity {
                     menu.setGroupVisible(R.id.group_menu_main, false);
                     menu.setGroupVisible(R.id.group_menu_edit_layer, false);
                     menu.setGroupVisible(R.id.group_menu_edit_fields, true);
+                    changeAttribute.setVisible(false);
+                    break;
+
+                case EDIT_STATE_FIELD_VIEW:
+                    menu.setGroupVisible(R.id.group_menu_main, false);
+                    menu.setGroupVisible(R.id.group_menu_edit_layer, false);
+                    menu.setGroupVisible(R.id.group_menu_edit_fields, true);
+                    changeAttribute.setVisible(true);
                     break;
             }
 
@@ -217,6 +226,7 @@ public class MainActivity extends ActionBarActivity {
     protected static final int EDIT_STATE_NONE = 0;
     protected static final int EDIT_STATE_LAYER_EDIT = 1;
     protected static final int EDIT_STATE_FIELD_EDIT = 2;
+    protected static final int EDIT_STATE_FIELD_VIEW = 3;
 
     protected int getEditState() {
         if (mMap == null) return EDIT_STATE_NONE;
@@ -224,7 +234,8 @@ public class MainActivity extends ActionBarActivity {
         FieldEditorFragment fieldEditor = (FieldEditorFragment)
                 getSupportFragmentManager().findFragmentByTag("FieldEditor");
 
-        if (fieldEditor != null) return EDIT_STATE_FIELD_EDIT;
+        if (fieldEditor != null) return fieldEditor.isEditMode()
+                ? EDIT_STATE_FIELD_EDIT : EDIT_STATE_FIELD_VIEW;
 
         if (mMap.isEditModeActive()) return EDIT_STATE_LAYER_EDIT;
 
@@ -277,10 +288,13 @@ public class MainActivity extends ActionBarActivity {
             case R.id.menu_cancel:
                 mMap.onCancelEditLayer();
                 return true;
-            case R.id.menu_edit_fields_save:
+            case R.id.menu_ef_save:
                 onSaveEditFeatureAttributes();
                 return true;
-            case R.id.menu_edit_fields_cancel:
+            case R.id.menu_ef_change_attributes:
+                onEditFeatureAttributesFromShow();
+                return true;
+            case R.id.menu_ef_cancel:
                 onCancelEditFeatureAttributes();
                 return true;
         }
@@ -415,6 +429,7 @@ public class MainActivity extends ActionBarActivity {
 
         if (fieldEditor == null) {
             fieldEditor = new FieldEditorFragment();
+            fieldEditor.setParams(this, null, null, true);
         }
 
         fragmentTransaction.replace(R.id.map, fieldEditor, "FieldEditor");
@@ -435,6 +450,16 @@ public class MainActivity extends ActionBarActivity {
 
         getSupportFragmentManager().popBackStackImmediate();
         switchMenuView();
+    }
+
+    public void onEditFeatureAttributesFromShow() {
+        FieldEditorFragment fieldEditor = (FieldEditorFragment)
+                getSupportFragmentManager().findFragmentByTag("FieldEditor");
+
+        if (fieldEditor != null) {
+            fieldEditor.onEditMode();
+            switchMenuView();
+        }
     }
 
     public void onCancelEditFeatureAttributes() {

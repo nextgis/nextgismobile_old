@@ -26,6 +26,7 @@ import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Message;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -40,6 +41,7 @@ import com.nextgis.mobile.datasource.GeoEnvelope;
 import com.nextgis.mobile.datasource.GeoGeometry;
 import com.nextgis.mobile.datasource.GeoMultiPoint;
 import com.nextgis.mobile.datasource.GeoPoint;
+import com.nextgis.mobile.dialogs.FieldEditorFragment;
 import com.nextgis.mobile.display.EditMarkerStyle;
 import com.nextgis.mobile.util.FileUtil;
 import com.nextgis.mobile.util.GeoConstants;
@@ -447,6 +449,31 @@ public class MapViewEditable extends MapView {
                         reportError(e.getLocalizedMessage());
                     }
 
+                    dialog.dismiss();
+                }
+            });
+
+            btnShowAttributes.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MainActivity mainActivity = (MainActivity) getContext();
+
+                    FragmentTransaction fragmentTransaction = mainActivity
+                            .getSupportFragmentManager().beginTransaction();
+                    FieldEditorFragment fieldEditor = (FieldEditorFragment)
+                            mainActivity.getSupportFragmentManager().findFragmentByTag("FieldEditor");
+
+                    if (fieldEditor == null) {
+                        fieldEditor = new FieldEditorFragment();
+                        fieldEditor.setParams(null, layer, selectedFeature, false);
+                    }
+
+                    fragmentTransaction.replace(R.id.map, fieldEditor, "FieldEditor");
+                    fragmentTransaction.addToBackStack(null);
+                    fragmentTransaction.commit();
+                    mainActivity.getSupportFragmentManager().executePendingTransactions();
+
+                    switchMenuView();
                     dialog.dismiss();
                 }
             });

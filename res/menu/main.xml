@@ -102,17 +102,24 @@
         android:id="@+id/group_menu_edit_fields">
 
         <item
-            android:id="@+id/menu_edit_fields_save"
+            android:id="@+id/menu_ef_save"
             android:title="@string/save_layer"
             android:icon="@drawable/ic_action_accept"
             android:orderInCategory="1"
             sabd:showAsAction="always"/>
 
         <item
-            android:id="@+id/menu_edit_fields_cancel"
+            android:id="@+id/menu_ef_change_attributes"
+            android:title="@string/change_attributes"
+            android:icon="@drawable/ic_action_settings"
+            android:orderInCategory="2"
+            sabd:showAsAction="always"/>
+
+        <item
+            android:id="@+id/menu_ef_cancel"
             android:title="@string/cancel"
             android:icon="@drawable/ic_action_cancel"
-            android:orderInCategory="2"
+            android:orderInCategory="3"
             sabd:showAsAction="always"/>
 
     </group>

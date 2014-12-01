@@ -32,19 +32,24 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import com.nextgis.mobile.MainActivity;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.datasource.Feature;
 import com.nextgis.mobile.datasource.Field;
+import com.nextgis.mobile.map.GeoJsonLayer;
 import com.nextgis.mobile.map.LocalGeoJsonEditLayer;
 
 import java.util.List;
 
 public class FieldEditorFragment extends Fragment {
 
-    protected LocalGeoJsonEditLayer mEditLayer;
-    protected Feature mEditFeature;
+    protected GeoJsonLayer mLayer;
+    protected Feature mFeature;
     protected List<Field> mFields;
+    protected boolean mIsEditMode = false;
+    protected TextView mTitle;
+    protected ListView mFieldListView;
 
     protected int mMarginDP;
     protected int mMarginTop;
@@ -54,10 +59,6 @@ public class FieldEditorFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-
-        mEditLayer = ((MainActivity) getActivity()).getMap().getEditLayer();
-        mEditFeature = mEditLayer.getEditFeature();
-        mFields = mEditFeature.getFields();
 
         ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
         int actionBarHeight = actionBar.getHeight();
@@ -82,14 +83,20 @@ public class FieldEditorFragment extends Fragment {
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
         layoutParams.setMargins(mMarginDP, mMarginTop, mMarginDP, marginBottom);
 
+        mTitle = (TextView) view.findViewById(R.id.field_editor_title);
+        mTitle.setText(mIsEditMode
+                ? mainActivity.getString(R.string.editing_of_feature_properties)
+                : mainActivity.getString(R.string.feature_properties));
+
         FrameLayout frame = (FrameLayout) view.findViewById(R.id.field_editor_frame);
         frame.setLayoutParams(layoutParams);
 
-        ListView fieldListView = (ListView) view.findViewById(R.id.field_list_view);
+        mFieldListView = (ListView) view.findViewById(R.id.field_list_view);
         final FieldListAdapter fieldListAdapter = new FieldListAdapter(mainActivity, mFields);
-        fieldListView.setAdapter(fieldListAdapter);
+        mFieldListView.setAdapter(fieldListAdapter);
+        mFieldListView.setEnabled(mIsEditMode);
 
-        fieldListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mFieldListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final Field field = (Field) fieldListAdapter.getItem(position);
@@ -115,18 +122,45 @@ public class FieldEditorFragment extends Fragment {
         return view;
     }
 
+    public void setParams(MainActivity mainActivity, GeoJsonLayer layer,
+                          Feature feature, boolean isEditMode) {
+
+        mIsEditMode = isEditMode;
+
+        if (mIsEditMode) {
+            mLayer = mainActivity.getMap().getEditLayer();
+            mFeature = ((LocalGeoJsonEditLayer) mLayer).getEditFeature();
+            mFields = mFeature.getFields();
+
+        } else {
+            mLayer = layer;
+            mFeature = feature;
+            mFields = mFeature.getFields();
+        }
+    }
+
+    public boolean isEditMode() {
+        return mIsEditMode;
+    }
+
+    public void onEditMode() {
+        mIsEditMode = true;
+        mTitle.setText(getActivity().getString(R.string.editing_of_feature_properties));
+        mFieldListView.setEnabled(true);
+    }
+
     public void saveEditedFields() {
         boolean isEdited = false;
 
         for (Field field : mFields) {
             if (field.isFieldValueEdited()) {
                 isEdited = true;
-                mEditFeature.setFieldValue(field.getFieldKey().getFieldName(), field.getFieldValue());
+                mFeature.setFieldValue(field.getFieldKey().getFieldName(), field.getFieldValue());
             }
         }
 
         if (isEdited) {
-            mEditLayer.save();
+            mLayer.save();
         }
     }
 }
