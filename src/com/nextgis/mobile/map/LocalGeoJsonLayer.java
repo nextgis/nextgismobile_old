@@ -230,7 +230,8 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
 
             if (crsName.equals("urn:ogc:def:crs:OGC:1.3:CRS84")) { // WGS84
                 isWGS84 = true;
-            } else if (crsName.equals("urn:ogc:def:crs:EPSG::3857")) { //Web Mercator
+            } else if (crsName.equals("urn:ogc:def:crs:EPSG::3857")
+                    || crsName.equals("EPSG:3857")) { //Web Mercator
                 isWGS84 = false;
             } else {
                 progressDialog.hide();
