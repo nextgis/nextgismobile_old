@@ -91,6 +91,9 @@ public interface Constants {
     public static final String TILE_EXT = ".tile";
     public static final String DATA_GEOJSON = "data.geojson";
     public static final String NGW_CONNECTIONS_JSON = "ngw_connections.json";
+    public static final String FORM_DATA_GEOJSON = "form_data.geojson";
+    public static final String FORM_XML = "form.xml";
+    public static final String CONNECTION_JSON = "connection.json";
 
     /**
      * message type
@@ -201,6 +204,7 @@ public interface Constants {
     public static final int LAYERTYPE_LOCAL_EDIT_GEOJSON = 6;
     public static final int LAYERTYPE_NDW_VECTOR = 7;
     public static final int LAYERTYPE_NDW_RASTER = 8;
+    public static final int LAYERTYPE_LOCAL_NGFP = 9;
 
 
     /**

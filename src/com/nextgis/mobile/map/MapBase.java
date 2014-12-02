@@ -299,6 +299,9 @@ public class MapBase extends View {
                 case LAYERTYPE_NDW_RASTER:
                     layer = new NgwRasterLayer(this, path, rootObject);
                     break;
+                case LAYERTYPE_LOCAL_NGFP:
+                    layer = new LocalNgfpLayer(this, path, rootObject);
+                    break;
                 case LAYERTYPE_NGW:
                     break;
             }

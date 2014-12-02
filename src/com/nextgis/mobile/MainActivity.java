@@ -276,6 +276,9 @@ public class MainActivity extends ActionBarActivity {
             case R.id.menu_add_json:
                 onAdd(DS_TYPE_LOCAL_GEOJSON);
                 return true;
+            case R.id.menu_add_ngfp:
+                onAdd(DS_TYPE_LOCAL_NGFP);
+                return true;
             case R.id.menu_add_ngw:
                 onAddNgwLayers();
                 return true;
@@ -391,16 +394,19 @@ public class MainActivity extends ActionBarActivity {
                 intent_zip.addCategory(Intent.CATEGORY_OPENABLE);
 
                 try {
-                    startActivityForResult(Intent.createChooser(intent_zip, getString(R.string.message_select_file)), DS_TYPE_ZIP);
+                    startActivityForResult(Intent.createChooser(intent_zip,
+                            getString(R.string.message_select_file)), DS_TYPE_ZIP);
                 } catch (ActivityNotFoundException e) {
                     // Potentially direct the user to the Market with a Dialog
                     Toast.makeText(this, R.string.error_file_manager, Toast.LENGTH_SHORT).show();
                 }
 
                 break;
+
             case DS_TYPE_TMS:
                 mMap.createLayer(null, nType);
                 break;
+
             case DS_TYPE_LOCAL_GEOJSON:
                 Intent intent_geojson = new Intent(Intent.ACTION_GET_CONTENT);
                 //intent_geojson.setType("application/json");
@@ -408,11 +414,29 @@ public class MainActivity extends ActionBarActivity {
                 intent_geojson.addCategory(Intent.CATEGORY_OPENABLE);
 
                 try {
-                    startActivityForResult(Intent.createChooser(intent_geojson, getString(R.string.message_select_file)), DS_TYPE_LOCAL_GEOJSON);
+                    startActivityForResult(Intent.createChooser(intent_geojson,
+                            getString(R.string.message_select_file)), DS_TYPE_LOCAL_GEOJSON);
                 } catch (ActivityNotFoundException e) {
                     // Potentially direct the user to the Market with a Dialog
                     Toast.makeText(this, R.string.error_file_manager, Toast.LENGTH_SHORT).show();
                 }
+
+                break;
+
+            case DS_TYPE_LOCAL_NGFP:
+                Intent intent_ngfp = new Intent(Intent.ACTION_GET_CONTENT);
+                //intent_ngfp.setType("application/ngfp");
+                intent_ngfp.setType("application/*");
+                intent_ngfp.addCategory(Intent.CATEGORY_OPENABLE);
+
+                try {
+                    startActivityForResult(Intent.createChooser(intent_ngfp,
+                            getString(R.string.message_select_file)), DS_TYPE_LOCAL_NGFP);
+                } catch (ActivityNotFoundException e) {
+                    // Potentially direct the user to the Market with a Dialog
+                    Toast.makeText(this, R.string.error_file_manager, Toast.LENGTH_SHORT).show();
+                }
+
                 break;
         }
     }

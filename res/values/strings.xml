@@ -46,6 +46,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <string name="add_geojson">Add GeoJSON</string>
     <string name="add_tms">Add TMS</string>
     <string name="add_ngw">Add NGW Layer</string>
+    <string name="add_ngfp">Add NGFP Layer</string>
 
 	<string name="pref_title">NextGIS Mobile preferences</string>
 	<string name="pref_cat_main">Main preferences</string>

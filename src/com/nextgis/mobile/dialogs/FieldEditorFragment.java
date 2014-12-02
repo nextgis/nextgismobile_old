@@ -44,13 +44,15 @@ import java.util.List;
 
 public class FieldEditorFragment extends Fragment {
 
+    protected MainActivity mMainActivity;
     protected GeoJsonLayer mLayer;
     protected Feature mFeature;
     protected List<Field> mFields;
     protected boolean mIsEditMode = false;
     protected TextView mTitle;
     protected ListView mFieldListView;
-
+    protected FieldListAdapter mFieldListAdapter;
+    protected AdapterView.OnItemClickListener mOnItemClickListener;
     protected int mMarginDP;
     protected int mMarginTop;
 
@@ -72,7 +74,7 @@ public class FieldEditorFragment extends Fragment {
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        MainActivity mainActivity = (MainActivity) getActivity();
+        mMainActivity = (MainActivity) getActivity();
         View view = inflater.inflate(R.layout.feature_field_editor, container, false);
 
         int marginBottom = mMarginDP;
@@ -85,21 +87,20 @@ public class FieldEditorFragment extends Fragment {
 
         mTitle = (TextView) view.findViewById(R.id.field_editor_title);
         mTitle.setText(mIsEditMode
-                ? mainActivity.getString(R.string.editing_of_feature_properties)
-                : mainActivity.getString(R.string.feature_properties));
+                ? mMainActivity.getString(R.string.editing_of_feature_properties)
+                : mMainActivity.getString(R.string.feature_properties));
 
         FrameLayout frame = (FrameLayout) view.findViewById(R.id.field_editor_frame);
         frame.setLayoutParams(layoutParams);
 
         mFieldListView = (ListView) view.findViewById(R.id.field_list_view);
-        final FieldListAdapter fieldListAdapter = new FieldListAdapter(mainActivity, mFields);
-        mFieldListView.setAdapter(fieldListAdapter);
-        mFieldListView.setEnabled(mIsEditMode);
+        mFieldListAdapter = new FieldListAdapter(mMainActivity, mFields);
+        mFieldListView.setAdapter(mFieldListAdapter);
 
-        mFieldListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mOnItemClickListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                final Field field = (Field) fieldListAdapter.getItem(position);
+                final Field field = (Field) mFieldListAdapter.getItem(position);
 
                 FieldEditorDialog editDialog = new FieldEditorDialog();
 
@@ -110,14 +111,16 @@ public class FieldEditorFragment extends Fragment {
                                 if (fieldValue == null) return;
 
                                 field.setFieldValue(fieldValue);
-                                fieldListAdapter.notifyDataSetChanged();
+                                mFieldListAdapter.notifyDataSetChanged();
                             }
                         },
                         field);
 
                 editDialog.show(getActivity().getSupportFragmentManager(), "FieldEditorDialog");
             }
-        });
+        };
+
+        mFieldListView.setOnItemClickListener(mIsEditMode ? mOnItemClickListener : null);
 
         return view;
     }
@@ -146,7 +149,7 @@ public class FieldEditorFragment extends Fragment {
     public void onEditMode() {
         mIsEditMode = true;
         mTitle.setText(getActivity().getString(R.string.editing_of_feature_properties));
-        mFieldListView.setEnabled(true);
+        mFieldListView.setOnItemClickListener(mIsEditMode ? mOnItemClickListener : null);
     }
 
     public void saveEditedFields() {

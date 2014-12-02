@@ -386,6 +386,7 @@ public class MapViewEditable extends MapView {
         List<Layer> geoJsonLayers = new ArrayList<Layer>();
         addToListLayersByType(geoJsonLayers, LAYERTYPE_LOCAL_GEOJSON);
         addToListLayersByType(geoJsonLayers, LAYERTYPE_NDW_VECTOR);
+        addToListLayersByType(geoJsonLayers, LAYERTYPE_LOCAL_NGFP);
 
         switch (geoJsonLayers.size()) {
             case 0:

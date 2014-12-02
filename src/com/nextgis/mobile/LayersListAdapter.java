@@ -71,6 +71,7 @@ public class LayersListAdapter extends BaseAdapter {
             case LAYERTYPE_REMOTE_TMS:
             case LAYERTYPE_NDW_VECTOR:
             case LAYERTYPE_NDW_RASTER:
+            case LAYERTYPE_LOCAL_NGFP:
             default:
                 return getStandardLayerView(layer, view);
         }
