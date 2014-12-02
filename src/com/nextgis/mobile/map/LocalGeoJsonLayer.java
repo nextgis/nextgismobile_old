@@ -200,7 +200,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
     /**
      * Create a LocalGeoJsonLayer from the GeoJson data submitted by geoJSONObject.
      */
-    public void create(
+    public File create(
             final MapBase map, String layerName, JSONObject geoJSONObject,
             ProgressDialog progressDialog)
             throws JSONException, IOException {
@@ -254,13 +254,13 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
 
         progressDialog.hide();
 
-        create(map, layerName, features);
+        return create(map, layerName, features);
     }
 
     /**
      * Create a LocalGeoJsonLayer from the GeoJson data submitted by features.
      */
-    protected void create(
+    protected File create(
             final MapBase map, String layerName, List<Feature> features)
             throws JSONException, IOException {
 
@@ -315,6 +315,8 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
             msg.setData(bundle);
             map.getMapEventsHandler().sendMessage(msg);
         }
+
+        return outputPath;
     }
 
     protected JSONObject createDetails() throws JSONException{

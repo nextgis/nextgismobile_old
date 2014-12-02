@@ -84,10 +84,10 @@ public class LocalGeoJsonEditLayer extends LocalGeoJsonLayer {
      * Create a LocalGeoJsonLayerEditor from the GeoJson data submitted by features.
      */
     @Override
-    public void create(final MapBase map, String editLayerName, List<Feature> features)
+    public File create(final MapBase map, String editLayerName, List<Feature> features)
             throws JSONException, IOException {
 
-        super.create(map, "edit_" + editLayerName, features);
+        return super.create(map, "edit_" + editLayerName, features);
     }
 
     public Feature getEditFeature() {

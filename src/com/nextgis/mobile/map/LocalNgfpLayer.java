@@ -21,11 +21,13 @@
 package com.nextgis.mobile.map;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 import com.nextgis.mobile.R;
 import com.nextgis.mobile.util.Constants;
+import com.nextgis.mobile.util.FileUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -64,50 +66,38 @@ public class LocalNgfpLayer extends LocalGeoJsonLayer {
         ProgressDialog progressDialog = new ProgressDialog(map.getContext());
 
         try {
-            InputStream inputStream = map.getContext().getContentResolver().openInputStream(uri);
+            progressDialog.setMessage(
+                    map.getContext().getString(R.string.message_opening_progress));
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.setCancelable(true);
+            progressDialog.show();
 
-            if (inputStream != null) {
-                progressDialog.setMessage(
-                        map.getContext().getString(R.string.message_opening_progress));
-                progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                progressDialog.setCancelable(true);
-                progressDialog.show();
+            // GeoJSON-data for NGFP
+            String str = getTextFileStringFromZipUri(
+                    map.getContext(), uri, Constants.FORM_DATA_GEOJSON);
 
-                // Connection for NGFP
-                ZipInputStream zis = new ZipInputStream(inputStream);
-                JSONObject connectionJson =
-                        getJsonObjectFromZipInputStream(zis, Constants.CONNECTION_JSON);
+            if (str == null) throw new FileNotFoundException(
+                    "File " + Constants.FORM_DATA_GEOJSON + " is not found");
+
+            JSONObject geoJSONObject = new JSONObject(str);
+            File outputPath = create(map, layerName, geoJSONObject, progressDialog);
+
+            // XML-form for NGFP
+            String xmlFormString =
+                    getTextFileStringFromZipUri(map.getContext(), uri, Constants.FORM_XML);
+
+            if (xmlFormString != null) {
+                File file = new File(outputPath, Constants.FORM_XML);
+                FileUtil.writeToFile(file, xmlFormString);
+            }
+
+            // Connection for NGFP
+            str = getTextFileStringFromZipUri(map.getContext(), uri, Constants.CONNECTION_JSON);
+
+            if (str != null) {
+                JSONObject connectionJson = new JSONObject(str);
 
                 // TODO: find connection or create it
-                if (connectionJson != null) {
-
-                }
-
-                // XML-form for NGFP
-                inputStream = map.getContext().getContentResolver().openInputStream(uri);
-                zis = new ZipInputStream(inputStream);
-                BufferedReader formDataReader =
-                        getTextFileReaderFromZipInputStream(zis, Constants.FORM_XML, "UTF-8");
-
-                if (formDataReader != null) {
-                    StringBuilder responseStrBuilder = new StringBuilder();
-
-                    String inputStr;
-                    while ((inputStr = formDataReader.readLine()) != null) {
-                        responseStrBuilder.append(inputStr);
-                    }
-
-                    // TODO: write String to file
-
-                }
-
-                // GeoJSON-data for NGFP
-                inputStream = map.getContext().getContentResolver().openInputStream(uri);
-                zis = new ZipInputStream(inputStream);
-                JSONObject geoJSONObject =
-                        getJsonObjectFromZipInputStream(zis, Constants.FORM_DATA_GEOJSON);
-
-                create(map, layerName, geoJSONObject, progressDialog);
             }
 
         } catch (UnsupportedEncodingException e) {
@@ -128,7 +118,6 @@ public class LocalNgfpLayer extends LocalGeoJsonLayer {
         progressDialog.hide();
         //if we here something wrong occurred
         Toast.makeText(map.getContext(), sErr, Toast.LENGTH_SHORT).show();
-
     }
 
     public BufferedReader getTextFileReaderFromZipInputStream(
@@ -167,8 +156,14 @@ public class LocalNgfpLayer extends LocalGeoJsonLayer {
         return null;
     }
 
-    public JSONObject getJsonObjectFromZipInputStream(ZipInputStream zis, String textFileInArchive)
+    public String getTextFileStringFromZipUri(Context context, Uri uri, String textFileInArchive)
             throws IOException, JSONException {
+
+        InputStream inputStream = context.getContentResolver().openInputStream(uri);
+
+        if (inputStream == null) return null;
+
+        ZipInputStream zis = new ZipInputStream(inputStream);
 
         BufferedReader formDataReader =
                 getTextFileReaderFromZipInputStream(zis, textFileInArchive, "UTF-8");
@@ -182,6 +177,6 @@ public class LocalNgfpLayer extends LocalGeoJsonLayer {
             responseStrBuilder.append(inputStr);
         }
 
-        return new JSONObject(responseStrBuilder.toString());
+        return responseStrBuilder.toString();
     }
 }
