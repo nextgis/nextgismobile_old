@@ -20,6 +20,8 @@
  ****************************************************************************/
 package com.nextgis.mobile.datasource;
 
+import com.nextgis.mobile.util.GeoConstants;
+
 public class Field {
 
     protected FieldKey mFieldKey;
@@ -47,5 +49,68 @@ public class Field {
 
     public boolean isFieldValueEdited() {
         return mIsEdited;
+    }
+
+    public int getType() {
+        return mFieldKey.getType();
+    }
+
+    public void setFieldValue(String valueText) {
+            Object newFieldValue = null;
+
+            switch (mFieldKey.getType()) {
+                case GeoConstants.FTInteger:
+                    newFieldValue = Long.valueOf(valueText);
+                    break;
+
+                case GeoConstants.FTReal:
+                    newFieldValue = Double.valueOf(valueText);
+                    break;
+
+                case GeoConstants.FTString:
+                    newFieldValue = valueText;
+                    break;
+
+                case GeoConstants.FTDateTime:
+                    break;
+
+                case GeoConstants.FTIntegerList:
+                case GeoConstants.FTRealList:
+                case GeoConstants.FTStringList:
+                case GeoConstants.FTBinary:
+                    break;
+            }
+
+            setFieldValue(newFieldValue);
+    }
+
+    public String getFieldValueText() {
+        String fieldValueText = "";
+
+        switch (mFieldKey.getType()) {
+            case GeoConstants.FTInteger:
+                fieldValueText += ((Number) mFieldValue).longValue();
+                break;
+
+            case GeoConstants.FTReal:
+                fieldValueText += ((Number) mFieldValue).doubleValue();
+                break;
+
+            case GeoConstants.FTString:
+                fieldValueText += (String) mFieldValue;
+                break;
+
+            case GeoConstants.FTDateTime:
+//                fieldValueText += ((Date) mFieldValue).toString();
+                break;
+
+            case GeoConstants.FTIntegerList:
+            case GeoConstants.FTRealList:
+            case GeoConstants.FTStringList:
+            case GeoConstants.FTBinary:
+                break;
+        }
+
+        return fieldValueText;
     }
 }

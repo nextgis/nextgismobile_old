@@ -102,12 +102,15 @@ public abstract class GeoJsonLayer extends Layer{
         for(int i = 0; i < geoJSONFeatures.length(); i++){
             JSONObject jsonFeature = geoJSONFeatures.getJSONObject(i);
 
+            // get ID
+            int id = jsonFeature.getInt(GEOJSON_FEATURE_ID);
+
             //get geometry
             JSONObject jsonGeometry = jsonFeature.getJSONObject(GEOJSON_GEOMETRY);
             GeoGeometry geometry = GeoGeometry.fromJson(jsonGeometry);
             geometry.setCRS(CRS_WEB_MERCATOR);
 
-            Feature feature = new Feature(mFieldKeys);
+            Feature feature = new Feature(id, mFieldKeys);
             feature.setGeometry(geometry);
             //TODO: add to RTree for fast spatial queries
 
@@ -214,7 +217,7 @@ public abstract class GeoJsonLayer extends Layer{
         getFeatures();
 
         for (Feature feature: mFeatures) {
-            if (feature.getID() == id) {
+            if (feature.getId() == id) {
                 return feature;
             }
         }

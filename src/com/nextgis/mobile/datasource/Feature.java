@@ -32,26 +32,19 @@ import static com.nextgis.mobile.util.Constants.*;
 
 public class Feature implements JSONStore {
 
-    protected int mID = -1;
+    protected int mId;
     protected GeoGeometry mGeometry;
     protected List<Object> mFieldValues;
     protected List<FieldKey> mFieldKeys;
 
-    public Feature(List<FieldKey> fieldKeys) {
+    public Feature(int id, List<FieldKey> fieldKeys) {
+        mId = id;
         mFieldKeys = fieldKeys;
         mFieldValues = new ArrayList<Object>(mFieldKeys.size());
     }
 
-    public int getID() {
-        if (mID == -1) {
-            Object field = getFieldValue(GEOJSON_ID);
-
-            if (field != null) {
-                mID = (Integer) field;
-            }
-        }
-
-        return mID;
+    public int getId() {
+        return mId;
     }
 
     public void setGeometry(GeoGeometry geometry){
@@ -105,8 +98,8 @@ public class Feature implements JSONStore {
         return mFieldKeys;
     }
 
-    public List<Field> getFields() {
-        List<Field> fields = new ArrayList<Field>(mFieldKeys.size());
+    public FieldList getFields() {
+        FieldList fields = new FieldList(mFieldKeys.size());
 
         for (FieldKey fieldKey : mFieldKeys) {
             Object fieldValue = getFieldValue(fieldKey.getFieldName());
@@ -127,6 +120,7 @@ public class Feature implements JSONStore {
     public JSONObject toJSON() throws JSONException {
         JSONObject oJSONOut = new JSONObject();
         oJSONOut.put(GEOJSON_TYPE, GEOJSON_TYPE_Feature);
+        oJSONOut.put(GEOJSON_FEATURE_ID, mId);
         oJSONOut.put(GEOJSON_GEOMETRY, mGeometry.toJSON());
         JSONObject oJSONProp = new JSONObject();
 
@@ -143,6 +137,8 @@ public class Feature implements JSONStore {
     public void fromJSON(JSONObject jsonObject) throws JSONException {
         if(!jsonObject.getString(GEOJSON_TYPE).equals(GEOJSON_TYPE_Feature))
             throw new JSONException("not valid geojson feature");
+
+        mId = jsonObject.getInt(GEOJSON_FEATURE_ID);
 
         JSONObject oJSONGeom = jsonObject.getJSONObject(GEOJSON_GEOMETRY);
         mGeometry = GeoGeometry.fromJson(oJSONGeom);

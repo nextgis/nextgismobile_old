@@ -192,6 +192,10 @@ public interface Constants {
     public static final int NGWTYPE_PARENT_RESOURCE_GROUP = 999;
     public static final int NGWTYPE_UNKNOWN = 1000;
 
+    public static final int FORM_TYPE_TEXT_LABEL = 0;
+    public static final int FORM_TYPE_TEXT_EDIT = 1;
+
+
 
     /**
      * Layer type

@@ -357,7 +357,7 @@ public class LocalGeoJsonLayer extends GeoJsonLayer {
                 geometry.setCRS(CRS_WEB_MERCATOR);
             }
 
-            Feature feature = new Feature(fieldKeys);
+            Feature feature = new Feature(i, fieldKeys); // ID == i
             feature.setGeometry(geometry);
             //TODO: add to RTree for fast spatial queries
 

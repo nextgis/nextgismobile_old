@@ -292,7 +292,7 @@ public class MainActivity extends ActionBarActivity {
                 mMap.onCancelEditLayer();
                 return true;
             case R.id.menu_ef_save:
-                onSaveEditFeatureAttributes();
+                onSaveEditedFeatureFields();
                 return true;
             case R.id.menu_ef_change_attributes:
                 onEditFeatureAttributesFromShow();
@@ -453,7 +453,7 @@ public class MainActivity extends ActionBarActivity {
 
         if (fieldEditor == null) {
             fieldEditor = new FieldEditorFragment();
-            fieldEditor.setParams(this, null, null, true);
+            fieldEditor.setParams(getMap(), null, null, true);
         }
 
         fragmentTransaction.replace(R.id.map, fieldEditor, "FieldEditor");
@@ -464,7 +464,7 @@ public class MainActivity extends ActionBarActivity {
         switchMenuView();
     }
 
-    public void onSaveEditFeatureAttributes() {
+    public void onSaveEditedFeatureFields() {
         FieldEditorFragment fieldEditor = (FieldEditorFragment)
                 getSupportFragmentManager().findFragmentByTag("FieldEditor");
 
@@ -481,7 +481,7 @@ public class MainActivity extends ActionBarActivity {
                 getSupportFragmentManager().findFragmentByTag("FieldEditor");
 
         if (fieldEditor != null) {
-            fieldEditor.onEditMode();
+            fieldEditor.setEditMode();
             switchMenuView();
         }
     }

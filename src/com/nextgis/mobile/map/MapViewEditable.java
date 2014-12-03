@@ -184,7 +184,7 @@ public class MapViewEditable extends MapView {
 
             if (editableLayer != null) {
                 Feature editFeature = mEditLayer.getEditFeature();
-                Feature editableFeature = editableLayer.getFeatureById(editFeature.getID());
+                Feature editableFeature = editableLayer.getFeatureById(editFeature.getId());
 
                 if (editableFeature != null) {
                     editableFeature.setParameters(editFeature);
@@ -466,7 +466,7 @@ public class MapViewEditable extends MapView {
 
                     if (fieldEditor == null) {
                         fieldEditor = new FieldEditorFragment();
-                        fieldEditor.setParams(null, layer, selectedFeature, false);
+                        fieldEditor.setParams(getSelf(), layer, selectedFeature, false);
                     }
 
                     fragmentTransaction.replace(R.id.map, fieldEditor, "FieldEditor");
@@ -486,6 +486,10 @@ public class MapViewEditable extends MapView {
         }
     }
 
+    @Override
+    public MapViewEditable getSelf() {
+        return this;
+    }
     protected Feature getSelectedFeature(GeoPoint screenPoint, GeoJsonLayer layer) {
         GeoEnvelope screenEnvelope = new GeoEnvelope(
                 screenPoint.getX() - tolerancePX, screenPoint.getX() + tolerancePX,

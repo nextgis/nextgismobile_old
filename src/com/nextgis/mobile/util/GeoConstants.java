@@ -62,6 +62,7 @@ public interface GeoConstants {
      */
     public static final String GEOJSON_TYPE = "type";
     public static final String GEOJSON_ID = "ID";
+    public static final String GEOJSON_FEATURE_ID = "FEATURE_ID";
     public static final String GEOJSON_CRS = "crs";
     public static final String GEOJSON_NAME = "name";
     public static final String GEOJSON_PROPERTIES = "properties";
