@@ -89,19 +89,29 @@ public class Field {
 
         switch (mFieldKey.getType()) {
             case GeoConstants.FTInteger:
-                fieldValueText += ((Number) mFieldValue).longValue();
+                if (mFieldValue instanceof Number) {
+                    fieldValueText += ((Number) mFieldValue).longValue();
+                } else {
+                    fieldValueText += "DATA ERROR";
+                }
                 break;
 
             case GeoConstants.FTReal:
-                fieldValueText += ((Number) mFieldValue).doubleValue();
+                if (mFieldValue instanceof Number) {
+                    fieldValueText += ((Number) mFieldValue).doubleValue();
+                }
                 break;
 
             case GeoConstants.FTString:
-                fieldValueText += (String) mFieldValue;
+                if (mFieldValue instanceof String) {
+                    fieldValueText += (String) mFieldValue;
+                }
                 break;
 
             case GeoConstants.FTDateTime:
-//                fieldValueText += ((Date) mFieldValue).toString();
+//                if (mFieldValue instanceof Date) {
+//                    fieldValueText += ((Date) mFieldValue).toString();
+//                }
                 break;
 
             case GeoConstants.FTIntegerList:
