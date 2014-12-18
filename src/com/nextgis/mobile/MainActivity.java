@@ -84,8 +84,6 @@ public class MainActivity extends ActionBarActivity {
 
         restoreActionBar();
 
-        mLayersFragment = (LayersFragment) getSupportFragmentManager().findFragmentById(R.id.layers);
-
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         mMapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("MAP");
 
@@ -96,11 +94,10 @@ public class MainActivity extends ActionBarActivity {
 
         getSupportFragmentManager().executePendingTransactions();
 
-        LayersFragment layersFragment =
-                (LayersFragment) getSupportFragmentManager().findFragmentById(R.id.layers);
+        mLayersFragment = (LayersFragment) getSupportFragmentManager().findFragmentById(R.id.layers);
 
         // Set up the drawer.
-        layersFragment.setUp(R.id.layers, (DrawerLayout) findViewById(R.id.drawer_layout));
+        mLayersFragment.setUp(R.id.layers, (DrawerLayout) findViewById(R.id.drawer_layout));
 /*		
         showLayersList(m_bShowLayersList);
 */

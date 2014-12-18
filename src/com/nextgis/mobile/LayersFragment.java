@@ -22,6 +22,7 @@ package com.nextgis.mobile;
 
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -30,6 +31,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -107,6 +109,22 @@ public class LayersFragment extends Fragment implements MapEventListener{
      */
     public void setUp(int fragmentId, DrawerLayout drawerLayout) {
         mFragmentContainerView = getActivity().findViewById(fragmentId);
+
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+
+        int displayWidth;
+        if (android.os.Build.VERSION.SDK_INT >= 13) {
+            Point size = new Point();
+            display.getSize(size);
+            displayWidth = size.x;
+        } else {
+            displayWidth = display.getWidth();
+        }
+
+        ViewGroup.LayoutParams params = mFragmentContainerView.getLayoutParams();
+        params.width = (int) (displayWidth * 0.8);
+        mFragmentContainerView.setLayoutParams(params);
+
         mLayersListView = (ListView) mFragmentContainerView.findViewById(R.id.layer_list);
         mListAdapter = new LayersListAdapter(mMap);
         mLayersListView.setAdapter(mListAdapter);
