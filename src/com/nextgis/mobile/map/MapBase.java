@@ -323,7 +323,7 @@ public class MapBase extends View {
      * @param zoom A zoom level
      * @param center A map center coordinates
      */
-    protected void setZoomAndCenter(final double zoom, final GeoPoint center){
+    public void setZoomAndCenter(final double zoom, final GeoPoint center){
         if(mDisplay != null){
             double newZoom = zoom;
             if( zoom < mDisplay.getMinZoomLevel())

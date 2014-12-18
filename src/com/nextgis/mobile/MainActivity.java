@@ -40,6 +40,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.nextgis.mobile.datasource.GeoPoint;
 import com.nextgis.mobile.dialogs.FieldEditorFragment;
 import com.nextgis.mobile.dialogs.NgwResourcesDialog;
 import com.nextgis.mobile.map.MapViewEditable;
@@ -65,7 +66,7 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         mMap = new MapViewEditable(this);
-        //mMap.initMap(nTileSize, nZoom, nScrollX, nScrollY);
+        //mMap.initMap(nTileSize, mMapZoom, mMapScrollX, mMapScrollY);
         //mMap.showInfoPane(bInfoOn);
         //mMap.showCompass(bCompassOn);
 
@@ -79,9 +80,6 @@ public class MainActivity extends ActionBarActivity {
         mbGpxRecord = prefs.getBoolean(Constants.KEY_PREF_SW_TRACKGPX_SRV, false);
         boolean bCompassOn = prefs.getBoolean(Constants.PREFS_SHOW_COMPASS, false);
         int nTileSize = 256;//prefs.getInt(NGMConstants.KEY_PREF_TILE_SIZE + "_int", 256);
-        int nZoom = prefs.getInt(Constants.PREFS_ZOOM_LEVEL, 1);
-        int nScrollX = prefs.getInt(Constants.PREFS_SCROLL_X, 0);
-        int nScrollY = prefs.getInt(Constants.PREFS_SCROLL_Y, 0);
         warInfoPaneShowBeforeEditMode = prefs.getBoolean(Constants.PREFS_WAR_SHOW_INFO, false);
 
         restoreActionBar();
@@ -110,11 +108,17 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public void onPause() {
+        final SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(this).edit();
+
         if (mMap != null) {
+            GeoPoint point = mMap.getMapCenter();
+            edit.putLong(Constants.PREFS_ZOOM_LEVEL, Double.doubleToRawLongBits(mMap.getZoomLevel()));
+            edit.putLong(Constants.PREFS_SCROLL_X, Double.doubleToRawLongBits(point.getX()));
+            edit.putLong(Constants.PREFS_SCROLL_Y, Double.doubleToRawLongBits(point.getY()));
+
             mMap.onPause();
         }
 
-        final SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(this).edit();
         edit.putBoolean(Constants.KEY_PREF_SW_TRACKGPX_SRV, mbGpxRecord);
 
         if (mbGpxRecord) {
@@ -131,6 +135,12 @@ public class MainActivity extends ActionBarActivity {
 
         if (mMap != null) {
             mMap.onResume();
+
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            double mMapZoom = Double.longBitsToDouble(prefs.getLong(Constants.PREFS_ZOOM_LEVEL, 1));
+            double mMapScrollX = Double.longBitsToDouble(prefs.getLong(Constants.PREFS_SCROLL_X, 0));
+            double mMapScrollY = Double.longBitsToDouble(prefs.getLong(Constants.PREFS_SCROLL_Y, 0));
+            mMap.setZoomAndCenter(mMapZoom, new GeoPoint(mMapScrollX, mMapScrollY));
         }
 
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
