@@ -41,6 +41,7 @@ public interface Constants {
     public static final String PREFS_SHOW_COMPASS = "map_show_compass";
     public static final String PREFS_SHOW_INFO = "map_show_info";
     public static final String PREFS_WAR_SHOW_INFO = "map_war_show_info";
+    public static final String PREFS_IS_FRESH_INSTALL = "map_is_fresh_install";
     public static final String PREFS_MAP = "map";
 
     /**

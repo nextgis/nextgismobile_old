@@ -157,6 +157,31 @@ public class RemoteTMSLayer extends TMSLayer {
                 TMSTYPE_OSM, null);
     }
 
+    public void createOsmLayer(final MapBase map) {
+        String layerName = "OpenStreetMap TMS layer";
+        String layerUrl = "http://tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+        String errorMsg = map.getContext().getString(R.string.error_occurred);
+
+        try {
+            create(map, layerName, layerUrl, TMSTYPE_OSM);
+            return;
+
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "Exception: " + e.getLocalizedMessage());
+            errorMsg += ": " + e.getLocalizedMessage();
+        } catch (JSONException e) {
+            Log.d(TAG, "Exception: " + e.getLocalizedMessage());
+            errorMsg += ": " + e.getLocalizedMessage();
+        } catch (IOException e) {
+            Log.d(TAG, "Exception: " + e.getLocalizedMessage());
+            errorMsg += ": " + e.getLocalizedMessage();
+        }
+
+        //if we here something wrong occurred
+        Toast.makeText(map.getContext(), errorMsg, Toast.LENGTH_SHORT).show();
+    }
+
     @Override
     public void changeProperties() {
         showPropertiesDialog(mMap, false, mName, mURL, getTMSType(), this);

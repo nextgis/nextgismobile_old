@@ -86,6 +86,10 @@ public class MapView extends MapBase implements GestureDetector.OnGestureListene
         }
     }
 
+    public void createOsmLayer() {
+        new RemoteTMSLayer().createOsmLayer(this);
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         //Log.d(TAG, "state: " + mDrawingState + ", current loc: " +  mCurrentMouseLocation.toString() + " current focus: " + mCurrentFocusLocation.toString() + " scale: "  + mScaleFactor);

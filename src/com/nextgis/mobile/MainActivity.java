@@ -104,6 +104,16 @@ public class MainActivity extends ActionBarActivity {
 /*		
         showLayersList(m_bShowLayersList);
 */
+
+        boolean isFreshInstall = prefs.getBoolean(Constants.PREFS_IS_FRESH_INSTALL, true);
+
+        if (isFreshInstall) {
+            mMap.createOsmLayer();
+
+            SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(this).edit();
+            edit.putBoolean(Constants.PREFS_IS_FRESH_INSTALL, false);
+            edit.commit();
+        }
     }
 
     @Override
