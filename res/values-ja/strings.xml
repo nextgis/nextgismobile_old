@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">NextGIS Mobile</string>
+    <string name="home_page">http://nextgis.ru</string>
+    <string name="detail_page">http://gis-lab.info/qa/nextgis-mobile.html</string>
+
+    <string name="switch_track_service">トラッカーサービス開始</string>
+	<string name="tracker_service_name">NGMTrackerService</string>
+	<string name="sendpos_service_name">NGMSendPosService</string>
+	<string name="about_app">このアプリケーションは位置情報トラッキング、トラッキングサーバへの位置情報送信、地図表示と地理情報の取りだしを行うものです。 \n\n開発者:\n  Dmitriy Baryshnikov\n\nMore info at</string>
+
+	<string name="settings">設定</string>
+	<string name="about">このアプリケーションについて</string>
+	<string name="mark">ポイント追加</string>
+	<string name="layers">レイヤー管理</string>
+	<string name="gpx_record">GPX記録</string>
+	<string name="info">情報パネルを閉じる/開く</string>
+	<string name="pan">パン</string>
+    <string name="add">追加</string>
+    <string name="add_zip">ZIPファイルを追加</string>
+    <string name="add_geojson">GeoJSONを追加</string>
+    <string name="add_tms">TMSを追加</string>
+    <string name="add_ngw">NGW レイヤを追加</string>
+
+	<string name="pref_title">NextGIS Mobile 設定</string>
+	<string name="pref_cat_main">メイン設定</string>
+	<string name="pref_cat_tracker">トラッカー設定</string>
+	<string name="pref_cat_datasenser">データ送信設定</string>
+	<string name="pref_cat_compass">位置情報設定</string>
+	<string name="pref_tracker_service_on">トラックサービスを開始しました</string>
+	<string name="pref_tracker_service_off">トラックサービスを停止しました</string>
+	<string name="pref_tracker_service">トラックサービス開始/停止</string>
+	<string name="pref_tracker_name">トラックサービス開始/停止</string>
+	<string name="pref_site_name">ストレージサイト</string>
+	<string name="pref_site_summary">地理情報を格納するWebサイトアドレスを入力</string>
+	<string name="pref_site_dlg_title">Webサイトアドレスを入力</string>
+	<string name="pref_tracker_min_dist_update_name">更新する最小距離</string>
+	<string name="pref_tracker_min_dist_update_summary">更新する最小距離をメートルで入力</string>
+	<string name="pref_tracker_min_dist_update_dlg_title">更新する最小距離をメートルで入力</string>
+	<string name="pref_tracker_min_time_between_updates_name">更新する最小時間間隔</string>
+	<string name="pref_tracker_min_time_between_updates_summary">更新する最小時間を入力</string>
+	<string name="pref_tracker_min_time_between_updates_dlg_title">更新する最小時間を入力</string>
+	<string name="pref_sendpos_service">位置情報送信サービス 開始/停止</string>
+	<string name="pref_sendpos_name">位置情報送信サービス 開始/停止</string>
+	<string name="pref_sendpos_service_on">位置情報送信サービスは開始しました</string>
+	<string name="pref_sendpos_service_off">位置情報送信サービスは停止しました</string>
+	<string name="pref_time_between_sendpos_name">位置送信の最小時間</string>
+	<string name="pref_time_between_sendpos_summary">位置送信の最小時間を入力</string>
+	<string name="pref_time_between_sendpos_dlg_title">位置送信の最小時間間隔を入力</string>
+	<string name="pref_energy_economy_summary">位置送信の中断</string>
+	<string name="pref_energy_economy_name">位置送信の中断</string>
+	<string name="pref_energy_economy_on">位置送信を中断しない</string>
+	<string name="pref_energy_economy_off">位置送信の中断</string>
+	<string name="pref_uid_name">ユーザー識別ID</string>
+	<string name="pref_uid_summary">ユーザー識別IDの入力</string>
+	<string name="pref_uid_dlg_title">ユーザー識別IDの入力</string>
+	<string name="pref_start_services_onstartup">スタート時にサービスを開始</string>
+	<string name="pref_start_services_onstartup_summary">チェックした場合、スタート時にトラックとデータ送信サービスを起動します</string>
+	<string name="pref_coordinates_format_name">座標設定</string>
+	<string name="pref_coordinates_format_summary">テキスト出力の座票フォーマットを設定します</string>
+	<string name="pref_coordinates_format_dlg_title">座票フォーマット選択</string>
+
+	<string name="pref_compass_vibration">コンパスタッチの振動オン</string>
+	<string name="pref_compass_vibration_summary">コンパスにタッチすると端末が振動する</string>
+	<string name="pref_compass_wake_lock">コンパスが表示されている場合、スクリーンロックしない</string>
+	<string name="pref_compass_wake_lock_summary">コンパスが表示されている場合、ディスプレイをオフにしない</string>
+	<string name="pref_compass_true_north">真北表示</string>
+	<string name="pref_compass_true_north_summary">真北表示</string>
+	<string name="pref_compass_show_magnetic">磁北表示</string>
+	<string name="pref_compass_show_magnetic_summary">磁北表示</string>
+
+	<string name="default_azimuth">0°N</string>
+	<string name="compass_title">コンパス</string>
+	<string name="map_title">地図</string>
+	<string name="layers_title">地図</string>
+	<string name="tabs_position_tab">位置情報</string>
+	<string name="tabs_description_tab">説明</string>
+	<string name="tabs_camera_tab">カメラ</string>
+	<string name="tabs_note_tab">ノート</string>
+	<string name="input_poi_title">位置入力</string>
+	<string name="input_poi_step1">1. POI説明の追加</string>
+	<string name="input_poi_step2">2. 位置と方位の追加</string>
+	<string name="input_poi_step3">3. 写真撮影</string>
+	<string name="input_poi_step4">4. ノートの追加と終了</string>
+	<string name="input_poi_finish">終了</string>
+	<string name="input_poi_summary">概要: </string>
+	<string name="input_poi_coordiantes">座標: </string>
+	<string name="input_poi_dist">距離: </string>
+	<string name="input_poi_azimuth">方位: </string>
+	<string name="input_poi_cat">カテゴリー入力: </string>
+	<string name="input_poi_subcat">サブカテゴリー入力: </string>
+	<string name="input_poi_subcatcustom">カスタムサブカテゴリー入力: </string>
+	<string name="input_poi_subcatdefault">なし</string>
+	<string name="input_poi_added">位置が追加されました</string>
+	<string name="input_poi_take_photo">写真撮影</string>
+	<string name="info_speed">速度</string>
+	<string name="info_speed_val">km/h</string>
+	<string name="info_coordinates">座標</string>
+	<string name="info_lat">緯度</string>
+	<string name="info_lon">経度</string>
+	<string name="info_height">高度</string>
+	<string name="info_height_val">m altitude</string>
+    <string name="info_accuracy">Acc.</string>
+    <string name="info_accuracy_val">m</string>
+    <string name="info_sat_count">Fix.</string>
+    <string name="info_sat_count_val">sat.</string>
+	<string name="compas_N">N</string>
+	<string name="compas_NE">NE</string>
+	<string name="compas_E">E</string>
+	<string name="compas_SE">SE</string>
+	<string name="compas_S">S</string>
+	<string name="compas_SW">SW</string>
+	<string name="compas_W">W</string>
+	<string name="compas_NW">NW</string>
+	<string name="sum_cat">カテゴリー: </string>
+	<string name="sum_subcat">サブカテゴリー: </string>
+	<string name="sum_coords">座標: </string>
+	<string name="sum_az">方位角: </string>
+	<string name="sum_dist">距離: </string>
+	<string name="coord_lat"></string>
+	<string name="coord_lon"></string>
+	<string name="create_next_gpx">GPXファイル作成: </string>
+	<string name="gpx_recording">GPX記録中...</string>
+
+	<string name="set_mode_offline">オフラインモードにする</string>
+	<string name="set_mode_online">オンラインモードにする</string>
+
+	<string name="set_mode_show_me">現在位置の表示とトラッキング</string>
+	<string name="set_mode_hide_me">現在位置を非表示にする</string>
+
+	<string name="pref_cat_map">地図</string>
+	<string name="pref_tile_size_name">地図タイルサイズ</string>
+	<string name="pref_tile_size_summary">地図タイルサイズ設定</string>
+	<string name="pref_tile_size_name_dlg_title">地図タイルサイズ選択</string>
+
+	<string name="pref_cat_acc">座標の精度</string>
+	<string name="pref_accurate_coordinates_pick">座標精度の取得</string>
+	<string name="pref_accurate_coordinates_pick_summary">オンにするとより精度の高い座票値が得られます。座票値は収集され平均化された座票です。</string>
+	<string name="acc_gather_dlg_title">座票収集</string>
+
+	<string name="pref_accurate_coordinates_pick_count">GPS計測カウント数</string>
+	<string name="pref_accurate_coordinates_pick_count_summary">精度の高い座標を得るためのGPS計測のカウント数</string>
+
+	<string name="pref_accurate_ce">正円誤差</string>
+	<string name="pref_accurate_ce_summary">平均誤差半径</string>
+
+	<string name="layers_drawer_open">レイヤーリストを開く</string>
+    <string name="layers_drawer_close">レイヤーリストを閉じる</string>
+
+    <string name="input_layer_properties">レイヤー属性入力</string>
+    <string name="change_layer_properties">レイヤー属性変更</string>
+
+    <string name="ok">Ok</string>
+    <string name="cancel">キャンセル</string>
+
+    <!-- messages -->
+    <string name="message_zip_extract_progress">展開中...</string>
+    <string name="message_loading_progress">ロード中...</string>
+    <string name="message_layer_added">レイヤーは正常に追加されました</string>
+    <string name="message_select_file">アップロードするファイルを選択</string>
+    <string name="message_opening_progress">開いています...</string>
+
+    <!-- errors -->
+    <string name="error_loc_fix">位置FIXエラー</string>
+    <string name="error_file_manager">ファイルマネージャーをインストールしてください。</string>
+    <string name="error_cancel_by_user">ユーザーによるキャンセル</string>
+    <string name="error_occurred">エラーが発生しました</string>
+    <string name="error_geojson_unsupported">GeoJSONが壊れているかサポートしていないフォーマットです</string>
+    <string name="error_geojson_crs_unsupported">GeoJSONのCRSがサポートされていません</string>
+    <string name="error_savefile_failed">ファイル保存に失敗しました</string>
+
+    <!-- geo specific -->
+    <string name="tmstype_qtiles">QTiles</string>
+    <string name="tmstype_osm">OSM</string>
+    <string name="tmstype_normal">Normal</string>
+    <string name="tmstype_ngw">NGW</string>
+
+    <string name="default_map_name">新しい地図</string>
+    <string name="layer_name">Name</string>
+    <string name="layer_url">URL</string>
+    <string name="layer_type">Type</string>
+</resources>
