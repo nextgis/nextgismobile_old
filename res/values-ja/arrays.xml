@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Project:  NextGISDroid
+ 	Purpose:  Gathering position information and data
+    Author:   Bishop (aka Baryshnikov Dmitriy), polimax@mail.ru
+    Copyright (C) 2012,2014 NextGIS
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<resources>
+	<string-array name="tracker_min_dist_update">
+	    <item>0 m</item>
+		<item>1 m</item>
+		<item>5 m</item>
+		<item>10 m</item>
+		<item>25 m</item>
+		<item>50 m</item>
+		<item>75 m</item>
+		<item>100 m</item>
+		<item>150 m</item>
+		<item>200 m</item>
+		<item>300 m</item>
+	</string-array>
+	<string-array name="tracker_min_time_between_updates">
+	    <item>0 秒</item>
+	    <item>1 秒</item>
+	    <item>2 秒</item>
+	    <item>5 秒</item>
+	    <item>10 秒</item>
+	    <item>20 秒</item>
+	    <item>30 秒</item>
+	    <item>45 秒</item>
+		<item>1 分</item>
+		<item>2 分</item>
+		<item>5 分</item>
+		<item>10 分</item>
+		<item>20 分</item>
+		<item>30 分</item>
+		<item>45 分</item>
+	</string-array>
+	<string-array name="datapos_send_updates">
+	    <item>1 分</item>
+		<item>2 分</item>
+		<item>3 分</item>
+		<item>4 分</item>
+		<item>5 分</item>
+		<item>10 分</item>
+		<item>15 分</item>
+		<item>20 分</item>
+		<item>30 分</item>
+		<item>60 分</item>
+	</string-array>
+	<string-array name="coordinates_format">
+	    <item>DD-MM-SS.SS</item>
+		<item>DD-MM.MM</item>
+		<item>DD.DDDD</item>
+	</string-array>
+	<string-array name="views">
+	    <item>地図</item>
+		<item>コンパス</item>
+	</string-array>
+</resources>
